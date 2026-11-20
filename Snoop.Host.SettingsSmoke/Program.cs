@@ -97,7 +97,6 @@ internal static class Program
                 File.Delete(transientPath);
             }
 
-
             // Exercise the actual host settings view against a temporary
             // settings file. No real user profile settings are read or changed.
             var persistedSettingsPath = Settings.Default.SettingsFile;
