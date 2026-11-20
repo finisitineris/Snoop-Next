@@ -37,3 +37,11 @@ is \`system\`. The existing localization/SettingsView tests continue to run.
 - SN-009's next step is to consume the transported LanguageTag inside
   Snoop.Core and perform controlled attach/inspect/detach tests for net462
   and net10, including AppDomain and target Culture/Resources isolation.
+
+
+## Compatibility contract
+
+- New host → injector payloads always serialize the committed \`Settings.Default.LanguageTag\`.
+- Old payloads that do not contain \`LanguageTag\` deserialize to \`system\` because the property initializer supplies the default.
+- The transport object is part of \`Snoop.Core\`, which is already loaded by the injector. This step adds no localization assembly reference, satellite resource or new runtime dependency to the inspected process.
+- The payload value is data only; no code in this PR reads it to change a thread culture or create localized controls.
