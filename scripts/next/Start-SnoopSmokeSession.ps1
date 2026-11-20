@@ -24,7 +24,7 @@ if ([System.Diagnostics.Process]::GetCurrentProcess().SessionId -eq 0) {
     throw 'Session 0 and unattended runner execution are prohibited.'
 }
 
-$principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+$principal = [System.Security.Principal.WindowsPrincipal]::new([System.Security.Principal.WindowsIdentity]::GetCurrent())
 if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     throw 'Run this test from a non-elevated account; do not inject as administrator.'
 }
