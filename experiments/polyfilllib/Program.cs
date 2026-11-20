@@ -15,14 +15,14 @@ internal static class Program
         Console.WriteLine("Base directory: " + AppDomain.CurrentDomain.BaseDirectory);
 
         var files = Directory.GetFiles(
-            AppDomain.CurrentDomain.BaseDirectory, "*Polyfill*.dll", SearchOption.TopDirectoryOnly);
-        Console.WriteLine("Polyfill-related DLL copies: " + files.Length);
+            AppDomain.CurrentDomain.BaseDirectory, "PolyfillLib.dll", SearchOption.TopDirectoryOnly);
+        Console.WriteLine("PolyfillLib runtime DLL copies: " + files.Length);
 
         // net462 must carry the compiled polyfill runtime DLL. Modern TFMs may
         // legitimately have no runtime asset because their APIs are built-in.
-        if (Environment.Version.Major < 5 && files.Length == 0)
+        if (files.Length == 0)
         {
-            Console.Error.WriteLine("FAIL: no compiled PolyfillLib runtime assembly was copied beside net462 exe.");
+            Console.Error.WriteLine("FAIL: pinned PolyfillLib package must deploy its compiled runtime assembly.");
             return 2;
         }
 

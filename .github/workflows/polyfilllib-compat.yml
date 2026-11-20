@@ -44,7 +44,7 @@ jobs:
             $exe = Join-Path 'experiments/polyfilllib/bin/Release' $framework
             $exe = Join-Path $exe 'PolyfillCompat.exe'
             if (-not (Test-Path $exe)) { throw "Missing $framework executable: $exe" }
-            & $exe | Tee-Object -FilePath "output/polyfilllib-compat/$framework-runtime.txt"
+            & $exe 2>&1 | Tee-Object -FilePath "output/polyfilllib-compat/$framework-runtime.txt"
             if ($LASTEXITCODE -ne 0) { throw "PolyfillLib runtime smoke failed for $framework" }
           }
 
