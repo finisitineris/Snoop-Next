@@ -71,6 +71,7 @@ internal static class Program
             {
                 throw new InvalidOperationException("host SettingsView language selector was not created");
             }
+
             Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
             Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
                 "host picker selection does not match the Snoop host setting");
