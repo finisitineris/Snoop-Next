@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using Snoop;
 using Snoop.Next.Localization;
+using Snoop.Data;
 
 /// <summary>
 /// Tests Snoop's host-only XML preference without launching any WPF inspector,
@@ -62,6 +63,38 @@ internal static class Program
 
             Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
                 "settings preference modified the thread UI culture");
+
+            // The host transports its committed language choice through the
+            // existing transient XML channel used by the injector.
+            var transient = new TransientSettingsData { LanguageTag = "en-US" };
+            var transientPath = transient.WriteToFile();
+            try
+            {
+                var transientXml = File.ReadAllText(transientPath);
+                Require(transientXml.Contains("<LanguageTag>en-US</LanguageTag>"),
+                    "transient settings XML did not include LanguageTag");
+
+                var transientSerializer = new System.Xml.Serialization.XmlSerializer(typeof(TransientSettingsData));
+                using (var stream = File.OpenRead(transientPath))
+                {
+                    var loadedTransient = (TransientSettingsData)transientSerializer.Deserialize(stream);
+                    Require(loadedTransient.LanguageTag == "en-US", "transient language preference did not round-trip");
+                }
+
+                // Old host XML has no LanguageTag; the new injector side must
+                // safely default to system rather than fail deserialization.
+                var legacyTransientXml = transientXml.Replace("<LanguageTag>en-US</LanguageTag>", string.Empty);
+                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(legacyTransientXml)))
+                {
+                    var legacyTransient = (TransientSettingsData)transientSerializer.Deserialize(stream);
+                    Require(legacyTransient.LanguageTag == "system", "legacy transient XML did not default to system");
+                }
+            }
+            finally
+            {
+                File.Delete(transientPath);
+            }
+
 
             // Exercise the actual host settings view against a temporary
             // settings file. No real user profile settings are read or changed.

@@ -14,6 +14,8 @@ on:
       - 'Snoop/App.xaml.cs'
       - 'Snoop/Views/SettingsView.xaml'
       - 'Snoop/Views/SettingsView.xaml.cs'
+      - 'Snoop/ProcessInfo.cs'
+      - 'Snoop.Core/Data/TransientSettingsData.cs'
   workflow_dispatch:
 
 permissions:

@@ -91,6 +91,7 @@ public class ProcessInfo
             SetOwnerWindow = settings.SetOwnerWindow,
             ShowActivated = settings.ShowActivated,
             EnableDiagnostics = settings.EnableDiagnostics,
+            LanguageTag = settings.LanguageTag,
             ILSpyPath = settings.ILSpyPath
         };
     }
