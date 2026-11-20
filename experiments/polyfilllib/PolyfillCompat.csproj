@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- SN-003: stand-alone experiment, never referenced by Snoop.Core or injector. -->
+    <TargetFrameworks>net462;net10.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- Override the repository-wide Central Package Management for this
+         isolated dependency-closure experiment only. -->
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <OutputPath>$(MSBuildProjectDirectory)\bin\$(Configuration)\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Compiled library variant, NOT SimonCropp/Polyfill source-only package. -->
+    <PackageReference Include="PolyfillLib" Version="11.4.5" />
+  </ItemGroup>
+</Project>
