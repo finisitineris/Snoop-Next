@@ -68,9 +68,10 @@ internal static class Program
                 "settings preference modified the thread UI culture");
 
             var committedHostLanguage = Settings.Default.LanguageTag;
+            var committedManagerLanguage = LocalizationManager.Default.LanguageTag;
+            var originalHostCulture = Thread.CurrentThread.CurrentUICulture;
             try
             {
-                Settings.Default.LanguageTag = "en-US";
                 var factory = typeof(ProcessInfo).GetMethod(
                     "CreateTransientSettingsData", BindingFlags.NonPublic | BindingFlags.Static);
                 if (factory == null)
@@ -78,15 +79,31 @@ internal static class Program
                     throw new InvalidOperationException("ProcessInfo transient settings factory was not found");
                 }
 
+                Settings.Default.LanguageTag = "en-US";
+                LocalizationManager.Default.SetLanguage("en-US");
                 var hostPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
                     as TransientSettingsData
                     ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
                 Require(hostPayload.LanguageTag == "en-US",
                     "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+
+                // "system" is resolved in the host before crossing the process boundary.
+                Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+                Settings.Default.LanguageTag = "system";
+                LocalizationManager.Default.SetLanguage("system");
+                var systemPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
+                    as TransientSettingsData
+                    ?? throw new InvalidOperationException("ProcessInfo did not create system-language payload");
+                Require(systemPayload.LanguageTag == "en-US",
+                    "ProcessInfo did not resolve host system language to the supported fallback");
+                Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
+                    "resolving system language modified the host thread CurrentUICulture");
             }
             finally
             {
+                Thread.CurrentThread.CurrentUICulture = originalHostCulture;
                 Settings.Default.LanguageTag = committedHostLanguage;
+                LocalizationManager.Default.SetLanguage(committedManagerLanguage);
             }
 
             // The host transports its committed language choice through the

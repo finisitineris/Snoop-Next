@@ -30,6 +30,24 @@ public sealed class LocalizationTests
     }
 
     [Test]
+    public void SystemPreferenceMapsHostCultureToSupportedResourceLanguage()
+    {
+        var original = Thread.CurrentThread.CurrentUICulture;
+        try
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+            Assert.That(new LocalizationManager("system").EffectiveLanguageTag, Is.EqualTo("en-US"));
+
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("zh-CN");
+            Assert.That(new LocalizationManager("system").EffectiveLanguageTag, Is.EqualTo("zh-CN"));
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentUICulture = original;
+        }
+    }
+
+    [Test]
     public void UnknownKeyIsDiagnosable()
     {
         var manager = new LocalizationManager("zh-CN");

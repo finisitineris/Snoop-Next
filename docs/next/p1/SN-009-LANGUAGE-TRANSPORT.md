@@ -73,3 +73,15 @@ process, verifies the embedded resource and live EN/ZH bindings, checks
 resource key parity and confirms the thread Culture remains unchanged.
 This is **not** a real inspectee-process attach test; SN-004 still owns that
 runtime acceptance gate.
+
+
+### Host "system" preference transport semantics
+
+For a newly attached inspector, \`ProcessInfo.CreateTransientSettingsData\`
+resolves the host's \`system\` preference to the supported resource tag
+(\`zh-CN\` when the host UI culture is Chinese, otherwise \`en-US\`) **before**
+crossing the process boundary. This prevents the inspected application's
+thread culture from influencing the Snoop chrome. Legacy transient payloads
+without a language field still default to \`system\`; the injected manager's
+legacy fallback uses \`CultureInfo.InstalledUICulture\` without mutating the
+target thread.

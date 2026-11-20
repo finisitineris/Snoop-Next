@@ -40,6 +40,10 @@ public sealed class LocalizationManager : INotifyPropertyChanged
 
     public CultureInfo UICulture => this.uiCulture;
 
+    /// <summary>Maps the host's effective UI culture to one of Snoop's supported resource languages.</summary>
+    public string EffectiveLanguageTag =>
+        this.uiCulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase) ? "zh-CN" : "en-US";
+
     public string this[string key]
     {
         get
@@ -94,6 +98,7 @@ public sealed class LocalizationManager : INotifyPropertyChanged
         this.uiCulture = next;
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.LanguageTag)));
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.UICulture)));
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.EffectiveLanguageTag)));
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
     }
 

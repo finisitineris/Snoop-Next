@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Input;
 using Snoop.Data;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 
 public class ProcessInfo
 {
@@ -91,7 +92,11 @@ public class ProcessInfo
             SetOwnerWindow = settings.SetOwnerWindow,
             ShowActivated = settings.ShowActivated,
             EnableDiagnostics = settings.EnableDiagnostics,
-            LanguageTag = settings.LanguageTag,
+            // Resolve "system" in the Snoop host. The injected process must
+            // not infer its UI language from the inspected app's thread culture.
+            LanguageTag = settings.LanguageTag == "system"
+                ? LocalizationManager.Default.EffectiveLanguageTag
+                : settings.LanguageTag,
             ILSpyPath = settings.ILSpyPath
         };
     }
