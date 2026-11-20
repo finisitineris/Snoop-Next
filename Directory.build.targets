@@ -2,7 +2,7 @@
   <!-- Build references -->
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net462" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" IncludeAssets="build; native" />
+    <!-- Source Link ships with the .NET 8+ SDK; avoid the vulnerable explicit 8.0.0 package. -->
 
     <PackageReference Include="GitVersion.MsBuild" PrivateAssets="all" />
   </ItemGroup>
