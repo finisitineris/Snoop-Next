@@ -223,7 +223,7 @@ internal static class Program
                         }
                     }
 
-                    Require(englishKeyCount == 54, "unexpected number of paired inspector resource keys");
+                    Require(englishKeyCount == 63, "unexpected number of paired inspector resource keys");
 
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
