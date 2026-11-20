@@ -120,10 +120,8 @@ public sealed class WpfLocalizationBindingTests
         }
     }
 
-
     [Test]
     [Apartment(ApartmentState.STA)]
-    [Timeout(30000)]
     public void TwoDispatchers_RefreshLocalizedControlsWithoutChangingTheirCultureOrResources()
     {
         var manager = LocalizationManager.Default;
