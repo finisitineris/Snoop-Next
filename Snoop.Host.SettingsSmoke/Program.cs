@@ -157,7 +157,6 @@ internal static class Program
         }
     }
 
-
     private static T FindRequired<T>(System.Windows.FrameworkElement element, string name)
         where T : class
     {
