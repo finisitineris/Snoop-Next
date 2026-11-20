@@ -112,7 +112,7 @@ internal static class Program
                 var resetButton = FindRequired<System.Windows.Controls.Button>(resetView, "ResetAllSettings");
                 resetButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 Require(resetPicker.SelectedValue as string == "zh-CN", "Reset did not select default language");
-                Require(Settings.Default.LanguageTag == "zh-CN", "Reset did not reset in-memory setting");
+                Require(Settings.Default.LanguageTag == "en-US", "Reset overwrote the committed language before Save");
                 Require(LocalizationManager.Default.LanguageTag == "en-US", "Reset applied language before Save");
                 Require(File.ReadAllText(file).Contains("<LanguageTag>en-US</LanguageTag>"), "Reset unexpectedly persisted before Save");
 

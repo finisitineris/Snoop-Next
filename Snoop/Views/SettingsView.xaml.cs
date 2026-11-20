@@ -67,7 +67,12 @@ public partial class SettingsView
 
     private void ResetAllSettings_OnClick(object sender, RoutedEventArgs e)
     {
+        // Reset the rest of the settings immediately, but keep the persisted
+        // language as the committed value until the user clicks Save. The
+        // picker represents the pending default language in the meantime.
+        var persistedLanguageTag = Settings.Default.LanguageTag;
         Settings.Default.Reset();
-        this.LanguageSelector.SelectedValue = Settings.Default.LanguageTag;
+        Settings.Default.LanguageTag = persistedLanguageTag;
+        this.LanguageSelector.SelectedValue = LanguageTagPolicy.DefaultLanguageTag;
     }
 }
