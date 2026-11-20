@@ -1,0 +1,37 @@
+name: next-harness-build
+
+on:
+  pull_request:
+    branches:
+      - develop
+    paths:
+      - '.github/workflows/next-harness-build.yml'
+      - 'scripts/next/**'
+      - 'docs/next/p0/**'
+      - 'TestHarnesses/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-only:
+    name: next-harness-compile-only
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.400'
+          global-json-file: global.json
+      - name: Compile WPF smoke harnesses (no injection)
+        shell: pwsh
+        run: ./scripts/next/Build-SnoopHarnesses.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sn004-compile-manifest
+          path: output/next-harness-build/manifest.json
+          if-no-files-found: warn
