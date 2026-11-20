@@ -1,0 +1,41 @@
+name: next-localization
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/next-localization.yml'
+      - 'Snoop.Next.Localization/**'
+      - 'Snoop.Next.Localization.Tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  resource-and-runtime:
+    name: next-localization-unit-tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - name: Compile the localization library against net462 and net10
+        shell: pwsh
+        run: |
+          dotnet build Snoop.Next.Localization/Snoop.Next.Localization.csproj -c Release -f net462
+          if ($LASTEXITCODE -ne 0) { throw 'net462 localization build failed' }
+          dotnet build Snoop.Next.Localization/Snoop.Next.Localization.csproj -c Release -f net10.0-windows
+          if ($LASTEXITCODE -ne 0) { throw 'net10 localization build failed' }
+      - name: Run isolated localization tests (no injection)
+        shell: pwsh
+        run: |
+          dotnet test Snoop.Next.Localization.Tests/Snoop.Next.Localization.Tests.csproj -c Release --logger trx --results-directory output/next-localization-tests
+          if ($LASTEXITCODE -ne 0) { throw 'Localization tests failed' }
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: next-localization-test-results
+          path: output/next-localization-tests
+          if-no-files-found: warn

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="Accessibility.Refresh" xml:space="preserve"><value>Refresh inspector</value></data>
+  <data name="Binding.Title" xml:space="preserve"><value>Bindings</value></data>
+  <data name="Error.AttachFailed" xml:space="preserve"><value>Failed to attach to target process</value></data>
+  <data name="Error.TargetExited" xml:space="preserve"><value>Target process has exited</value></data>
+  <data name="Mcp.Start" xml:space="preserve"><value>Start MCP server</value></data>
+  <data name="Menu.File" xml:space="preserve"><value>File</value></data>
+  <data name="Menu.Tools" xml:space="preserve"><value>Tools</value></data>
+  <data name="Nav.Diagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="Nav.Inspector" xml:space="preserve"><value>Inspector</value></data>
+  <data name="Permission.AllowOnce" xml:space="preserve"><value>Allow once</value></data>
+  <data name="Process.Attach" xml:space="preserve"><value>Attach</value></data>
+  <data name="Process.Detach" xml:space="preserve"><value>Detach</value></data>
+  <data name="Property.ValueOrigin" xml:space="preserve"><value>Value source</value></data>
+  <data name="Settings.Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Shell.Title" xml:space="preserve"><value>Snoop Next</value></data>
+  <data name="Status.ElementsSelected" xml:space="preserve"><value>Selected elements: {0}</value></data>
+  <data name="Tree.Title" xml:space="preserve"><value>Visual tree</value></data>
+</root>
