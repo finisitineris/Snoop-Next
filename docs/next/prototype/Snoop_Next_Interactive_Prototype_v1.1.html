@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>Snoop Next — Interactive Design Prototype</title>
+<style>*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'Segoe UI Variable','Segoe UI',system-ui,-apple-system,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}body{--bg:#e7edf7;--shell:#f7f9fd;--chrome:#edf2fa;--panel:#fff;--soft:#f8faff;--hover:#f0f5fe;--line:#dce5f0;--line-soft:#eaf0f7;--text:#273447;--muted:#78869a;--subtle:#9aa7b9;--accent:#3979d5;--accent-ink:#235faf;--accent-soft:#e8f1ff;--good:#178c69;--good-bg:#e4f7ef;--warn:#ad751c;--warn-bg:#fff3d9;--danger:#ce5151;--danger-bg:#fff0f0;--shadow:0 18px 60px rgba(32,63,104,.13),0 3px 12px rgba(32,63,104,.06);--preview:#f2f5fa;--space:1;color:var(--text);background:radial-gradient(ellipse at 10% 0%,#fafcff 0,transparent 36%),linear-gradient(135deg,#e7edf7,#e0e9f5)}body.dark{--bg:#141c28;--shell:#1e2736;--chrome:#222c3c;--panel:#293548;--soft:#253144;--hover:#33435a;--line:#3b4a60;--line-soft:#344258;--text:#e8edf6;--muted:#aab7c9;--subtle:#7e8ca2;--accent:#78adff;--accent-ink:#a0c6ff;--accent-soft:#2b4668;--good:#62d7ae;--good-bg:#20483f;--warn:#eac174;--warn-bg:#54452d;--danger:#ff9494;--danger-bg:#613d49;--shadow:0 18px 65px rgba(0,0,0,.28);--preview:#1e2939;background:#101824}body.compact{--space:.8}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent)!important;outline-offset:2px}button:disabled{opacity:.43;cursor:not-allowed}kbd{border:1px solid var(--line);border-radius:4px;padding:2px 5px;background:var(--panel);color:var(--muted);font-size:10px}code,.mono{font-family:Consolas,'Cascadia Code',monospace}p{line-height:1.55}.boot{padding:40px;color:var(--muted)}.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+
+.page{padding:16px;min-height:100vh}.context{max-width:1740px;margin:0 auto 12px;display:flex;justify-content:space-between;align-items:center;gap:12px}.context h1{font-size:19px;margin:0;font-weight:730;letter-spacing:-.4px}.context p{font-size:11px;color:var(--muted);margin:3px 0 0}.context-tag{border:1px solid var(--line);background:var(--panel);padding:7px 11px;border-radius:100px;font-size:11px;color:var(--muted)}.app{max-width:1740px;margin:auto;height:calc(100vh - 91px);min-height:620px;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:14px;background:var(--shell);box-shadow:var(--shadow);overflow:hidden}.windowbar{height:45px;flex-shrink:0;background:var(--chrome);display:flex;justify-content:space-between;align-items:center;padding:0 16px;border-bottom:1px solid var(--line)}.brand{display:flex;gap:9px;align-items:center;font-size:12px;font-weight:700}.logo{width:25px;height:25px;display:grid;place-items:center;color:white;font-weight:850;background:linear-gradient(135deg,#318eeb,#7c66d8);border-radius:8px;box-shadow:0 4px 12px #448add44}.titlebar-right{display:flex;gap:10px;align-items:center;font-size:11px;color:var(--muted)}.window-controls{display:flex;gap:22px;opacity:.65;font-size:13px;margin-left:12px}.menubar{height:31px;display:flex;align-items:center;gap:15px;padding:0 17px;background:var(--shell);border-bottom:1px solid var(--line-soft);font-size:11px;color:var(--muted)}.menubar button{border:0;background:transparent;color:inherit;padding:3px 0}.commandbar{height:58px;flex-shrink:0;display:flex;align-items:center;gap:9px;padding:0 14px;background:var(--panel);border-bottom:1px solid var(--line)}.command-search{flex:1;min-width:80px;max-width:430px;display:flex;gap:8px;align-items:center;padding:0 10px;height:34px;background:var(--soft);border:1px solid var(--line);border-radius:8px}.command-search span{font-size:11px;color:var(--muted);flex:1}.live{color:var(--good);font-size:10px;white-space:nowrap}.dot{display:inline-block;width:7px;height:7px;background:currentColor;border-radius:50%;margin-right:5px}.workspace{display:flex;flex:1;min-height:0;min-width:0}.rail{width:51px;flex-shrink:0;background:var(--chrome);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:9px;padding:13px 0}.rail button{width:36px;height:37px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-size:17px;position:relative}.rail button.active{background:var(--accent-soft);color:var(--accent)}.rail button.active:before{content:'';position:absolute;left:-7px;top:9px;width:3px;height:19px;border-radius:3px;background:var(--accent)}.rail button:hover{background:var(--hover)}.rail .rail-bottom{margin-top:auto}.area{min-height:0;min-width:0;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line)}.tree-area{background:var(--soft);flex:none}.inspector-area{flex:none;border-right:0;border-left:1px solid var(--line)}.main-area{min-width:0;flex:1;background:var(--shell);display:flex;flex-direction:column}.main-top,.area-header{height:44px;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 13px;background:var(--panel);border-bottom:1px solid var(--line-soft)}.h-title{font-size:12px;font-weight:720;white-space:nowrap}.panel-tools{display:flex;gap:4px}.resizer{width:5px;cursor:col-resize;background:transparent;flex:0 0 5px;position:relative;z-index:3}.resizer:hover,.resizer.dragging{background:var(--accent-soft)}.resizer-v{height:6px;cursor:row-resize;background:transparent;flex:0 0 6px}.resizer-v:hover{background:var(--accent-soft)}.statusbar{height:30px;flex-shrink:0;border-top:1px solid var(--line);background:var(--chrome);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px;font-size:10px;color:var(--muted)}.statusbar b{color:var(--accent-ink)}.screen-scroller{flex:1;min-height:0;overflow:auto;padding:18px 22px}.screen-heading{display:flex;gap:18px;justify-content:space-between;align-items:flex-start;margin-bottom:18px}.screen-heading h2{font-size:21px;font-weight:750;margin:0}.screen-heading p{margin:6px 0;color:var(--muted);font-size:12px}.screen-content{max-width:1100px;margin:0 auto}.empty-workspace{display:grid;place-items:center;flex:1;padding:30px}.empty-card{text-align:center;max-width:530px;padding:38px;border:1px solid var(--line);background:var(--panel);border-radius:16px}.empty-card h2{font-size:18px}.empty-card p{color:var(--muted);font-size:12px}.section-caption{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.section-caption h3{font-size:12px;margin:0}.footnote{font-size:10px;color:var(--subtle)}.flex-spacer{flex:1}.hidden{display:none!important}@media(max-width:1180px){.context-tag,.menubar{display:none}.app{height:calc(100vh - 68px)}.commandbar{gap:6px}.statusbar .status-extra{display:none}.tree-area{min-width:180px}.inspector-area{min-width:250px}}@media(max-width:850px){.page{padding:7px}.context{padding:0 4px}.app{height:calc(100vh - 56px)}.window-controls{display:none}.commandbar .compact-hide{display:none}.rail{width:42px}.tree-area{min-width:150px}.inspector-area{min-width:190px}.screen-scroller{padding:12px}}
+
+.btn{height:32px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:8px;color:var(--text);padding:0 12px;font-size:11px;white-space:nowrap}.btn:hover,.icon-btn:hover{background:var(--hover)}.btn.primary{background:var(--accent);border-color:var(--accent);color:white}.btn.primary:hover{filter:brightness(1.07)}.btn.danger{color:var(--danger);border-color:var(--danger)}.btn.subtle{background:var(--soft)}.btn.tiny{height:25px;padding:0 8px;font-size:10px}.icon-btn{border:0;background:transparent;border-radius:7px;width:28px;height:28px;font-size:14px;color:var(--muted)}.tag,.badge{font-size:10px;border:1px solid var(--line);border-radius:5px;padding:3px 7px;color:var(--muted);background:var(--soft)}.badge.good{color:var(--good);background:var(--good-bg);border-color:transparent}.badge.warn{color:var(--warn);background:var(--warn-bg);border-color:transparent}.badge.error{color:var(--danger);background:var(--danger-bg);border-color:transparent}.form-input,.form-select{height:32px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--text);padding:0 9px;font-size:11px;min-width:0}.form-input::placeholder{color:var(--subtle)}.form-input:focus,.form-select:focus{border-color:var(--accent)}.form-select{padding-right:4px}.full{width:100%}.segmented{display:flex;background:var(--chrome);border:1px solid var(--line);padding:3px;border-radius:8px;gap:2px}.segmented button{flex:1;border:0;border-radius:5px;padding:6px 7px;font-size:10px;color:var(--muted);background:transparent;white-space:nowrap}.segmented button.on{background:var(--panel);color:var(--accent-ink);box-shadow:0 1px 5px #00000012;font-weight:750}.panel-body{padding:10px;overflow:auto;flex:1;min-height:0}.tree-filter{padding:10px 10px 6px;display:grid;gap:8px}.tree-scroll{padding:5px 7px;overflow:auto;flex:1}.tree-node{width:100%;display:flex;gap:6px;align-items:center;background:transparent;border:0;padding:7px 5px;border-radius:6px;text-align:left;color:var(--text);font-size:11px;white-space:nowrap}.tree-node:hover{background:var(--hover)}.tree-node.selected{background:var(--accent-soft);color:var(--accent-ink);font-weight:700}.tree-toggle{border:0;background:transparent;padding:0;flex:0 0 15px;color:var(--muted);font-size:10px}.type-mark{display:inline-grid;place-items:center;width:17px;height:17px;flex-shrink:0;color:var(--accent);font-family:monospace;font-weight:750}.node-name{overflow:hidden;text-overflow:ellipsis;min-width:0}.node-type{font-size:10px;color:var(--muted)}.tree-footer{border-top:1px solid var(--line);padding:9px 11px;background:var(--panel);min-height:70px}.tree-footer .crumb{color:var(--accent-ink);line-height:1.8;overflow-wrap:anywhere;font-size:10px}.preview-scroll{padding:13px 16px;overflow:auto;flex:1;min-height:0}.preview-panel{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:11px;min-height:257px;box-shadow:0 4px 15px #26344b0b}.preview-canvas{min-height:233px;border:1px dashed var(--line);border-radius:8px;background:var(--preview);display:grid;place-items:center;padding:16px;overflow:hidden}.sample-app{width:440px;max-width:100%;background:#fff;color:#2d3949;border:1px solid #d9e2ee;border-radius:9px;overflow:visible;box-shadow:0 11px 27px #47617a28;font-size:11px}.sample-title{display:flex;justify-content:space-between;align-items:center;height:32px;padding:0 12px;background:#f3f7fd;border-bottom:1px solid #e5ebf3;color:#687891;border-radius:8px 8px 0 0}.sample-main{padding:17px 25px 23px}.sample-app h4{font-size:15px;margin:0 0 6px;font-weight:730}.sample-app p{font-size:10px;color:#8a96a7;margin:0 0 14px}.sample-label{font-size:10px;color:#65748a;margin:0 0 6px}.sample-input{height:35px;border:1px solid #dbe3ee;border-radius:6px;background:#fff;display:flex;align-items:center;padding:0 10px;color:#526178;width:100%;max-width:345px}.sample-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:17px}.sample-action{height:34px;padding:0 16px;border-radius:6px;border:1px solid #d9e2ec;color:#607087;background:#f1f5fa;font-size:11px;max-width:100%}.sample-action.save{background:#3979d5;border-color:#3979d5;color:#fff}.sample-select{position:relative}.sample-select.selected:after{content:attr(data-overlay);position:absolute;pointer-events:none;inset:-5px;border:2px solid #3888f2;border-radius:7px;box-shadow:0 0 0 4px #3985ec28}.sample-select.selected:before{content:attr(data-tag);position:absolute;top:-30px;left:-3px;background:#397fe0;color:white;font-size:10px;padding:4px 7px;white-space:nowrap;border-radius:5px;z-index:2;pointer-events:none}.inspect-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.inspect-card{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px;min-width:0}.inspect-card .metric{margin-top:5px;font-size:12px;font-weight:730;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.diagnostics{border-top:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column;min-height:100px;flex-shrink:0}.diag-tabs{display:flex;align-items:center;gap:2px;border-bottom:1px solid var(--line-soft);padding:0 10px;min-height:38px}.tab{height:35px;border:0;background:transparent;border-bottom:2px solid transparent;color:var(--muted);font-size:11px;padding:0 11px;white-space:nowrap}.tab.active{border-bottom-color:var(--accent);color:var(--accent-ink);font-weight:750}.diag-body{overflow:auto;flex:1;font-size:11px}.diag-item{width:100%;display:flex;align-items:center;gap:9px;padding:8px 12px;text-align:left;border:0;border-bottom:1px solid var(--line-soft);background:transparent;color:var(--text);font-size:10px}.diag-item:hover{background:var(--hover)}.diag-kind{width:14px;flex-shrink:0;text-align:center}.error-text{color:var(--danger)}.warn-text{color:var(--warn)}.diag-message{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.diag-details{padding:10px 14px;color:var(--muted);font-size:10px;background:var(--soft);border-bottom:1px solid var(--line)}.inspector-tools{padding:10px;display:grid;gap:8px;border-bottom:1px solid var(--line-soft)}.property-filters{display:flex;gap:5px}.property-table{overflow:auto;flex:1;min-height:0}.property-head,.property-row{display:grid;grid-template-columns:minmax(96px,1fr) minmax(80px,1fr) 67px;align-items:center;gap:6px;padding:0 10px;font-size:10px}.property-head{height:30px;background:var(--soft);color:var(--muted);font-weight:700;border-bottom:1px solid var(--line)}.property-row{min-height:35px;border-bottom:1px solid var(--line-soft)}.property-row:hover{background:var(--hover)}.property-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace;font-size:10px}.property-value{border:0;text-align:left;background:none;color:var(--text);padding:5px 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace;font-size:10px}.property-value.editable:hover{color:var(--accent-ink);text-decoration:underline}.property-value.modified{font-weight:800;color:var(--accent-ink)}.origin{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 5px;border-radius:4px;color:var(--muted);background:var(--soft);font-size:9px;cursor:pointer;border:0}.origin.binding{color:#926aca;background:#f4edff}.inspector-detail{min-height:104px;max-height:195px;overflow:auto;padding:12px;border-top:1px solid var(--line);background:var(--soft);font-size:11px}.inspector-detail h4{font-size:11px;margin:0 0 5px}.inspector-detail p{font-size:10px;color:var(--muted);margin:5px 0}.inline-edit{display:flex;gap:4px;min-width:0}.inline-edit input{min-width:0;width:100%;height:27px;border:1px solid var(--accent);border-radius:5px;background:var(--panel);color:var(--text);padding:0 6px;font:10px Consolas,monospace}.inline-edit button{font-size:10px;padding:0 4px;border:0;background:var(--accent-soft);color:var(--accent-ink);border-radius:4px}.list-row{display:flex;align-items:center;gap:9px;padding:12px;border:1px solid var(--line);border-radius:9px;background:var(--panel);font-size:11px}.process-grid{display:grid;gap:9px}.process-row{display:grid;grid-template-columns:37px minmax(160px,1.5fr) 90px 140px 70px 98px;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);padding:13px 15px;border-radius:10px;font-size:11px}.process-symbol{width:33px;height:33px;display:grid;place-items:center;background:var(--accent-soft);border-radius:9px;color:var(--accent);font-size:20px}.muted{color:var(--muted)}.small{font-size:10px}.sub-card{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:16px}.card-title{font-weight:720;font-size:13px;margin-bottom:4px}.card-sub{font-size:11px;color:var(--muted);margin-bottom:13px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}.three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.stat-card{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:13px}.stat-value{font-size:21px;font-weight:800;margin-top:7px}.tool-row,.audit-row{display:grid;grid-template-columns:minmax(180px,1fr) 96px minmax(150px,1.7fr) 90px;align-items:center;gap:8px;padding:10px 11px;border-bottom:1px solid var(--line-soft);font-size:11px}.audit-row{grid-template-columns:80px 135px minmax(160px,1fr) 85px}.setting-row{display:grid;grid-template-columns:minmax(180px,1fr) 250px;gap:18px;align-items:center;padding:17px 3px;border-bottom:1px solid var(--line-soft)}.setting-row strong{font-size:12px}.setting-row p{margin:4px 0 0;color:var(--muted);font-size:10px}.setting-row select{width:100%}.empty{padding:35px 18px;color:var(--muted);text-align:center;font-size:11px}.toast{position:fixed;bottom:45px;right:30px;padding:11px 16px;border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--panel);border-radius:10px;box-shadow:var(--shadow);font-size:12px;max-width:410px;z-index:40}.modal-backdrop{position:fixed;inset:0;background:#0d1a2e77;z-index:50;display:grid;place-items:center;padding:25px}.modal-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:23px;box-shadow:0 22px 65px #0003;width:min(510px,100%)}.modal-card h3{margin:0;font-size:17px}.modal-card p{font-size:12px;color:var(--muted)}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}.command-list{display:grid;gap:4px;max-height:340px;overflow:auto;margin-top:14px}.command-row{width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:8px;color:var(--text);font-size:12px}.command-row:hover{background:var(--hover)}.check-line{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)}@media(max-width:1300px){.three-col{grid-template-columns:1fr 1fr}.process-row{grid-template-columns:30px minmax(130px,1fr) 70px 120px 55px 80px}.inspector-detail{min-height:80px}}@media(max-width:950px){.inspect-cards{grid-template-columns:repeat(2,1fr)}.two-col,.three-col{grid-template-columns:1fr}.process-row{grid-template-columns:30px 1fr 90px}.process-row .optional{display:none}.setting-row{grid-template-columns:1fr}.tool-row{grid-template-columns:1fr 80px}.tool-row .optional{display:none}}
+.compact .tree-node{padding-top:4px;padding-bottom:4px;font-size:10px}.compact .property-row{min-height:28px}.compact .diag-item{padding-top:5px;padding-bottom:5px}.compact .inspector-tools{padding:7px;gap:5px}.compact .tree-filter{padding:7px;gap:5px}.compact .list-row{padding:8px}.compact .process-row{padding:9px 12px}.compact .setting-row{padding:11px 3px}.compact .screen-heading{margin-bottom:11px}.compact .sub-card{padding:12px}.compact .area-header,.compact .main-top{height:38px;min-height:38px}.compact .commandbar{height:49px}.compact .tab{height:30px}.compact .diag-tabs{min-height:32px}
+.inspector-area{min-width:240px}.inspector-area .diag-tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}.inspector-area .diag-tabs .tab{flex:0 0 auto;min-width:0;padding:0 8px}.inspector-area .property-row,.inspector-area .property-head{grid-template-columns:minmax(58px,1.05fr) minmax(64px,1fr) minmax(46px,56px);gap:4px;padding:0 7px}.inspector-area .property-filters{min-width:0}.inspector-area .property-filters select{min-width:0;max-width:100%}.inspector-area .property-value{min-width:0}.inspector-area .inspector-detail{overflow-wrap:anywhere}.tree-node .node-name{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.diag-tabs{overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}.diag-tabs .tab{flex-shrink:0}
+</style></head><body><div id="app" aria-live="off"><div class="boot">Snoop Next · Interactive Prototype</div></div>
+<script>/* Snoop Next — deterministic offline demo state, not a process inspector. */
+(function (host) {
+  'use strict';
+  const targets = [
+    {id:'sample',pid:41920,instanceKey:'41920:2026-11-19T08:45:13Z',name:'SampleApp.exe',title:'Contoso Desktop · Demo',runtime:'.NET 10.0',arch:'x64',status:'available',icon:'◈'},
+    {id:'legacy',pid:11784,instanceKey:'11784:2026-11-19T08:31:06Z',name:'LegacyOrder.exe',title:'Legacy Sales System',runtime:'.NET Framework 4.6.2',arch:'x86',status:'available',icon:'▤'},
+    {id:'restricted',pid:6216,instanceKey:'6216:2026-11-19T07:20:15Z',name:'AdminConsole.exe',title:'Elevated Process',runtime:'.NET 8.0',arch:'x64',status:'restricted',icon:'◇'}
+  ];
+  const prop = (value,origin='Local',editable=true,extra={}) => ({value,origin,editable,...extra});
+  const templateElements = () => ({
+    MainWindow:{id:'MainWindow',name:'MainWindow',type:'Window',parent:null,children:['RootGrid'],rect:'960 × 640',props:{Title:prop('Contoso Desktop'),Width:prop(960,'Local'),Height:prop(640,'Local'),Background:prop('#F8FAFD','Style'),ActualWidth:prop(960,'Runtime',false)}},
+    RootGrid:{id:'RootGrid',name:'RootGrid',type:'Grid',parent:'MainWindow',children:['HeaderBar','ContentPanel'],rect:'960 × 600',props:{Name:prop('RootGrid'),Background:prop('#FFFFFF','Style'),Width:prop('Auto','Default'),ActualWidth:prop(960,'Runtime',false)}},
+    HeaderBar:{id:'HeaderBar',name:'HeaderBar',type:'Border',parent:'RootGrid',children:['AppTitle'],rect:'920 × 60',props:{Background:prop('#F2F6FC','Style'),Height:prop(60,'Local'),BorderBrush:prop('#E4EAF3','Style')}},
+    AppTitle:{id:'AppTitle',name:'AppTitle',type:'TextBlock',parent:'HeaderBar',children:[],rect:'320 × 24',props:{Text:prop('Customer workspace','Local'),FontSize:prop(20,'Style'),Foreground:prop('#1F3048','Inherited')}},
+    ContentPanel:{id:'ContentPanel',name:'ContentPanel',type:'StackPanel',parent:'RootGrid',children:['WelcomeText','NameInput','ActionsPanel'],rect:'720 × 405',props:{Orientation:prop('Vertical','Default'),Margin:prop('24,16,24,24','Local'),Background:prop('Transparent','Default')}},
+    WelcomeText:{id:'WelcomeText',name:'WelcomeText',type:'TextBlock',parent:'ContentPanel',children:[],rect:'370 × 36',props:{Text:prop('Edit customer details','Local'),FontSize:prop(16,'Style'),Foreground:prop('#34445A','Inherited')}},
+    NameInput:{id:'NameInput',name:'NameInput',type:'TextBox',parent:'ContentPanel',children:[],rect:'460 × 38',props:{Name:prop('NameInput'),Text:prop('Alice Johnson','Binding',true,{binding:'Customer.Name',source:'CustomerViewModel',status:'Resolved'}),ToolTip:prop('{Binding Customer.MissingAddress}','Binding',true,{binding:'Customer.MissingAddress',source:'CustomerViewModel',status:'Error'}),Width:prop(460,'Local'),ActualWidth:prop(460,'Runtime',false),Background:prop('#FFFFFF','Style')}},
+    ActionsPanel:{id:'ActionsPanel',name:'ActionsPanel',type:'StackPanel',parent:'ContentPanel',children:['CancelButton','SaveButton'],rect:'440 × 42',props:{Orientation:prop('Horizontal','Local'),HorizontalAlignment:prop('Right','Local'),Margin:prop('0,20,0,0','Local')}},
+    CancelButton:{id:'CancelButton',name:'CancelButton',type:'Button',parent:'ActionsPanel',children:[],rect:'96 × 36',props:{Content:prop('取消','Local'),Width:prop(96,'Local'),Height:prop(36,'Style'),Background:prop('#E9EEF6','Style'),IsEnabled:prop(true,'Default'),ActualWidth:prop(96,'Runtime',false)}},
+    SaveButton:{id:'SaveButton',name:'SaveButton',type:'Button',parent:'ActionsPanel',children:[],rect:'120 × 36',props:{Content:prop('保存','Local'),Width:prop(120,'Local'),Height:prop(36,'Style'),Background:prop('#3979D5','Style'),IsEnabled:prop(true,'Default'),ActualWidth:prop(120,'Runtime',false),Command:prop('SaveCommand','Binding',false,{binding:'SaveCommand',source:'CustomerViewModel',status:'Resolved'}),ToolTip:prop('Save changes','Local'),Focusable:prop(true,'Inherited')}},
+  });
+  const sampleDiagnostics = [
+    {id:'bind-101',kind:'error',area:'Binding',time:'10:24:32',elementId:'NameInput',property:'ToolTip',message:'Cannot resolve Customer.MissingAddress on CustomerViewModel',details:'BindingExpression path error: property MissingAddress was not found on CustomerViewModel.'},
+    {id:'perf-201',kind:'warning',area:'Layout',time:'10:24:28',elementId:'RootGrid',property:'ActualWidth',message:'Layout pass exceeded the sample threshold (18 ms)',details:'RootGrid.MeasureOverride took 18 ms in the simulated timeline.'},
+    {id:'res-301',kind:'info',area:'Resources',time:'10:23:51',elementId:'SaveButton',property:'Background',message:'Resolved AccentButtonBrush via App.xaml',details:'Resource lookup: local style → application resources → theme dictionaries.'},
+  ];
+  const clone = s => JSON.parse(JSON.stringify(s));
+  function pathFor(state,id){const path=[];const seen=new Set();while(id&&state.elements[id]&&!seen.has(id)){seen.add(id);path.unshift(id);id=state.elements[id].parent;}return path;}
+  function previewSelection(state){return state.connection.status==='attached'?state.ui.selectedElementId:null;}
+  function visibleTree(state){
+    if(state.connection.status!=='attached')return [];
+    const q=state.ui.treeQuery.trim().toLowerCase();
+    const excluded=state.ui.treeKind==='logical'?new Set(['HeaderBar','AppTitle','ActionsPanel']):state.ui.treeKind==='automation'?new Set(['RootGrid','HeaderBar','AppTitle','ContentPanel','ActionsPanel','WelcomeText']):new Set();
+    const items=Object.values(state.elements).filter(n=>!excluded.has(n.id));
+    if(q)return items.filter(n=>(n.name+' '+n.type+' '+n.id).toLowerCase().includes(q)).map(n=>({...n,depth:Math.min(pathFor(state,n.id).length-1,3),hasChildren:n.children.length>0}));
+    return items.filter(n=>pathFor(state,n.id).slice(0,-1).every(p=>excluded.has(p)||state.ui.expanded.includes(p))).map(n=>({...n,depth:Math.min(pathFor(state,n.id).filter(p=>!excluded.has(p)).length-1,4),hasChildren:n.children.some(c=>!excluded.has(c))}));
+  }
+  function processes() {return clone(targets);}
+  function createInitialState() {
+    return {
+      preferences:{theme:'light',language:'zh-CN',density:'comfortable'},
+      lifecycle:{attachmentEpoch:0},
+      connection:{status:'disconnected',processId:null,instanceKey:null,error:null},
+      ui:{activeView:'inspector',selectedElementId:null,treeKind:'visual',treeQuery:'',expanded:['MainWindow','RootGrid','HeaderBar','ContentPanel','ActionsPanel'],propertyTab:'properties',propertyQuery:'',propertyOrigin:'All',modifiedOnly:false,propertySort:'name',propertyDetail:null,diagTab:'diagnostics',diagQuery:'',diagExpanded:null,panels:{tree:true,inspector:true,bottom:true,treeWidth:282,inspectorWidth:354,bottomHeight:210,layout:'default'},commandOpen:false,commandQuery:'',picker:false,processQuery:'',processRuntime:'All',processArch:'All',processSort:'name',screenshotReady:false,toast:null,modal:null,editing:null},
+      elements:templateElements(),history:{past:[],future:[]},diagnostics:sampleDiagnostics,events:[{id:'ev1',time:'10:24:30',message:'SaveButton.Click • RoutedEvent',elementId:'SaveButton'},{id:'ev2',time:'10:24:31',message:'NameInput.TextChanged • Bubble',elementId:'NameInput'}],output:[{id:'out1',time:'10:24:31',message:'Binding engine: element tree hydrated.'}],
+      mcp:{status:'stopped',mode:'readonly',clients:[{id:'codex-desktop',name:'Codex Desktop',connected:true},{id:'local-agent',name:'Local AI Agent',connected:false}],audit:[],permission:null,request:null,approvedWrite:null,attachRequest:null}
+    };
+  }
+  function clearTarget(next,status,processId,error) {
+    if(next.mcp.request)recordAudit(next,{...next.mcp.request,result:'denied',reason:'Target changed before approval'});
+    if(next.mcp.approvedWrite)recordAudit(next,{...next.mcp.approvedWrite,result:'denied',reason:'Approved operation cancelled: target changed before execution'});
+    if(next.mcp.attachRequest)recordAudit(next,{...next.mcp.attachRequest,tool:'attach_process',target:next.mcp.attachRequest.processId,result:'denied',reason:'Target changed before approval'});
+    next.connection={status,processId:processId||null,instanceKey:null,error:error||null};
+    next.elements=templateElements();next.history={past:[],future:[]};next.ui.selectedElementId=null;next.ui.editing=null;next.ui.propertyDetail=null;next.mcp.permission=null;next.mcp.request=null;next.mcp.approvedWrite=null;next.mcp.attachRequest=null;
+    if(['mcpWrite','mcpAttach'].includes(next.ui.modal?.type))next.ui.modal=null;
+  }
+  function recordAudit(s,a){
+    const num=s.mcp.audit.length;const time='10:'+String(24+Math.floor(num/60)).padStart(2,'0')+':'+String((32+num)%60).padStart(2,'0');
+    s.mcp.audit.unshift({time,clientId:a.clientId||'system',tool:a.tool||'unknown',target:a.target||'',result:a.result,reason:a.reason||''});
+  }
+  function connectedClient(s,clientId){return s.mcp.clients.some(c=>c.id===clientId&&c.connected===true);}
+  function permissionBusy(s){return !!(s.mcp.request||s.mcp.attachRequest||s.mcp.approvedWrite);}
+  function canUseSession(s,a){const p=s.mcp.permission;return !!(p&&p.clientId===a.clientId&&p.instanceKey===s.connection.instanceKey&&p.instanceKey===a.instanceKey&&p.tools.includes(a.tool));}
+  function mcpWrite(s,req,grant){
+    if(s.mcp.status!=='running'||!connectedClient(s,req.clientId)||s.mcp.mode!=='approval'||s.connection.status!=='attached'||s.connection.instanceKey!==req.instanceKey){recordAudit(s,{...req,result:'denied',reason:'Target or permission is no longer valid'});return s;}
+    const valid=validateProperty(s.elements[req.target],req.key,req.value);
+    if(!valid.ok){recordAudit(s,{...req,result:'denied',reason:valid.error});s.ui.toast=valid.error;return s;}
+    const after=editCommitted(s,{elementId:req.target,key:req.key,value:req.value});
+    if(grant==='session')after.mcp.permission={clientId:req.clientId,instanceKey:req.instanceKey,tool:req.tool,tools:[req.tool],scope:'session'};
+    recordAudit(after,{...req,result:'allowed'});
+    after.ui.toast='MCP simulated write: '+req.target+'.'+req.key;
+    return after;
+  }
+  function validateProperty(element,key,input){
+    const p=element?.props?.[key];if(!p)return {ok:false,error:'Property not found'};
+    if(!p.editable)return {ok:false,error:'This WPF property is read-only'};
+    const raw=String(input??'').trim();
+    if(['Width','Height','MinWidth','MaxWidth','FontSize'].includes(key)){
+      if(raw.toLowerCase()==='auto'&&['Width','Height'].includes(key))return {ok:true,value:'Auto'};
+      const n=Number(raw);if(raw===''||!Number.isFinite(n)||n<0||n>5000)return {ok:false,error:'Enter a number from 0 to 5000, or Auto'};
+      return {ok:true,value:n};
+    }
+    if(key==='Background'||key==='Foreground'||key==='BorderBrush'){
+      if(!/^(#[0-9a-f]{6}|#[0-9a-f]{8}|Transparent)$/i.test(raw))return {ok:false,error:'Use #RRGGBB, #AARRGGBB, or Transparent'};
+      return {ok:true,value:raw};
+    }
+    if(typeof p.value==='boolean')return /^(true|false)$/i.test(raw)?{ok:true,value:raw.toLowerCase()==='true'}:{ok:false,error:'Use true or false'};
+    if(raw.length>500)return {ok:false,error:'Value exceeds 500 characters'};
+    return {ok:true,value:String(input??'')};
+  }
+  function syncRect(element){
+    if(!element?.rect)return;
+    const parts=element.rect.split(' × ');
+    const width=element.props.Width?.value??parts[0],height=element.props.Height?.value??parts[1];
+    element.rect=String(width)+' × '+String(height);
+  }
+  function editCommitted(s,a){
+    if(s.connection.status!=='attached')return s;
+    const element=s.elements[a.elementId],key=a.key,original=element?.props[key],v=validateProperty(element,key,a.value);
+    if(!v.ok){s.ui.editing={elementId:a.elementId,key,value:String(a.value??''),error:v.error};s.ui.propertyDetail=key;return s;}
+    if(original.value===v.value){s.ui.editing=null;return s;}
+    const before=clone(original),after={...clone(original),value:v.value,origin:'Local',modified:true};
+    const baseline=templateElements()[a.elementId]?.props[key];if(baseline&&baseline.value===v.value){after.modified=false;after.origin=baseline.origin;}
+    s.elements[a.elementId].props[key]=after;
+    if(key==='Width'||key==='Height')syncRect(s.elements[a.elementId]);
+    s.history.past.push({elementId:a.elementId,key,before,after:clone(after)});
+    s.history.future=[];s.ui.editing=null;s.ui.propertyDetail=key;
+    return s;
+  }
+  function reduce(state, action) {
+    const s=clone(state);
+    switch(action.type){
+      case 'ATTACH_BEGIN':clearTarget(s,'attaching',action.processId);break;
+      case 'ATTACH_SUCCESS':{
+        const process=targets.find(p=>p.id===action.processId); if(!process)return state;
+        clearTarget(s,'attached',process.id);
+        s.lifecycle.attachmentEpoch++;
+        s.connection.instanceKey=(action.instanceKey||process.instanceKey)+'#attach-'+s.lifecycle.attachmentEpoch;
+        s.ui.activeView='inspector';s.ui.selectedElementId='SaveButton';
+        break;
+      }
+      case 'ATTACH_FAIL':clearTarget(s,'attachFailed',action.processId,action.error||'Unable to attach');break;
+      case 'TARGET_EXITED':clearTarget(s,'targetExited',state.connection.processId,'Target process has exited');break;
+      case 'DETACH':clearTarget(s,'disconnected',null);break;
+      case 'RESET_DEMO':{
+        const prefs=s.preferences,panels=s.ui.panels,connection=s.connection;
+        const fresh=createInitialState();fresh.preferences=prefs;fresh.ui.panels=panels;fresh.lifecycle=s.lifecycle;
+        if(connection.status==='attached')return reduce(fresh,{type:'ATTACH_SUCCESS',processId:connection.processId,instanceKey:connection.instanceKey});
+        return fresh;
+      }
+      case 'SELECT_ELEMENT':if(s.connection.status==='attached'&&s.elements[action.id]){s.ui.selectedElementId=action.id;s.ui.propertyDetail=null;}break;
+      case 'SET_TREE_KIND':if(['visual','logical','automation'].includes(action.kind))s.ui.treeKind=action.kind;break;
+      case 'SET_TREE_QUERY':s.ui.treeQuery=String(action.query||'');break;
+      case 'TOGGLE_TREE_NODE':s.ui.expanded=s.ui.expanded.includes(action.id)?s.ui.expanded.filter(id=>id!==action.id):[...s.ui.expanded,action.id];break;
+      case 'SET_VIEW':s.ui.activeView=action.view;break;
+      case 'SET_PROPERTY_TAB':s.ui.propertyTab=action.tab;break;
+      case 'SET_PROPERTY_QUERY':s.ui.propertyQuery=String(action.query||'');break;
+      case 'SET_PROPERTY_ORIGIN':s.ui.propertyOrigin=action.origin||'All';break;
+      case 'SET_MODIFIED_ONLY':s.ui.modifiedOnly=!!action.flag;break;
+      case 'SET_PROPERTY_SORT':s.ui.propertySort=action.sort;break;
+      case 'SHOW_PROPERTY_ORIGIN':if(s.elements[s.ui.selectedElementId]?.props[action.key])s.ui.propertyDetail=action.key;break;
+      case 'EDIT_PROPERTY_BEGIN':{
+        const p=s.elements[action.elementId]?.props[action.key];if(p){s.ui.propertyDetail=action.key;s.ui.editing=p.editable?{elementId:action.elementId,key:action.key,value:String(p.value),error:null}:{elementId:action.elementId,key:action.key,value:String(p.value),error:'This WPF property is read-only'};}
+        break;
+      }
+      case 'EDIT_PROPERTY_VALUE':if(s.ui.editing)s.ui.editing.value=String(action.value);break;
+      case 'EDIT_PROPERTY_COMMIT':return editCommitted(s,action);
+      case 'EDIT_PROPERTY_CANCEL':s.ui.editing=null;break;
+      case 'UNDO':{
+        const entry=s.history.past.pop();if(entry){s.elements[entry.elementId].props[entry.key]=clone(entry.before);if(['Width','Height'].includes(entry.key))syncRect(s.elements[entry.elementId]);s.history.future.push(entry);s.ui.editing=null;}
+        break;
+      }
+      case 'REDO':{
+        const entry=s.history.future.pop();if(entry){s.elements[entry.elementId].props[entry.key]=clone(entry.after);if(['Width','Height'].includes(entry.key))syncRect(s.elements[entry.elementId]);s.history.past.push(entry);s.ui.editing=null;}
+        break;
+      }
+      case 'RESET_PROPERTY_CHANGES':s.elements=templateElements();s.history={past:[],future:[]};s.ui.editing=null;break;
+      case 'SET_DIAGNOSTIC_TAB':s.ui.diagTab=action.tab;break;
+      case 'SET_DIAGNOSTIC_QUERY':s.ui.diagQuery=String(action.query||'');break;
+      case 'SET_DIAGNOSTIC_DETAIL':s.ui.diagExpanded=s.ui.diagExpanded===action.id?null:action.id;break;
+      case 'NAVIGATE_DIAGNOSTIC':{
+        const row=[...s.diagnostics,...s.events].find(d=>d.id===action.id);
+        if(row&&s.connection.status==='attached'&&s.elements[row.elementId]){s.ui.activeView='inspector';s.ui.selectedElementId=row.elementId;s.ui.propertyDetail=row.property||null;s.ui.propertyTab='properties';}
+        else s.ui.toast='Element not found or target disconnected';break;
+      }
+      case 'CLEAR_LOG':{const tab=action.tab||s.ui.diagTab;if(tab==='diagnostics')s.diagnostics=[];else if(tab==='events')s.events=[];else s.output=[];break;}
+      case 'TOGGLE_PANEL':if(action.panel in s.ui.panels)s.ui.panels[action.panel]=!s.ui.panels[action.panel];break;
+      case 'SET_PANEL_SIZE':{
+        const limits={tree:[165,500],inspector:[240,590],bottom:[110,440]},limit=limits[action.panel];
+        if(limit&&Number.isFinite(action.pixels)){const key=action.panel==='bottom'?'bottomHeight':action.panel+'Width';s.ui.panels[key]=Math.max(limit[0],Math.min(limit[1],action.pixels));s.ui.panels.layout='custom';}
+        break;
+      }
+      case 'SET_LAYOUT':{
+        const layouts={default:[282,354,210],focus:[210,285,160],inspect:[270,460,240]},sizes=layouts[action.layout];
+        if(sizes){[s.ui.panels.treeWidth,s.ui.panels.inspectorWidth,s.ui.panels.bottomHeight]=sizes;s.ui.panels.layout=action.layout;s.ui.panels.tree=true;s.ui.panels.inspector=true;s.ui.panels.bottom=true;}
+        break;
+      }
+      case 'RESET_LAYOUT':return reduce(s,{type:'SET_LAYOUT',layout:'default'});
+      case 'SET_COMMAND_PALETTE':s.ui.commandOpen=!!action.open;if(!action.open)s.ui.commandQuery='';break;
+      case 'SET_COMMAND_QUERY':s.ui.commandQuery=String(action.query||'');break;
+      case 'SET_PROCESS_QUERY':s.ui.processQuery=String(action.query||'');break;
+      case 'SET_PROCESS_RUNTIME':s.ui.processRuntime=action.runtime;break;
+      case 'SET_PROCESS_ARCH':s.ui.processArch=action.arch;break;
+      case 'SET_PROCESS_SORT':s.ui.processSort=action.sort;break;
+      case 'CAPTURE_SCREENSHOT':if(s.connection.status==='attached')s.ui.screenshotReady=true;break;
+      case 'TOGGLE_PICKER':if(s.connection.status==='attached')s.ui.picker=!s.ui.picker;break;
+      case 'SHOW_TOAST':s.ui.toast=String(action.message);break;
+      case 'CLEAR_TOAST':s.ui.toast=null;break;
+      case 'SHOW_MODAL':s.ui.modal=action.modal;break;
+      case 'HIDE_MODAL':{
+        if(s.mcp.request){recordAudit(s,{...s.mcp.request,result:'denied',reason:'User dismissed the permission prompt'});s.mcp.request=null;}
+        if(s.mcp.attachRequest){recordAudit(s,{clientId:s.mcp.attachRequest.clientId,tool:'attach_process',target:s.mcp.attachRequest.processId,result:'denied',reason:'User dismissed the attach prompt'});s.mcp.attachRequest=null;}
+        s.ui.modal=null;break;
+      }
+      case 'MCP_START_BEGIN':s.mcp.status='starting';break;
+      case 'MCP_START':s.mcp.status='running';break;
+      case 'MCP_STOP_BEGIN':s.mcp.status='stopping';break;
+      case 'MCP_FAIL':{
+        if(s.mcp.approvedWrite)recordAudit(s,{...s.mcp.approvedWrite,result:'denied',reason:'Service failure before write execution'});
+        s.mcp.status='error';s.mcp.permission=null;s.mcp.request=null;s.mcp.approvedWrite=null;s.mcp.attachRequest=null;s.ui.modal=null;s.ui.toast=String(action.error||'Service start failed');break;
+      }
+      case 'MCP_STOP':{
+        if(s.mcp.request)recordAudit(s,{...s.mcp.request,result:'denied',reason:'Server stopped while awaiting approval'});
+        if(s.mcp.approvedWrite)recordAudit(s,{...s.mcp.approvedWrite,result:'denied',reason:'Server stopped before approved write execution'});
+        if(s.mcp.attachRequest)recordAudit(s,{clientId:s.mcp.attachRequest.clientId,tool:'attach_process',target:s.mcp.attachRequest.processId,result:'denied',reason:'Server stopped while awaiting user approval'});
+        s.mcp.status='stopped';s.mcp.permission=null;s.mcp.request=null;s.mcp.approvedWrite=null;s.mcp.attachRequest=null;s.ui.modal=null;break;
+      }
+      case 'MCP_SET_MODE':if(['readonly','approval'].includes(action.mode)){s.mcp.mode=action.mode;if(action.mode==='readonly')s.mcp.permission=null;}break;
+      case 'MCP_REVOKE':s.mcp.permission=null;recordAudit(s,{tool:'revoke_permission',target:s.connection.processId,result:'allowed'});break;
+      case 'MCP_CALL':{
+        const allowed=['list_processes','get_visual_tree','inspect_element'].includes(action.tool);
+        const targetAction=action.tool!=='list_processes';
+        const valid=allowed&&s.mcp.status==='running'&&connectedClient(s,action.clientId)&&(!targetAction||(s.connection.status==='attached'&&action.instanceKey===s.connection.instanceKey&&(action.tool!=='inspect_element'||!!s.elements[action.elementId])));
+        recordAudit(s,{...action,target:targetAction?s.ui.selectedElementId:'processes',result:valid?'allowed':'denied',reason:valid?'':'Client disconnected, service stopped, target disconnected, or stale handle'});
+        s.ui.toast=valid?'MCP simulated call: '+action.tool:'MCP call denied — no valid service/target';break;
+      }
+      case 'MCP_REQUEST_WRITE':{
+        const request={clientId:action.clientId,tool:action.tool,target:action.target,key:action.key,value:action.value,instanceKey:action.instanceKey||null};
+        if(permissionBusy(s)){recordAudit(s,{...request,result:'denied',reason:'Another permission operation is pending'});s.ui.toast='MCP request denied — another consent is pending';break;}
+        if(s.mcp.status!=='running'||!connectedClient(s,request.clientId)||s.connection.status!=='attached'||request.instanceKey!==s.connection.instanceKey||request.tool!=='set_property'){
+          recordAudit(s,{...request,result:'denied',reason:'Server or target is not available'});s.ui.toast='MCP write denied — invalid target';break;
+        }
+        if(s.mcp.mode==='readonly'){recordAudit(s,{...request,result:'denied',reason:'Read-only mode'});s.ui.toast='MCP write denied — read-only mode';break;}
+        if(canUseSession(s,request))return mcpWrite(s,request,'session');
+        s.mcp.request=request;s.ui.modal={type:'mcpWrite',...request};break;
+      }
+      case 'MCP_RESOLVE_WRITE':{
+        const request=s.mcp.request;s.ui.modal=null;s.mcp.request=null;
+        if(!request)break;
+        if(action.decision==='deny'){recordAudit(s,{...request,result:'denied',reason:'Denied by user'});break;}
+        if(['once','session'].includes(action.decision)){s.mcp.approvedWrite={...request,grant:action.decision};s.ui.toast='Approved. Waiting for simulated execution…';break;}
+        recordAudit(s,{...request,result:'denied',reason:'Unknown decision'});break;
+      }
+      case 'MCP_EXECUTE_APPROVED_WRITE':{
+        const pending=s.mcp.approvedWrite;s.mcp.approvedWrite=null;
+        if(!pending)break;
+        return mcpWrite(s,pending,pending.grant);
+      }
+      case 'MCP_REQUEST_ATTACH':{
+        const process=targets.find(x=>x.id===action.processId);
+        if(s.mcp.status!=='running'||!connectedClient(s,action.clientId)||!process||permissionBusy(s)){recordAudit(s,{clientId:action.clientId,tool:'attach_process',target:action.processId,result:'denied',reason:permissionBusy(s)?'Another permission operation is pending':'Client disconnected, service stopped, or unknown target'});break;}
+        s.mcp.attachRequest={clientId:action.clientId,processId:process.id,pid:process.pid,instanceKey:process.instanceKey};
+        s.ui.modal={type:'mcpAttach',...s.mcp.attachRequest};break;
+      }
+      case 'MCP_RESOLVE_ATTACH':{
+        const pending=s.mcp.attachRequest;s.mcp.attachRequest=null;s.ui.modal=null;
+        if(pending){const approved=action.decision==='allow'&&s.mcp.status==='running';recordAudit(s,{clientId:pending.clientId,tool:'attach_process',target:pending.processId,result:approved?'allowed':'denied',reason:approved?'User approved attach':'User rejected attach'});}
+        break;
+      }
+      case 'SET_THEME':if(['light','dark','system'].includes(action.mode))s.preferences.theme=action.mode;break;
+      case 'SET_LANGUAGE':if(['zh-CN','en-US'].includes(action.locale))s.preferences.language=action.locale;break;
+      case 'SET_DENSITY':if(['comfortable','compact'].includes(action.mode))s.preferences.density=action.mode;break;
+      case 'RESET_PREFERENCES':s.preferences={theme:'light',language:'zh-CN',density:'comfortable'};break;
+      default:return state;
+    }
+    return s;
+  }
+  const api={processes,createInitialState,reduce,templateElements,visibleTree,pathFor,previewSelection,validateProperty};
+  host.SnoopModel=api;
+  if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
+
+(function(host){'use strict';
+const zh={processes:'选择目标进程',intro:'选择一个 WPF 进程进行检查；此界面的进程与 MCP 均为本地模拟。',searchProcess:'搜索进程或 PID…',attach:'附加',disconnect:'断开',inspector:'检查器',diagnostics:'诊断',events:'事件',resources:'资源',screenshot:'截图',mcp:'AI / MCP',settings:'设置',picking:'拾取元素',pick:'选取元素',refresh:'刷新',commands:'搜索命令或元素…',attached:'已附加',disconnected:'未连接',mcpOn:'MCP 已启动',mcpOff:'MCP 未启动',tree:'元素浏览器',treeSearch:'筛选控件、类型或 ID…',treeEmpty:'没有匹配的节点',path:'元素路径',preview:'实时可视化预览',surface:'目标窗口 / 模拟预览',selection:'当前元素',type:'控件类型',size:'布局尺寸',bindingCount:'绑定数量',properties:'属性',bindings:'绑定',triggers:'触发器',propertyEvents:'事件',searchProperties:'搜索属性或值…',all:'所有来源',modified:'仅已修改',byName:'按名称',byOrigin:'按来源',name:'名称',value:'值',origin:'来源',noProperties:'没有匹配属性',sourceDetails:'属性来源',propertyHint:'点击值可编辑；点击来源标签查看详情',readOnly:'只读',apply:'应用',cancel:'取消',undo:'撤销',redo:'重做',resetChanges:'重置修改',diagTab:'诊断',eventsTab:'事件流',outputTab:'输出',diagSearch:'筛选诊断或日志…',clear:'清空',noDiagnostics:'无匹配日志',navigate:'定位',resize:'拖动调整大小',hide:'收起',restore:'恢复',layout:'工作区布局',layoutDefault:'默认三栏',layoutFocus:'预览优先',layoutInspect:'属性优先',resetLayout:'重置布局',startMcp:'启动模拟服务',stopMcp:'停止模拟服务',server:'服务状态',endpoint:'示例监听地址',readOnlyMode:'仅允许读取',approvalMode:'允许请求写入（需确认）',policy:'权限策略',clients:'模拟客户端',catalog:'工具目录',read:'读取',write:'操作',callTree:'模拟读取元素树',callInspect:'模拟检查元素',callWrite:'模拟修改 SaveButton.Content',callAttach:'模拟 AI 请求附加进程',audit:'调用审计',emptyAudit:'还没有调用记录',revoke:'撤销授权',scope:'授权范围',permissionTitle:'AI 请求写入属性',attachTitle:'AI 请求附加进程',permissionNote:'请检查目标、客户端与参数；所有授权及调用都会留下审计记录。',once:'仅本次允许',session:'本次会话允许',deny:'拒绝',copyConfig:'复制连接配置',config:'示例客户端配置',mcpIntro:'管理 AI 对模拟目标的读取与写入权限，不会启动真实 HTTP 服务。',mcpNoTarget:'请先附加模拟目标',theme:'外观主题',light:'浅色',dark:'深色',system:'跟随系统',language:'界面语言',density:'界面密度',comfortable:'舒适',compact:'紧凑',shortcuts:'快捷键',prefsReset:'恢复默认设置',about:'关于原型',settingsIntro:'调整外观、语言和布局，不会清除当前进程、属性修改或 MCP 状态。',resetDemo:'重置演示数据',simulateExit:'模拟目标退出',simulatePid:'模拟 PID 重用',capture:'生成模拟截图',captureReady:'已生成模拟截图预览（没有保存真实文件）',screenshotIntro:'模拟目标窗口截取与元素高亮标注。',diagIntro:'模拟 WPF 绑定错误、布局性能及资源溯源，点击问题定位控件。',eventsIntro:'模拟路由事件记录与检索。',resourceIntro:'模拟应用程序资源与查找路径。',targetMissing:'当前尚未连接目标',chooseProcess:'选择进程',connecting:'正在连接模拟进程…',attachFailed:'附加失败',targetExited:'目标进程已退出',retry:'重试',runtime:'运行时',arch:'架构',status:'状态',available:'可附加',restricted:'权限受限',commandTitle:'快速命令',commandSearch:'搜索功能…',commandEmpty:'没有匹配的命令',close:'关闭',confirm:'确认',save:'保存',sampleHeading:'客户工作台',sampleIntro:'编辑客户资料并保存更改',customer:'客户名称',demo:'演示模式 · 无真实进程连接',reload:'刷新示例数据',originLocal:'局部值',originBinding:'绑定',originStyle:'样式',noData:'无数据',copy:'复制',history:'修改历史',error:'错误',zoom:'100%',select:'选择',menuFile:'文件',menuEdit:'编辑',menuView:'视图',menuTools:'工具',menuHelp:'帮助'};
+const en={processes:'Target processes',intro:'Choose a WPF process to inspect. All processes and MCP calls here are local simulations.',searchProcess:'Search process or PID…',attach:'Attach',disconnect:'Disconnect',inspector:'Inspector',diagnostics:'Diagnostics',events:'Events',resources:'Resources',screenshot:'Capture',mcp:'AI / MCP',settings:'Settings',picking:'Picking element',pick:'Pick element',refresh:'Refresh',commands:'Search commands or elements…',attached:'Attached',disconnected:'Disconnected',mcpOn:'MCP running',mcpOff:'MCP stopped',tree:'Element browser',treeSearch:'Filter elements, type or ID…',treeEmpty:'No matching elements',path:'Element path',preview:'Live visual preview',surface:'Target window / simulated view',selection:'Selected element',type:'Control type',size:'Layout size',bindingCount:'Bindings',properties:'Properties',bindings:'Bindings',triggers:'Triggers',propertyEvents:'Events',searchProperties:'Search properties or values…',all:'All origins',modified:'Modified only',byName:'By name',byOrigin:'By origin',name:'Name',value:'Value',origin:'Origin',noProperties:'No matching properties',sourceDetails:'Property origin',propertyHint:'Click values to edit; click origins to inspect',readOnly:'Read-only',apply:'Apply',cancel:'Cancel',undo:'Undo',redo:'Redo',resetChanges:'Reset changes',diagTab:'Diagnostics',eventsTab:'Events',outputTab:'Output',diagSearch:'Filter diagnostics or logs…',clear:'Clear',noDiagnostics:'No matching logs',navigate:'Navigate',resize:'Drag to resize',hide:'Collapse',restore:'Restore',layout:'Workspace layout',layoutDefault:'Classic three panels',layoutFocus:'Preview focus',layoutInspect:'Inspector focus',resetLayout:'Reset layout',startMcp:'Start simulated service',stopMcp:'Stop simulated service',server:'Server status',endpoint:'Example listening endpoint',readOnlyMode:'Read-only',approvalMode:'Allow write requests (approval required)',policy:'Access policy',clients:'Simulated clients',catalog:'Tool catalog',read:'Read',write:'Write',callTree:'Simulate tree read',callInspect:'Simulate element inspect',callWrite:'Simulate SaveButton.Content edit',callAttach:'Simulate AI attach request',audit:'Call audit log',emptyAudit:'No tool calls yet',revoke:'Revoke grant',scope:'Grant scope',permissionTitle:'AI requests a property write',attachTitle:'AI requests attaching a process',permissionNote:'Review client, target and parameters. All approvals and calls are audited.',once:'Allow once',session:'Allow for session',deny:'Deny',copyConfig:'Copy connection config',config:'Example client config',mcpIntro:'Manage AI read/write access to the simulated target; no real HTTP server is started.',mcpNoTarget:'Attach a simulated target first',theme:'Theme',light:'Light',dark:'Dark',system:'System',language:'Interface language',density:'Density',comfortable:'Comfortable',compact:'Compact',shortcuts:'Keyboard shortcuts',prefsReset:'Reset preferences',about:'About prototype',settingsIntro:'Change appearance, language and layout without losing process, edits or MCP state.',resetDemo:'Reset demo data',simulateExit:'Simulate target exit',simulatePid:'Simulate PID reuse',capture:'Generate simulated capture',captureReady:'Simulated capture ready (no real file saved)',screenshotIntro:'Simulated target window capture with selection overlay.',diagIntro:'Simulated WPF binding errors, layout performance and resource lookup; select an issue to navigate.',eventsIntro:'Explore simulated routed event logs.',resourceIntro:'Simulated application resources and lookup paths.',targetMissing:'No target connected',chooseProcess:'Choose process',connecting:'Attaching simulated process…',attachFailed:'Attach failed',targetExited:'Target process exited',retry:'Retry',runtime:'Runtime',arch:'Architecture',status:'Status',available:'Available',restricted:'Elevated',commandTitle:'Command palette',commandSearch:'Find a command…',commandEmpty:'No matching commands',close:'Close',confirm:'Confirm',save:'Save',sampleHeading:'Customer workspace',sampleIntro:'Edit customer details and save changes',customer:'Customer name',demo:'DEMO · NO REAL PROCESS CONNECTION',reload:'Refresh demo data',originLocal:'Local',originBinding:'Binding',originStyle:'Style',noData:'No data',copy:'Copy',history:'Edit history',error:'Error',zoom:'100%',select:'Select',menuFile:'File',menuEdit:'Edit',menuView:'View',menuTools:'Tools',menuHelp:'Help'};
+const t=(k,l)=>((l==='en-US'?en:zh)[k]||zh[k]||k),h=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),str=v=>typeof v==='boolean'?String(v):String(v??'');
+const btn=(action,label,cls='btn',attrs='')=>`<button class="${cls}" data-action="${action}" ${attrs}>${label}</button>`;
+const tag=(text,kind='')=>`<span class="badge ${kind}">${text}</span>`;
+function render(s,root){const T=k=>t(k,s.preferences.language),on=s.connection.status==='attached',proc=host.SnoopModel.processes().find(p=>p.id===s.connection.processId),processLabel=proc?`${h(proc.name)} · ${proc.pid}`:T('chooseProcess');
+const nav=[['inspector','▤'],['diagnostics','◉'],['events','♧'],['resources','◈'],['screenshot','▧'],['mcp','⌘'],['settings','⚙']];
+let markup=`<div class="page"><header class="context"><div><h1>Snoop Next &nbsp;${tag('UI / UX')}</h1><p>${T('demo')}</p></div><span class="context-tag">● DESIGN REFERENCE · 2026</span></header><main class="app"><div class="windowbar"><div class="brand"><span class="logo">S</span> Snoop <span class="muted">Next</span>${tag('Prototype')}</div><div class="titlebar-right">${tag(T('demo'))}<span>${on?'● '+T('attached'):T('disconnected')}</span><div class="window-controls"><span>—</span><span>□</span><span>×</span></div></div></div><nav class="menubar">${['File','Edit','View','Tools','Help'].map(k=>btn('menu-'+k.toLowerCase(),T('menu'+k),'menu-item')).join('')}</nav><div class="commandbar">${btn('pick-process','◎ &nbsp;'+processLabel+' &nbsp;⌄','btn subtle compact-hide')}${on?btn('detach','↗ '+T('disconnect'),'btn compact-hide'):''}<span class="flex-spacer"></span>${btn('picker',s.ui.picker?'◎ '+T('picking'):'⊕ '+T('pick'),'btn compact-hide',on?'':'disabled')}${btn('refresh','↻ '+T('refresh'),'btn compact-hide')}<button class="command-search" data-action="command-open"><span>⌕ &nbsp; ${T('commands')}</span><kbd>Ctrl K</kbd></button>${btn('view-mcp','● '+T(s.mcp.status==='running'?'mcpOn':'mcpOff'),'btn subtle')}${btn('view-settings','⚙','icon-btn')}</div><div class="workspace"><nav class="rail">${nav.map(([id,icon])=>`<button title="${T(id)}" aria-label="${T(id)}" class="${s.ui.activeView===id?'active':''} ${id==='settings'?'rail-bottom':''}" data-action="view" data-view="${id}">${icon}</button>`).join('')}</nav>${s.ui.activeView==='inspector'&&on?workbench(s,T):`<section class="main-area"><div class="screen-scroller"><div class="screen-content">${screen(s,T)}</div></div></section>`}</div><footer class="statusbar"><span>${on?`<span class="dot" style="color:var(--good)"></span>${h(proc?.name)} · ${h(proc?.runtime)} · PID ${proc?.pid}`:T('disconnected')} <span class="status-extra">&nbsp; | &nbsp; ${Object.keys(s.elements).length} Elements</span></span><span><b>${on?h(s.ui.selectedElementId):'—'}</b></span><span class="status-extra">Ctrl+K · F6 · Ctrl+Z/Y · Esc</span><span>${s.mcp.status==='running'?'● MCP':'○ MCP'}</span></footer></main>${s.ui.toast?`<div class="toast" role="status">${h(s.ui.toast)}</div>`:''}${modal(s,T)}</div>`;
+if(on)markup=markup.replace('</footer></main>',`<span style="display:flex;gap:4px" class="status-extra">${btn('simulate-exit','⨯','btn tiny',`title="${T('simulateExit')}"`)}${btn('simulate-restart','↻ PID','btn tiny',`title="${T('simulatePid')}"`)}</span></footer></main>`);
+root.innerHTML=markup;
+}
+function workbench(s,T){const node=s.elements[s.ui.selectedElementId],path=node?host.SnoopModel.pathFor(s,node.id):[],nodes=host.SnoopModel.visibleTree(s);
+const tree=s.ui.panels.tree?`<aside class="area tree-area" style="width:${s.ui.panels.treeWidth}px"><div class="area-header"><span class="h-title">⌘ ${T('tree')}</span>${btn('collapse-tree','−','icon-btn',`title="${T('hide')}"`)}</div><div class="tree-filter"><div class="segmented">${['visual','logical','automation'].map(k=>btn('tree-kind',k[0].toUpperCase()+k.slice(1),s.ui.treeKind===k?'on':'',`data-kind="${k}"`)).join('')}</div><input class="form-input full" data-field="treeQuery" placeholder="${T('treeSearch')}" value="${h(s.ui.treeQuery)}"></div><div class="tree-scroll" role="tree">${nodes.length?nodes.map(n=>`<div style="display:flex;align-items:center;padding-left:${n.depth*12}px"><button class="tree-toggle" data-action="toggle-tree" data-id="${n.id}" ${n.hasChildren?'':'disabled'}>${n.hasChildren?(s.ui.expanded.includes(n.id)?'▾':'▸'):'·'}</button><button class="tree-node ${n.id===s.ui.selectedElementId?'selected':''}" role="treeitem" aria-selected="${n.id===s.ui.selectedElementId}" data-action="select-element" data-id="${n.id}"><span class="type-mark">${n.type==='Button'?'▣':n.type==='TextBox'?'⌗':'◇'}</span><span class="node-name" title="${h(n.name)}">${h(n.name)} <span class="node-type">${h(n.type)}</span></span></button></div>`).join(''):`<div class="empty">${T('treeEmpty')}<div>${btn('clear-tree',T('restore'),'btn tiny')}</div></div>`}</div><div class="tree-footer"><span class="muted small">${T('path')}</span><div class="crumb">${path.map((id,i)=>`${btn('select-element',h(id),'icon-btn',`data-id="${id}" style="font-size:10px;width:auto"`)}${i<path.length-1?'›':''}`).join('')}</div></div></aside><div class="resizer" data-resize="tree" title="${T('resize')}"></div>`:'';
+const right=s.ui.panels.inspector?`<div class="resizer" data-resize="inspector" title="${T('resize')}"></div><aside class="area inspector-area" style="width:${s.ui.panels.inspectorWidth}px">${inspectorPanel(s,T)}</aside>`:'';
+const bottom=s.ui.panels.bottom?`<div class="resizer-v" data-resize="bottom" title="${T('resize')}"></div><section class="diagnostics" style="height:${s.ui.panels.bottomHeight}px"><div class="diag-tabs">${['diagnostics','events','output'].map(k=>btn('diag-tab',T(k==='diagnostics'?'diagTab':k==='events'?'eventsTab':'outputTab'),`tab ${s.ui.diagTab===k?'active':''}`,`data-tab="${k}"`)).join('')}<span class="flex-spacer"></span><input class="form-input" style="height:27px;width:155px" data-field="diagQuery" placeholder="${T('diagSearch')}" value="${h(s.ui.diagQuery)}">${btn('clear-log','⌫','icon-btn',`title="${T('clear')}"`)}${btn('collapse-bottom','⌄','icon-btn',`title="${T('hide')}"`)}</div><div class="diag-body">${diagnostics(s,T)}</div></section>`:`<div style="padding:5px 12px;border-top:1px solid var(--line)">${btn('expand-bottom','▴ '+T('restore'),'btn tiny')}</div>`;
+return `${tree}<section class="main-area"><div class="main-top"><span class="small muted">${T('surface')} &nbsp; › &nbsp; <b style="color:var(--text)">${h(path.join(' › '))}</b></span><div class="panel-tools">${!s.ui.panels.tree?btn('expand-tree','▤','icon-btn'):''}${!s.ui.panels.inspector?btn('expand-inspector','◫','icon-btn'):''}${btn('reset-layout','⊞','icon-btn',`title="${T('resetLayout')}"`)}</div></div><div class="preview-scroll"><div class="section-caption"><h3>◈ ${T('preview')}</h3><span class="footnote">${T('surface')} · ${T('zoom')}</span></div>${preview(s,T)}<div class="inspect-cards">${[[T('selection'),node?.name||'—'],[T('type'),node?.type||'—'],[T('size'),node?.rect||'—'],[T('bindingCount'),Object.values(node?.props||{}).filter(p=>p.origin==='Binding').length]].map(([k,v])=>`<div class="inspect-card"><div class="muted small">${k}</div><div class="metric">${h(v)}</div></div>`).join('')}</div></div>${bottom}</section>${right}`;}
+function preview(s,T){const id=s.ui.selectedElementId,P=(who,key,fallback)=>s.elements[who]?.props[key]?.value??fallback;function sel(who,cls='',style=''){return `class="sample-select ${cls} ${id===who?'selected':''}" role="button" tabindex="0" data-action="select-element" data-preview="${who}" data-id="${who}" data-tag="${who} · ${s.elements[who].type}" style="${style}"`;}
+return `<div class="preview-panel"><div class="preview-canvas"><div ${sel('MainWindow','sample-app')}><div ${sel('HeaderBar','sample-title')}><span>◈ &nbsp; ${h(P('MainWindow','Title','Contoso Desktop'))}</span><span>— &nbsp; □ &nbsp; ×</span></div><div ${sel('ContentPanel','sample-main')}><h4 ${sel('AppTitle')}>${h(P('AppTitle','Text',T('sampleHeading')))}</h4><p ${sel('WelcomeText')}>${h(P('WelcomeText','Text',T('sampleIntro')))}</p><div class="sample-label">${T('customer')}</div><button ${sel('NameInput','sample-input',`max-width:min(100%,${Number(P('NameInput','Width',460))||460}px)`)}>${h(P('NameInput','Text','Alice Johnson'))}</button><div ${sel('ActionsPanel','sample-actions')}><button ${sel('CancelButton','sample-action',`width:${Number(P('CancelButton','Width',96))||96}px;background:${h(P('CancelButton','Background','#E9EEF6'))}`)}>${h(P('CancelButton','Content',T('cancel')))}</button><button ${sel('SaveButton','sample-action save',`width:${Number(P('SaveButton','Width',120))||120}px;background:${h(P('SaveButton','Background','#3979D5'))}`)}>${h(P('SaveButton','Content',T('save')))}</button></div></div></div></div></div>`;}
+function inspectorPanel(s,T){const el=s.elements[s.ui.selectedElementId],props=el?.props||{},tab=s.ui.propertyTab;let list=Object.entries(props).map(([key,p])=>({key,...p}));if(tab==='bindings')list=list.filter(x=>x.origin==='Binding');if(tab==='triggers'||tab==='events')list=[];if(s.ui.propertyOrigin!=='All')list=list.filter(x=>x.origin===s.ui.propertyOrigin);if(s.ui.modifiedOnly)list=list.filter(x=>!!x.modified);if(s.ui.propertyQuery)list=list.filter(x=>(x.key+' '+str(x.value)+' '+x.origin).toLowerCase().includes(s.ui.propertyQuery.toLowerCase()));list.sort((a,b)=>s.ui.propertySort==='origin'?a.origin.localeCompare(b.origin):a.key.localeCompare(b.key));
+const rows=list.length?list.map(x=>{const editing=s.ui.editing?.elementId===el.id&&s.ui.editing?.key===x.key;return `<div class="property-row" data-property="${h(x.key)}"><span class="property-name" title="${h(x.key)}">${x.modified?'● ':''}${h(x.key)}</span>${editing?`<form class="inline-edit" data-edit="1"><input data-field="editValue" data-editor="value" class="form-input" value="${h(s.ui.editing.value)}" aria-label="${T('value')}"><button type="submit" title="${T('apply')}">✓</button><button type="button" data-action="edit-cancel">×</button></form>`:`<button class="property-value ${x.editable?'editable':''} ${x.modified?'modified':''}" data-action="edit-property" data-key="${h(x.key)}" title="${x.editable?T('apply'):T('readOnly')}">${h(str(x.value))}</button>`}<button class="origin ${x.origin==='Binding'?'binding':''}" data-action="property-origin" data-key="${h(x.key)}">${h(x.origin)}</button></div>`;}).join(''):`<div class="empty">${tab==='triggers'?'IsMouseOver → AccentBrush · IsEnabled → Opacity':tab==='events'?'Click · Loaded · MouseEnter':T('noProperties')}</div>`;const key=s.ui.propertyDetail||s.ui.editing?.key,detail=props[key];
+return `<div class="area-header"><span class="h-title">◫ ${T('properties')}</span><div class="panel-tools">${btn('undo','↶','icon-btn',s.history.past.length?'':'disabled')}${btn('redo','↷','icon-btn',s.history.future.length?'':'disabled')}${btn('collapse-inspector','×','icon-btn')}</div></div><div class="diag-tabs">${[['properties','properties'],['bindings','bindings'],['triggers','triggers'],['events','propertyEvents']].map(([k,label])=>btn('property-tab',T(label),`tab ${tab===k?'active':''}`,`data-tab="${k}"`)).join('')}</div><div class="inspector-tools"><input data-field="propertyQuery" class="form-input full" placeholder="${T('searchProperties')}" value="${h(s.ui.propertyQuery)}"><div class="property-filters"><select class="form-select" data-field="propertyOrigin" style="flex:1"><option value="All">${T('all')}</option>${['Local','Style','Template','Inherited','Default','Binding','Runtime'].map(k=>`<option ${s.ui.propertyOrigin===k?'selected':''}>${k}</option>`).join('')}</select><select class="form-select" data-field="propertySort"><option value="name" ${s.ui.propertySort==='name'?'selected':''}>${T('byName')}</option><option value="origin" ${s.ui.propertySort==='origin'?'selected':''}>${T('byOrigin')}</option></select></div><div style="display:flex;align-items:center;justify-content:space-between;gap:6px"><label class="check-line"><input type="checkbox" data-field="modifiedOnly" ${s.ui.modifiedOnly?'checked':''}> ${T('modified')}</label>${btn('reset-changes',T('resetChanges'),'btn tiny',s.history.past.length?'':'disabled')}</div></div><div class="property-head"><span>${T('name')}</span><span>${T('value')}</span><span>${T('origin')}</span></div><div class="property-table">${rows}</div><div class="inspector-detail"><h4>${key?h(key):h(el?.type+' · '+el?.name)}</h4>${detail?`<p>${T('sourceDetails')}: <b>${h(detail.origin)}</b> ${detail.editable?'':'· '+T('readOnly')}</p><p>${detail.binding?'Path: '+h(detail.binding)+' · Source: '+h(detail.source):'Value: '+h(str(detail.value))}</p>${s.ui.editing?.error?`<p class="error-text">⚠ ${h(s.ui.editing.error)}</p>`:''}`:`<p>${T('propertyHint')}</p><p>${T('undo')} ↶ · ${T('redo')} ↷</p>`}</div>`;}
+function diagnostics(s,T){const rows=s.ui.diagTab==='diagnostics'?s.diagnostics:s.ui.diagTab==='events'?s.events:s.output;const matched=rows.filter(x=>(x.message+' '+(x.elementId||'')+' '+(x.area||'')).toLowerCase().includes(s.ui.diagQuery.toLowerCase()));return matched.length?matched.map(x=>`<div><button class="diag-item" data-action="diag-detail" data-id="${x.id}"><span class="diag-kind ${x.kind==='error'?'error-text':x.kind==='warning'?'warn-text':''}">${x.kind==='error'?'●':x.kind==='warning'?'⚠':'◇'}</span><span class="muted">${h(x.time)}</span>${tag(h(x.area||s.ui.diagTab))}<span class="diag-message" title="${h(x.message)}">${h(x.message)}</span>${x.elementId?'↗':''}</button>${s.ui.diagExpanded===x.id?`<div class="diag-details">${h(x.details||x.message)} &nbsp; ${x.elementId?btn('diag-navigate',T('navigate'),'btn tiny',`data-id="${x.id}"`):''}</div>`:''}</div>`).join(''):`<div class="empty">${T('noDiagnostics')}</div>`;}
+function heading(title,subtitle,action=''){return `<div class="screen-heading"><div><h2>${title}</h2><p>${subtitle}</p></div>${action}</div>`;}
+function screen(s,T){switch(s.ui.activeView){case 'mcp':return mcpScreen(s,T);case 'settings':return settingsScreen(s,T);case 'diagnostics':case 'events':return diagnosticsScreen(s,T);case 'resources':return resourcesScreen(s,T);case 'screenshot':return screenshotScreen(s,T);default:return processScreen(s,T);}}
+function processScreen(s,T){const q=s.ui.processQuery.toLowerCase();let procs=host.SnoopModel.processes().filter(p=>(p.name+' '+p.pid+' '+p.runtime+' '+p.arch).toLowerCase().includes(q));if(s.ui.processRuntime!=='All')procs=procs.filter(p=>p.runtime.includes(s.ui.processRuntime));if(s.ui.processArch!=='All')procs=procs.filter(p=>p.arch===s.ui.processArch);if(s.ui.processSort==='pid')procs.sort((a,b)=>a.pid-b.pid);else procs.sort((a,b)=>a.name.localeCompare(b.name));const status=s.connection.status;
+return heading(T('processes'),T('intro'),tag(T('demo')))+`${['attaching','attachFailed','targetExited'].includes(status)?`<div class="sub-card" style="margin-bottom:14px;border-left:3px solid var(--warn)"><strong>${T(status==='attaching'?'connecting':status)}</strong><span class="muted"> ${h(s.connection.error||'')}</span> ${status==='attaching'?'':btn('reset-connection',T('retry'),'btn tiny')}</div>`:''}<div class="sub-card" style="margin-bottom:12px"><div style="display:flex;gap:10px;flex-wrap:wrap"><input class="form-input" data-field="processQuery" style="flex:1;min-width:200px" placeholder="${T('searchProcess')}" value="${h(s.ui.processQuery)}"><select class="form-select" data-field="processRuntime"><option value="All">${T('runtime')}: All</option><option value=".NET 10" ${s.ui.processRuntime==='.NET 10'?'selected':''}>.NET 10</option><option value="Framework" ${s.ui.processRuntime==='Framework'?'selected':''}>.NET Framework</option></select><select class="form-select" data-field="processSort"><option value="name" ${s.ui.processSort==='name'?'selected':''}>Name</option><option value="pid" ${s.ui.processSort==='pid'?'selected':''}>PID</option></select></div></div><div class="process-grid">${procs.map(p=>`<div class="process-row"><span class="process-symbol">${p.icon}</span><div><b>${h(p.name)}</b><div class="muted small">${h(p.title)}</div></div><span class="mono">${p.pid}</span><span class="optional">${h(p.runtime)}</span><span class="optional muted">${p.arch}</span>${btn('attach',T('attach'),'btn '+(p.id==='sample'?'primary':''),`data-id="${p.id}" ${status==='attaching'?'disabled':''}`)}</div>`).join('')||`<div class="empty">${T('noData')}</div>`}</div><p class="footnote">${T('demo')} · PID and runtime values are fictional.</p>`;}
+function diagnosticsScreen(s,T){const isEvents=s.ui.activeView==='events',copy={...s,ui:{...s.ui,diagTab:isEvents?'events':'diagnostics'}};return heading(T(isEvents?'events':'diagnostics'),T(isEvents?'eventsIntro':'diagIntro'),btn('clear-log',T('clear')))+`<div class="sub-card"><input class="form-input full" data-field="diagQuery" placeholder="${T('diagSearch')}" value="${h(s.ui.diagQuery)}"><div style="margin-top:12px">${diagnostics(copy,T)}</div></div>`;}
+function resourcesScreen(s,T){return heading(T('resources'),T('resourceIntro'))+`<div class="two-col"><div class="sub-card"><div class="card-title">App.xaml · ResourceDictionary</div>${[['AccentButtonBrush','#3979D5'],['WindowSurfaceBrush','#F8FAFD'],['ControlCornerRadius','6'],['TextStyle','Segoe UI 12']].map(([k,v])=>`<div class="list-row" style="margin-top:9px"><span style="background:${v.startsWith('#')?v:'var(--soft)'};border:1px solid var(--line);width:18px;height:18px;border-radius:4px"></span><span class="mono">${k}</span><span class="muted" style="margin-left:auto">${v}</span></div>`).join('')}</div><div class="sub-card"><div class="card-title">Resource lookup</div><p class="muted small">SaveButton.Background → ButtonStyle → App.xaml → AccentButtonBrush</p>${btn('view-inspector',T('navigate'),'btn primary',s.connection.status==='attached'?'':'disabled')}</div></div>`;}
+function screenshotScreen(s,T){return heading(T('screenshot'),T('screenshotIntro'),btn('capture',T('capture'),'btn primary',s.connection.status==='attached'?'':'disabled'))+`<div class="sub-card"><div class="card-title">${T('surface')}</div><p class="muted small">${T('demo')}</p>${s.connection.status==='attached'?preview(s,T):`<div class="empty">${T('mcpNoTarget')}</div>`}${s.ui.screenshotReady?`<p class="badge good">✓ ${T('captureReady')}</p>`:''}</div>`;}
+function mcpScreen(s,T){const running=s.mcp.status==='running',process=host.SnoopModel.processes().find(p=>p.id===s.connection.processId);return heading(T('mcp'),T('mcpIntro'),tag(running?T('mcpOn'):T('mcpOff'),running?'good':'warn'))+`<div class="three-col"><div class="stat-card"><div class="muted small">${T('server')}</div><div class="stat-value">${running?'ONLINE':'OFFLINE'}</div><p class="muted small">${T('endpoint')}: <code>127.0.0.1:39001</code></p>${btn(running?'mcp-stop':'mcp-start',running?T('stopMcp'):T('startMcp'),'btn '+(running?'danger':'primary'))}</div><div class="stat-card"><div class="muted small">${T('policy')}</div><div style="margin:11px 0"><select class="form-select full" data-field="mcpMode"><option value="readonly" ${s.mcp.mode==='readonly'?'selected':''}>${T('readOnlyMode')}</option><option value="approval" ${s.mcp.mode==='approval'?'selected':''}>${T('approvalMode')}</option></select></div><p class="muted small">${s.mcp.mode==='readonly'?T('readOnlyMode'):T('permissionNote')}</p></div><div class="stat-card"><div class="muted small">${T('scope')}</div><div class="stat-value" style="font-size:14px">${process?h(process.name):T('targetMissing')}</div><p class="muted small mono">${s.mcp.permission?h(s.mcp.permission.clientId+' · '+s.mcp.permission.instanceKey+' · '+s.mcp.permission.tool):'No active session grant'}</p>${btn('mcp-revoke',T('revoke'),'btn tiny',s.mcp.permission?'':'disabled')}</div></div><div class="two-col" style="margin-top:14px"><section class="sub-card"><div class="card-title">${T('catalog')}</div>${[['list_processes','read'],['get_visual_tree','read'],['inspect_element','read'],['set_property','write']].map(([k,kind])=>`<div class="list-row" style="margin-top:7px"><code>${k}</code><span style="margin-left:auto">${tag(T(kind),kind==='write'?'warn':'')}</span></div>`).join('')}<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:13px">${btn('mcp-call-tree',T('callTree'),'btn',running?'':'disabled')}${btn('mcp-call-inspect',T('callInspect'),'btn',running?'':'disabled')}${btn('mcp-write',T('callWrite'),'btn primary',running?'':'disabled')}${btn('mcp-attach',T('callAttach'),'btn',running?'':'disabled')}</div></section><section class="sub-card"><div class="card-title">${T('clients')}</div>${s.mcp.clients.map(c=>`<div class="list-row" style="margin-top:8px"><span class="dot" style="color:${c.connected?'var(--good)':'var(--muted)'}"></span><div><b>${h(c.name)}</b><div class="muted small mono">${h(c.id)}</div></div>${tag(c.connected?'Connected':'Offline',c.connected?'good':'')}</div>`).join('')}<div class="card-title" style="margin-top:17px">${T('config')}</div><pre class="mono" style="background:var(--soft);border:1px solid var(--line);border-radius:7px;padding:10px;white-space:pre-wrap;font-size:10px;color:var(--muted)">${h(JSON.stringify({transport:'streamable-http',url:'http://127.0.0.1:39001/mcp',demo:true},null,2))}</pre>${btn('copy-mcp',T('copyConfig'),'btn tiny')}</section></div><section class="sub-card" style="margin-top:14px"><div class="card-title">${T('audit')} ${tag(s.mcp.audit.length)}</div><div class="audit-row muted"><span>Time</span><span>Client</span><span>Tool · Target</span><span>Result</span></div>${s.mcp.audit.length?s.mcp.audit.map(a=>`<div class="audit-row"><span class="mono muted">${h(a.time)}</span><span>${h(a.clientId)}</span><span class="mono">${h(a.tool)} <span class="muted">${h(a.target||'')}</span></span>${tag(h(a.result),a.result==='allowed'?'good':a.result==='denied'?'error':'warn')}</div>`).join(''):`<div class="empty">${T('emptyAudit')}</div>`}</section>`;}
+function settingsScreen(s,T){const select=(field,items,current)=>`<select class="form-select" data-field="${field}">${items.map(([v,label])=>`<option value="${v}" ${current===v?'selected':''}>${label}</option>`).join('')}</select>`;const row=(title,sub,control)=>`<div class="setting-row"><div><strong>${title}</strong><p>${sub}</p></div>${control}</div>`;return heading(T('settings'),T('settingsIntro'),btn('reset-preferences',T('prefsReset')))+`<section class="sub-card">${row(T('theme'),T('settingsIntro'),select('theme',[['light',T('light')],['dark',T('dark')],['system',T('system')]],s.preferences.theme))}${row(T('language'),'RESX + WPF binding planned',select('language',[['zh-CN','简体中文'],['en-US','English (United States)']],s.preferences.language))}${row(T('density'),T('comfortable')+' / '+T('compact'),select('density',[['comfortable',T('comfortable')],['compact',T('compact')]],s.preferences.density))}${row(T('layout'),T('resize'),select('layout',[['default',T('layoutDefault')],['focus',T('layoutFocus')],['inspect',T('layoutInspect')]],s.ui.panels.layout))}${row(T('shortcuts'),'Ctrl+K · F6 · Ctrl+Z / Ctrl+Y · Esc',tag('Keyboard'))}</section><div class="sub-card" style="margin-top:14px"><div class="card-title">${T('about')}</div><p class="muted small">Snoop Next · independent WPF fork concept, .NET Framework 4.6.2 – .NET 11 · PolyfillLib · RESX</p>${btn('reset-demo',T('resetDemo'),'btn danger')} ${btn('view-inspector',T('inspector'))}</div>`;}
+function modal(s,T){if(s.ui.commandOpen){const commands=[['inspector',T('inspector')],['diagnostics',T('diagnostics')],['events',T('events')],['resources',T('resources')],['screenshot',T('screenshot')],['mcp',T('mcp')],['settings',T('settings')],['pick-process',T('processes')],['reset-layout',T('resetLayout')]];const list=commands.filter(([,v])=>v.toLowerCase().includes(s.ui.commandQuery.toLowerCase()));return `<div class="modal-backdrop" data-action="modal-dismiss"><div class="modal-card" data-stop="true"><h3>⌕ ${T('commandTitle')}</h3><input class="form-input full" style="margin-top:15px" data-field="commandQuery" value="${h(s.ui.commandQuery)}" placeholder="${T('commandSearch')}" autofocus><div class="command-list">${list.length?list.map(([id,label])=>btn('command-execute','↗ &nbsp; '+label,'command-row',`data-id="${id}"`)).join(''):`<div class="empty">${T('commandEmpty')}</div>`}</div><div class="modal-actions">${btn('command-close',T('close'))}</div></div></div>`;}
+const m=s.ui.modal;if(!m)return '';let title=T('confirm'),content='',actions=btn('modal-close',T('close'));if(m.type==='mcpWrite'){title=T('permissionTitle');content=`<p>${T('permissionNote')}</p><div class="sub-card"><b>${h(m.clientId)}</b><p class="mono small">${h(m.tool)} · ${h(m.target)}.${h(m.key)} = ${h(m.value)}</p><p class="muted small">${T('scope')}: ${h(m.instanceKey)}</p></div>`;actions=btn('mcp-deny',T('deny'),'btn danger')+btn('mcp-allow-once',T('once'))+btn('mcp-allow-session',T('session'),'btn primary');}else if(m.type==='mcpAttach'){title=T('attachTitle');content=`<p>${T('permissionNote')}</p><div class="sub-card">${h(m.clientId)} → ${h(m.processId)} (PID ${h(m.pid)})</div>`;actions=btn('mcp-attach-deny',T('deny'),'btn danger')+btn('mcp-attach-allow',T('confirm'),'btn primary');}else if(m.type==='error'){title=T('attachFailed');content=`<p>⚠ ${h(m.message)}</p>`;}else if(m.type==='confirmReset'){title=T('resetDemo');content=`<p>${T('intro')}</p>`;actions=btn('modal-close',T('cancel'))+btn('confirm-reset-demo',T('confirm'),'btn danger');}
+return `<div class="modal-backdrop" data-action="modal-dismiss"><div class="modal-card" data-stop="true" role="dialog" aria-modal="true" aria-label="${title}"><h3>${title}</h3>${content}<div class="modal-actions">${actions}</div></div></div>`;}
+Object.assign(zh,{mcpStarting:'正在启动模拟服务…',mcpStopping:'正在停止模拟服务…',mcpError:'模拟服务启动失败',simulateFailure:'模拟启动失败',callProcesses:'模拟列出进程'});
+Object.assign(en,{mcpStarting:'Starting simulated service…',mcpStopping:'Stopping simulated service…',mcpError:'Simulated service startup failed',simulateFailure:'Simulate startup failure',callProcesses:'Simulate process listing'});
+const originalMcpScreen=mcpScreen;
+mcpScreen=function(s,T){
+  let markup=originalMcpScreen(s,T),status=s.mcp.status;
+  if(s.mcp.permission){
+    const grant=s.mcp.permission;
+    markup=markup.replace(h(grant.clientId+' · '+grant.instanceKey+' · '+grant.tool),h(grant.clientId+' · '+grant.instanceKey+' · '+grant.tools.join(', ')));
+  }
+  markup=markup.replace(/<button class="btn" data-action="mcp-call-tree"[^>]*>/,match=>`${btn('mcp-call-processes',T('callProcesses'),'btn',status==='running'?'':'disabled')}${match}`);
+  if(status==='starting'||status==='stopping'||status==='error'){
+    const message=T(status==='starting'?'mcpStarting':status==='stopping'?'mcpStopping':'mcpError');
+    markup=markup.replace('OFFLINE',message).replace(T('mcpOff'),message);
+    if(status!=='error')markup=markup.replace('data-action="mcp-start"','data-action="mcp-start" disabled');
+  }
+  if(status==='stopped'||status==='error'){
+    markup=markup.replace('<div class="three-col">',`<div style="margin-bottom:9px">${btn('mcp-fail',T('simulateFailure'),'btn tiny')}</div><div class="three-col">`);
+  }
+  return markup;
+};
+function cssWidth(value){return value==='Auto'?'auto':typeof value==='number'&&Number.isFinite(value)?value+'px':'auto';}
+function cssWpfColor(value){const text=String(value||'');return /^#[0-9a-f]{8}$/i.test(text)?'#'+text.slice(3)+text.slice(1,3):text;}
+const originalPreview=preview;
+preview=function(s,T){
+  let markup=originalPreview(s,T);
+  const current=s.ui.selectedElementId,grid=s.elements.RootGrid;
+  markup=markup.replace('<div class="preview-canvas">',`<div class="preview-canvas sample-select ${current==='RootGrid'?'selected':''}" data-action="select-element" role="button" tabindex="0" data-preview="RootGrid" data-id="RootGrid" data-tag="${grid.name} · Grid">`);
+  const styles={
+    NameInput:`max-width:min(100%,${cssWidth(s.elements.NameInput.props.Width.value)})`,
+    CancelButton:`width:${cssWidth(s.elements.CancelButton.props.Width.value)};background:${cssWpfColor(s.elements.CancelButton.props.Background.value)}`,
+    SaveButton:`width:${cssWidth(s.elements.SaveButton.props.Width.value)};background:${cssWpfColor(s.elements.SaveButton.props.Background.value)}`
+  };
+  for(const [id,style] of Object.entries(styles))markup=markup.replace(new RegExp('(data-preview="'+id+'"[^>]*style=")[^"]*(")'),(_match,before,after)=>before+h(style)+after);
+  return markup;
+};
+const originalInspectorPanel=inspectorPanel;
+inspectorPanel=function(s,T){
+  let markup=originalInspectorPanel(s,T),prop=s.elements[s.ui.selectedElementId]?.props[s.ui.propertyDetail];
+  if(prop?.binding)markup=markup.replace('Source: '+h(prop.source),'Source: '+h(prop.source)+' · Status: '+h(prop.status||'Unknown'));
+  return markup;
+};
+const originalProcessScreen=processScreen;
+processScreen=function(s,T){
+  let markup=originalProcessScreen(s,T);
+  const filter=`<select class="form-select" data-field="processArch" aria-label="${T('arch')}"><option value="All">${T('arch')}: All</option><option value="x64" ${s.ui.processArch==='x64'?'selected':''}>x64</option><option value="x86" ${s.ui.processArch==='x86'?'selected':''}>x86</option></select>`;
+  markup=markup.replace('<select class="form-select" data-field="processSort">',filter+'<select class="form-select" data-field="processSort">');
+  return markup;
+};
+const api={render,t,dictionaries:{'zh-CN':zh,'en-US':en}};host.SnoopView=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);
+
+(function(host){'use strict';
+function start(root){
+  let state=host.SnoopModel.createInitialState(),attachSerial=0,mcpSerial=0,restartSerial=0,toastTimer=null,previousModal=false,lastWorkbenchFocus=null;
+  try{if(typeof localStorage!=='undefined'){const prefs=JSON.parse(localStorage.getItem('snoop-next-prefs')||'null');if(prefs){state.preferences={...state.preferences,...prefs};}}}catch(_err){}
+  const getState=()=>state;
+  function render(){
+    let focus=null;
+    if(typeof document!=='undefined'&&document.activeElement&&root.contains?.(document.activeElement)){
+      const el=document.activeElement,field=el.dataset?.field;
+      if(field)focus={kind:'field',field,start:el.selectionStart,end:el.selectionEnd};
+      else if(el.dataset?.action)focus={kind:'action',action:el.dataset.action,id:el.dataset.id,key:el.dataset.key,view:el.dataset.view,tab:el.dataset.tab};
+    }
+    const nextModal=!!state.ui.commandOpen||!!state.ui.modal;
+    if(focus&&!previousModal&&!nextModal)lastWorkbenchFocus=focus;
+    if(focus&&!previousModal&&nextModal)lastWorkbenchFocus=focus;
+    host.SnoopView.render(state,root);
+    if(typeof document!=='undefined'){
+      document.body.classList.toggle('dark',state.preferences.theme==='dark'||state.preferences.theme==='system'&&!!window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      document.body.classList.toggle('compact',state.preferences.density==='compact');
+      document.documentElement.lang=state.preferences.language;
+      const restore=target=>{
+        if(!target)return;
+        const matches=Array.from(root.querySelectorAll?.(target.kind==='field'?'[data-field]':'[data-action]')||[]);
+        const el=matches.find(x=>target.kind==='field'?x.dataset.field===target.field:x.dataset.action===target.action&&(!target.id||x.dataset.id===target.id)&&(!target.key||x.dataset.key===target.key)&&(!target.view||x.dataset.view===target.view)&&(!target.tab||x.dataset.tab===target.tab));
+        el?.focus?.({preventScroll:true});
+        if(el&&target.kind==='field'&&typeof el.setSelectionRange==='function'&&typeof target.start==='number')try{el.setSelectionRange(target.start,target.end);}catch(_err){}
+      };
+      if(state.ui.commandOpen)root.querySelector?.('[data-field="commandQuery"]')?.focus({preventScroll:true});
+      else if(state.ui.modal)root.querySelector?.('[role="dialog"] button')?.focus({preventScroll:true});
+      else if(previousModal)restore(lastWorkbenchFocus);
+      else restore(focus);
+      const labels={picker:'Pick element',refresh:'Refresh view',undo:'Undo property edit',redo:'Redo property edit','collapse-tree':'Collapse element tree','collapse-inspector':'Collapse property inspector','collapse-bottom':'Collapse diagnostic pane','expand-tree':'Restore element tree','expand-inspector':'Restore property inspector','reset-layout':'Reset workspace layout','view-settings':'Settings'};
+      for(const el of root.querySelectorAll?.('.icon-btn')||[]){if(!el.getAttribute?.('aria-label'))el.setAttribute?.('aria-label',el.getAttribute?.('title')||labels[el.dataset.action]||el.textContent?.trim()||'Action');}
+    }
+    previousModal=nextModal;
+  }
+  function dispatch(action){
+    state=host.SnoopModel.reduce(state,action);
+    if(['SET_LANGUAGE','SET_THEME','SET_DENSITY','RESET_PREFERENCES'].includes(action.type))try{localStorage.setItem('snoop-next-prefs',JSON.stringify(state.preferences));}catch(_err){}
+    render();return state;
+  }
+  function toast(text){dispatch({type:'SHOW_TOAST',message:String(text)});if(typeof setTimeout==='function'){clearTimeout(toastTimer);toastTimer=setTimeout(()=>dispatch({type:'CLEAR_TOAST'}),3500);}}
+  function attach(processId){attachSerial++;const token=attachSerial;dispatch({type:'ATTACH_BEGIN',processId});setTimeout(()=>{if(token!==attachSerial)return;if(processId==='restricted'){dispatch({type:'ATTACH_FAIL',processId,error:'Access denied — target process requires elevation (simulated).'});dispatch({type:'SHOW_MODAL',modal:{type:'error',message:'Access denied — target process requires elevation.'}});}else{dispatch({type:'ATTACH_SUCCESS',processId});toast('Attached: '+processId+' (simulation)');}},480);}
+  function view(name){dispatch({type:'SET_VIEW',view:name});}
+  function click(action,el){const id=el.dataset.id,key=el.dataset.key,tab=el.dataset.tab;switch(action){
+    case 'view':view(el.dataset.view);break;
+    case 'view-mcp':view('mcp');break;
+    case 'view-settings':view('settings');break;
+    case 'view-inspector':view('inspector');break;
+    case 'pick-process':dispatch({type:'DETACH'});view('inspector');break;
+    case 'attach':attach(id);break;
+    case 'detach':attachSerial++;dispatch({type:'DETACH'});break;
+    case 'simulate-exit':attachSerial++;dispatch({type:'TARGET_EXITED'});break;
+    case 'simulate-restart':{
+      const processId=state.connection.processId,process=host.SnoopModel.processes().find(p=>p.id===processId);
+      if(process)dispatch({type:'ATTACH_SUCCESS',processId,instanceKey:process.pid+':simulated-restart-'+(++restartSerial)});
+      break;
+    }
+    case 'reset-connection':dispatch({type:'DETACH'});break;
+    case 'picker':dispatch({type:'TOGGLE_PICKER'});break;
+    case 'tree-kind':dispatch({type:'SET_TREE_KIND',kind:el.dataset.kind});break;
+    case 'toggle-tree':dispatch({type:'TOGGLE_TREE_NODE',id});break;
+    case 'select-element':dispatch({type:'SELECT_ELEMENT',id});break;
+    case 'clear-tree':dispatch({type:'SET_TREE_QUERY',query:''});break;
+    case 'edit-property':dispatch({type:'EDIT_PROPERTY_BEGIN',elementId:state.ui.selectedElementId,key});break;
+    case 'edit-cancel':dispatch({type:'EDIT_PROPERTY_CANCEL'});break;
+    case 'property-origin':dispatch({type:'SHOW_PROPERTY_ORIGIN',key});break;
+    case 'property-tab':dispatch({type:'SET_PROPERTY_TAB',tab});break;
+    case 'diag-tab':dispatch({type:'SET_DIAGNOSTIC_TAB',tab});break;
+    case 'diag-detail':dispatch({type:'SET_DIAGNOSTIC_DETAIL',id});break;
+    case 'diag-navigate':dispatch({type:'NAVIGATE_DIAGNOSTIC',id});break;
+    case 'clear-log':dispatch({type:'CLEAR_LOG',tab:state.ui.activeView==='events'?'events':state.ui.activeView==='diagnostics'?'diagnostics':state.ui.diagTab});break;
+    case 'undo':dispatch({type:'UNDO'});break;
+    case 'redo':dispatch({type:'REDO'});break;
+    case 'reset-changes':dispatch({type:'RESET_PROPERTY_CHANGES'});break;
+    case 'collapse-tree':dispatch({type:'TOGGLE_PANEL',panel:'tree'});break;
+    case 'expand-tree':dispatch({type:'TOGGLE_PANEL',panel:'tree'});break;
+    case 'collapse-inspector':dispatch({type:'TOGGLE_PANEL',panel:'inspector'});break;
+    case 'expand-inspector':dispatch({type:'TOGGLE_PANEL',panel:'inspector'});break;
+    case 'collapse-bottom':dispatch({type:'TOGGLE_PANEL',panel:'bottom'});break;
+    case 'expand-bottom':dispatch({type:'TOGGLE_PANEL',panel:'bottom'});break;
+    case 'reset-layout':dispatch({type:'RESET_LAYOUT'});break;
+    case 'command-open':dispatch({type:'SET_COMMAND_PALETTE',open:true});break;
+    case 'command-close':dispatch({type:'SET_COMMAND_PALETTE',open:false});break;
+    case 'command-execute':dispatch({type:'SET_COMMAND_PALETTE',open:false});if(id==='pick-process')click('pick-process',el);else if(id==='reset-layout')click('reset-layout',el);else view(id);break;
+    case 'mcp-start':{
+      const token=++mcpSerial;dispatch({type:'MCP_START_BEGIN'});setTimeout(()=>{if(token===mcpSerial)dispatch({type:'MCP_START'});},350);break;
+    }
+    case 'mcp-stop':{
+      const token=++mcpSerial;dispatch({type:'MCP_STOP_BEGIN'});setTimeout(()=>{if(token===mcpSerial)dispatch({type:'MCP_STOP'});},300);break;
+    }
+    case 'mcp-fail':mcpSerial++;dispatch({type:'MCP_FAIL',error:'Simulated startup error: endpoint unavailable'});break;
+    case 'mcp-revoke':dispatch({type:'MCP_REVOKE'});break;
+    case 'mcp-call-processes':dispatch({type:'MCP_CALL',tool:'list_processes',clientId:'codex-desktop'});break;
+    case 'mcp-call-tree':dispatch({type:'MCP_CALL',tool:'get_visual_tree',clientId:'codex-desktop',instanceKey:state.connection.instanceKey});break;
+    case 'mcp-call-inspect':dispatch({type:'MCP_CALL',tool:'inspect_element',clientId:'codex-desktop',instanceKey:state.connection.instanceKey,elementId:state.ui.selectedElementId});break;
+    case 'mcp-write':dispatch({type:'MCP_REQUEST_WRITE',clientId:'codex-desktop',tool:'set_property',target:'SaveButton',key:'Content',value:'AI 已更新',instanceKey:state.connection.instanceKey});break;
+    case 'mcp-attach':dispatch({type:'MCP_REQUEST_ATTACH',clientId:'codex-desktop',processId:'legacy'});break;
+    case 'mcp-deny':dispatch({type:'MCP_RESOLVE_WRITE',decision:'deny'});break;
+    case 'mcp-allow-once':dispatch({type:'MCP_RESOLVE_WRITE',decision:'once'});setTimeout(()=>dispatch({type:'MCP_EXECUTE_APPROVED_WRITE'}),260);break;
+    case 'mcp-allow-session':dispatch({type:'MCP_RESOLVE_WRITE',decision:'session'});setTimeout(()=>dispatch({type:'MCP_EXECUTE_APPROVED_WRITE'}),260);break;
+    case 'mcp-attach-deny':dispatch({type:'MCP_RESOLVE_ATTACH',decision:'deny'});break;
+    case 'mcp-attach-allow':{const pending=state.mcp.attachRequest;dispatch({type:'MCP_RESOLVE_ATTACH',decision:'allow'});if(pending)attach(pending.processId);break;}
+    case 'copy-mcp':{const cfg=JSON.stringify({transport:'streamable-http',url:'http://127.0.0.1:39001/mcp',demo:true},null,2);if(typeof navigator!=='undefined'&&navigator.clipboard?.writeText)navigator.clipboard.writeText(cfg).then(()=>toast('Copied demo configuration'),()=>toast(cfg));else toast(cfg);break;}
+    case 'capture':dispatch({type:'CAPTURE_SCREENSHOT'});break;
+    case 'refresh':dispatch({type:'SHOW_TOAST',message:'Simulated view refreshed'});break;
+    case 'reset-preferences':dispatch({type:'RESET_PREFERENCES'});break;
+    case 'reset-demo':dispatch({type:'SHOW_MODAL',modal:{type:'confirmReset'}});break;
+    case 'confirm-reset-demo':dispatch({type:'RESET_DEMO'});break;
+    case 'modal-close':case 'modal-dismiss':dispatch({type:'HIDE_MODAL'});break;
+    case 'menu-file':view('inspector');break;
+    case 'menu-edit':dispatch({type:'SET_COMMAND_PALETTE',open:true});break;
+    case 'menu-view':dispatch({type:'SET_COMMAND_PALETTE',open:true});break;
+    case 'menu-tools':view('mcp');break;
+    case 'menu-help':view('settings');break;
+    default:break;
+  }}
+  function fieldChanged(el){const f=el.dataset.field,v=el.type==='checkbox'?el.checked:el.value;const mapping={treeQuery:'SET_TREE_QUERY',propertyQuery:'SET_PROPERTY_QUERY',propertyOrigin:'SET_PROPERTY_ORIGIN',propertySort:'SET_PROPERTY_SORT',modifiedOnly:'SET_MODIFIED_ONLY',diagQuery:'SET_DIAGNOSTIC_QUERY',processQuery:'SET_PROCESS_QUERY',processRuntime:'SET_PROCESS_RUNTIME',processArch:'SET_PROCESS_ARCH',processSort:'SET_PROCESS_SORT',commandQuery:'SET_COMMAND_QUERY',editValue:'EDIT_PROPERTY_VALUE',mcpMode:'MCP_SET_MODE',theme:'SET_THEME',language:'SET_LANGUAGE',density:'SET_DENSITY',layout:'SET_LAYOUT'};const type=mapping[f];if(type){const keys={treeQuery:'query',propertyQuery:'query',propertyOrigin:'origin',propertySort:'sort',modifiedOnly:'flag',diagQuery:'query',processQuery:'query',processRuntime:'runtime',processArch:'arch',processSort:'sort',commandQuery:'query',editValue:'value',mcpMode:'mode',theme:'mode',language:'locale',density:'mode',layout:'layout'};const action={type,[keys[f]]:v};
+      // Do not destroy a live input during its native input event (IME, selection, autofill).
+      // Editing text only affects the preview after Submit; filter inputs render on the next frame.
+      if(f==='editValue'){state=host.SnoopModel.reduce(state,action);return;}
+      if(el.tagName==='INPUT'&&el.type!=='checkbox'){
+        state=host.SnoopModel.reduce(state,action);
+        if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>render());
+        else setTimeout(()=>render(),0);
+        return;
+      }
+      dispatch(action);}}
+  if(root.addEventListener){root.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el||el.disabled)return;if(el.dataset.action==='modal-dismiss'&&e.target.closest('[data-stop]'))return;if(el.tagName==='BUTTON')e.preventDefault();click(el.dataset.action,el);});root.addEventListener('input',e=>{const el=e.target.closest('[data-field]');if(el&&el.type!=='checkbox'&&el.tagName!=='SELECT')fieldChanged(el);});root.addEventListener('change',e=>{const el=e.target.closest('[data-field]');if(el)fieldChanged(el);});root.addEventListener('submit',e=>{if(!e.target.matches('[data-edit]'))return;e.preventDefault();const editing=state.ui.editing;if(editing)dispatch({type:'EDIT_PROPERTY_COMMIT',elementId:editing.elementId,key:editing.key,value:editing.value});});root.addEventListener('keydown',e=>{if(!['Enter',' '].includes(e.key)||!e.target.matches('.sample-select[tabindex]'))return;e.preventDefault();click('select-element',e.target);});}
+  if(root.addEventListener)root.addEventListener('keydown',e=>{
+    if(e.key!=='Tab'||(!state.ui.modal&&!state.ui.commandOpen)||typeof document==='undefined')return;
+    const items=Array.from(root.querySelectorAll?.('.modal-card button:not(:disabled), .modal-card input, .modal-card select, .modal-card textarea')||[]).filter(x=>!x.disabled);
+    if(!items.length)return;
+    const index=items.indexOf(document.activeElement);
+    if(index<0||e.shiftKey&&index===0){e.preventDefault();items[e.shiftKey?items.length-1:0].focus();}
+    else if(!e.shiftKey&&index===items.length-1){e.preventDefault();items[0].focus();}
+  });
+  if(typeof window!=='undefined'){
+    window.addEventListener('keydown',e=>{const typing=['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName);if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();dispatch({type:'SET_COMMAND_PALETTE',open:!state.ui.commandOpen});}else if(e.key==='Escape'){dispatch({type:'SET_COMMAND_PALETTE',open:false});dispatch({type:'HIDE_MODAL'});dispatch({type:'EDIT_PROPERTY_CANCEL'});}else if(e.key==='F6'){e.preventDefault();dispatch({type:'TOGGLE_PICKER'});}else if((e.ctrlKey||e.metaKey)&&!typing&&(e.key.toLowerCase()==='z'||e.key.toLowerCase()==='y')){e.preventDefault();dispatch({type:e.key.toLowerCase()==='z'?'UNDO':'REDO'});}});
+    let dragging=null;root.addEventListener('pointerdown',e=>{const el=e.target.closest('[data-resize]');if(!el)return;dragging={name:el.dataset.resize,x:e.clientX,y:e.clientY,state:{...state.ui.panels}};e.preventDefault();});window.addEventListener('pointermove',e=>{if(!dragging)return;let size;if(dragging.name==='tree')size=dragging.state.treeWidth+(e.clientX-dragging.x);else if(dragging.name==='inspector')size=dragging.state.inspectorWidth-(e.clientX-dragging.x);else size=dragging.state.bottomHeight+(dragging.y-e.clientY);dispatch({type:'SET_PANEL_SIZE',panel:dragging.name,pixels:Math.round(size)});});window.addEventListener('pointerup',()=>{dragging=null;});
+  }
+  render();return {getState,dispatch,attach,view};
+}
+const api={start};host.SnoopController=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+if(typeof document!=='undefined'&&document.getElementById('app'))start(document.getElementById('app'));
+})(typeof window!=='undefined'?window:globalThis);
+</script></body></html>
