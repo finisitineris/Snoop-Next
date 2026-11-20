@@ -18,8 +18,8 @@ internal static class Program
             AppDomain.CurrentDomain.BaseDirectory, "PolyfillLib.dll", SearchOption.TopDirectoryOnly);
         Console.WriteLine("PolyfillLib runtime DLL copies: " + files.Length);
 
-        // net462 must carry the compiled polyfill runtime DLL. Modern TFMs may
-        // legitimately have no runtime asset because their APIs are built-in.
+        // This pinned PolyfillLib DLL-mode package deploys a binary on both
+        // tested TFMs. Do not mistake the test app for the library itself.
         if (files.Length == 0)
         {
             Console.Error.WriteLine("FAIL: pinned PolyfillLib package must deploy its compiled runtime assembly.");
