@@ -67,7 +67,10 @@ internal static class Program
             // runtime BAML, static resource, and selector wiring failures.
             var settingsView = new Snoop.Views.SettingsView();
             var languagePicker = settingsView.FindName("LanguageSelector") as System.Windows.Controls.ComboBox;
-            Require(languagePicker != null, "host SettingsView language selector was not created");
+            if (languagePicker == null)
+            {
+                throw new InvalidOperationException("host SettingsView language selector was not created");
+            }
             Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
             Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
                 "host picker selection does not match the Snoop host setting");
