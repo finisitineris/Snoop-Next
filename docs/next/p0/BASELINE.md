@@ -1,6 +1,6 @@
 # P0 baseline and validation status
 
-**Verified by GitHub repository inspection on 2026-11-20. Windows build and injection: NOT RUN.**
+**Initial repository snapshot taken on 2026-11-20. Later build evidence is recorded below. Actual WPF injection: NOT RUN.**
 
 | Item | Baseline |
 |---|---|
@@ -47,3 +47,11 @@ On trusted Windows WPF harnesses, test: discover process → attach → enumerat
 - P0 artifact-to-WPF acceptance traceability verified by a real implementation
 
 Do not label these passed based on HTML simulations.
+
+## P0 implementation evidence update — 2026-11-20
+
+- [PR #7](https://github.com/finisitineris/Snoop-Next/pull/7) is **merged** into `develop` as commit `c36ee903651c64200efa03b8fe828b0e70fa0313`. SDK setup now follows `global.json`; the explicit vulnerable SourceLink 8.0.0 package was removed.
+- [Windows CI #44692566884](https://github.com/finisitineris/Snoop-Next/actions/runs/44692566884) **passed**: SDK 10.0.403, `build.cmd CI`, ZIP/MSI packaging and NUnit **17/17 on each** net6/net8/net10 (51/51 test executions). `Snoop.Core` compiled for net462 and net6. Compilation is **not injection** evidence.
+- Branch `develop` has an active PR/anti-force-push Ruleset. **Required CI status checks have not yet been configured**; add `windows-latest` after reviewing the rule.
+- [SN-004 PR #9](https://github.com/finisitineris/Snoop-Next/pull/9) provides a separate compile-only harness matrix: net462 x86/x64, net6 and net10. [Run #44694680950](https://github.com/finisitineris/Snoop-Next/actions/runs/44694680950) passed six harness builds; actual interactive attach/inspect/detach remains **NOT RUN**.
+- [SN-006 #8](https://github.com/finisitineris/Snoop-Next/issues/8) tracks remaining Nuke bootstrapper NU190x security warnings. No security auditing was disabled.

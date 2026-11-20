@@ -29,3 +29,7 @@ git merge upstream/develop
 ## Mandatory GitHub admin action
 
 Configure a `develop` branch rule requiring PR review and successful status checks before merging. GitHub App access to code/PRs does not itself prove that repository branch protection is enabled. Treat SN-001 as **partially complete** until the rule is checked.
+
+## Status update (2026-11-20)
+
+An active Ruleset now protects `develop` against force pushes/deletion and requires a PR. This does **not** yet require `windows-latest` as a mandatory status check; an administrator still needs to configure that check after successful CI verification. The fork's current default branch remains `develop`.

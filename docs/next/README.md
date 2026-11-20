@@ -25,3 +25,10 @@ This is the approved **design and compatibility reference** for the independent 
 - Retain upstream Ms-PL copyright/attribution notices and selective upstream mergeability.
 
 This P0 documentation does **not** modify source targets or injector behavior. The HTML prototype's successful browser/Node tests do not establish Windows WPF compatibility. Every real implementation PR must reference the acceptance IDs and record verified test evidence.
+
+## Current test status
+
+- Source baseline: merged Windows CI fix [PR #7](https://github.com/finisitineris/Snoop-Next/pull/7) and [passing run #44692566884](https://github.com/finisitineris/Snoop-Next/actions/runs/44692566884).
+- Compiled net462 Snoop.Core and ran 51 NUnit executions on net6/net8/net10. `net462` and `.NET 11` **real process inspection remains unverified**.
+- Non-elevated desktop smoke protocol / compile-only harnesses prepared in [PR #9](https://github.com/finisitineris/Snoop-Next/pull/9).
+- Remaining inherited Nuke bootstrapper advisory cleanup is tracked in [SN-006](https://github.com/finisitineris/Snoop-Next/issues/8).
