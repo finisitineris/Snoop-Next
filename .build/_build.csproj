@@ -12,6 +12,12 @@
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="10.1.0" />
+    <!-- Bootstrapper-only pins for inherited vulnerable transitive packages.
+         Keep these out of production WPF projects/injected assembly dependencies.
+         Tracked by SN-006 (#8); verify with the Windows CI + NuGetAudit. -->
+    <PackageReference Include="NuGet.Packaging" Version="6.12.5" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.23" PrivateAssets="all" />
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="9.0.23" PrivateAssets="all" />
     <PackageDownload Include="GitVersion.Tool" Version="[6.5.1]" />
     <PackageDownload Include="Nuget.CommandLine" Version="[6.9.1]" />
   </ItemGroup>
