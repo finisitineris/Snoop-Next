@@ -33,6 +33,12 @@ internal static class Program
             loaded.Reload();
             Require(loaded.LanguageTag == "en-US", "reload did not restore en-US");
 
+            loaded.LanguageTag = "system";
+            loaded.Save();
+            var systemLoaded = new Settings { SettingsFile = file };
+            systemLoaded.Reload();
+            Require(systemLoaded.LanguageTag == "system", "system preference did not persist or reload");
+
             loaded.LanguageTag = "invalid-value";
             Require(loaded.LanguageTag == "zh-CN", "invalid value did not normalize");
             loaded.Reset();
