@@ -7,6 +7,7 @@ on:
       - '.github/workflows/next-localization.yml'
       - 'Snoop.Next.Localization/**'
       - 'Snoop.Next.Localization.Tests/**'
+      - 'Snoop.Next.Localization.Demo/**'
   workflow_dispatch:
 
 permissions:
@@ -30,6 +31,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'net462 localization build failed' }
           dotnet build Snoop.Next.Localization/Snoop.Next.Localization.csproj -c Release -f net10.0-windows
           if ($LASTEXITCODE -ne 0) { throw 'net10 localization build failed' }
+      - name: Compile interactive demo window (do not launch)
+        shell: pwsh
+        run: |
+          dotnet build Snoop.Next.Localization.Demo/Snoop.Next.Localization.Demo.csproj -c Release --nologo
+          if ($LASTEXITCODE -ne 0) { throw 'WPF localization demo compilation failed' }
       - name: Run isolated localization tests (no injection)
         shell: pwsh
         run: |

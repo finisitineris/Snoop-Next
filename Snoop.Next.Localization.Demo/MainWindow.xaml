@@ -1,0 +1,34 @@
+<Window x:Class="Snoop.Next.Localization.Demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:Snoop.Next.Localization;assembly=Snoop.Next.Localization"
+        Title="{loc:Loc Shell.Title}" Width="620" Height="410"
+        MinWidth="460" MinHeight="320" WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <Style x:Key="LocalizedTreeTitle" TargetType="{x:Type TextBlock}">
+            <Setter Property="loc:LocText.Key" Value="Tree.Title" />
+        </Style>
+        <DataTemplate x:Key="DiagnosticsTemplate">
+            <TextBlock Text="{loc:Loc Nav.Diagnostics}" FontSize="16" />
+        </DataTemplate>
+    </Window.Resources>
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="{loc:Loc Menu.File}" />
+            <MenuItem Header="{loc:Loc Menu.Tools}" />
+        </Menu>
+        <StackPanel Margin="24">
+            <TextBlock Text="{loc:Loc Settings.Language}" FontSize="17" Margin="0,0,0,8" />
+            <ComboBox Width="180" HorizontalAlignment="Left" SelectionChanged="OnLanguageChanged">
+                <ComboBoxItem Content="简体中文" Tag="zh-CN" IsSelected="True" />
+                <ComboBoxItem Content="English" Tag="en-US" />
+            </ComboBox>
+            <Separator Margin="0,18,0,14" />
+            <TextBlock Text="{loc:Loc Process.Attach}" FontSize="18" Margin="0,0,0,12" />
+            <TextBlock Style="{StaticResource LocalizedTreeTitle}" FontSize="18" Margin="0,0,0,12" />
+            <ContentControl Content="diagnostic-preview" ContentTemplate="{StaticResource DiagnosticsTemplate}" />
+            <TextBlock Text="{loc:Loc Error.TargetExited}" Margin="0,16,0,8" TextWrapping="Wrap" />
+            <TextBlock x:Name="CultureLabel" FontSize="12" Foreground="Gray" />
+        </StackPanel>
+    </DockPanel>
+</Window>

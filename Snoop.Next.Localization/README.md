@@ -41,3 +41,19 @@ is removed. Example:
 
 These tests do not attach to an existing process, exercise multi-dispatcher
 windows, or establish dependency safety inside an inspected WPF application.
+
+
+## Multi-dispatcher and WPF demo verification
+
+The STA NUnit fixture now creates two independent WPF Dispatcher threads
+with separate controls, CurrentUICulture values and ResourceDictionary
+markers. It triggers one UI language change from the first Dispatcher
+and checks the bindings are updated on both without mutating the thread
+cultures or local resource dictionaries.
+
+The independent Snoop.Next.Localization.Demo project provides a human-
+viewable language selector and examples of menu, TextBlock, DataTemplate
+and Style Setter localization. CI compiles it, never runs its window.
+
+Neither the test nor the demo attaches to a third-party process; the
+Snoop inspector/injection integration remains a separate security gate.

@@ -1,6 +1,7 @@
 namespace Snoop.Next.Localization.Tests;
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -116,6 +117,131 @@ public sealed class WpfLocalizationBindingTests
         finally
         {
             manager.SetLanguage("zh-CN");
+        }
+    }
+
+
+    [Test]
+    [Apartment(ApartmentState.STA)]
+    [Timeout(30000)]
+    public void TwoDispatchers_RefreshLocalizedControlsWithoutChangingTheirCultureOrResources()
+    {
+        var manager = LocalizationManager.Default;
+        try
+        {
+            manager.SetLanguage("zh-CN");
+            using (var first = new DispatcherHost("Snoop-Loc-First"))
+            using (var second = new DispatcherHost("Snoop-Loc-Second"))
+            {
+                var text = first.Invoke(() =>
+                {
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("ja-JP");
+                    var element = (TextBlock)XamlReader.Parse(
+                        "<TextBlock " + Ns + " " + LocNs + " Text='{loc:Loc Process.Attach}' />");
+                    element.Resources["Untouched"] = "first-marker";
+                    return element;
+                });
+                var menu = second.Invoke(() =>
+                {
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR");
+                    var element = (MenuItem)XamlReader.Parse(
+                        "<MenuItem " + Ns + " " + LocNs + " Header='{loc:Loc Menu.File}' />");
+                    element.Resources["Untouched"] = "second-marker";
+                    return element;
+                });
+
+                AssertState("附加", "文件");
+                foreach (var language in new[] { "en-US", "zh-CN", "en-US" })
+                {
+                    first.Invoke(() => manager.SetLanguage(language));
+                    AssertState(language == "en-US" ? "Attach" : "附加",
+                        language == "en-US" ? "File" : "文件");
+                }
+
+                void AssertState(string expectedText, string expectedMenu)
+                {
+                    var updated = SpinWait.SpinUntil(
+                        () => first.Invoke(() => text.Text == expectedText)
+                            && second.Invoke(() => string.Equals(menu.Header as string, expectedMenu, StringComparison.Ordinal)),
+                        TimeSpan.FromSeconds(6));
+                    Assert.That(updated, Is.True, "WPF did not propagate the indexer update across dispatchers");
+                    Assert.That(first.Invoke(() => Thread.CurrentThread.CurrentUICulture.Name), Is.EqualTo("ja-JP"));
+                    Assert.That(second.Invoke(() => Thread.CurrentThread.CurrentUICulture.Name), Is.EqualTo("fr-FR"));
+                    Assert.That(first.Invoke(() => text.Resources["Untouched"]), Is.EqualTo("first-marker"));
+                    Assert.That(second.Invoke(() => menu.Resources["Untouched"]), Is.EqualTo("second-marker"));
+                }
+            }
+        }
+        finally
+        {
+            manager.SetLanguage("zh-CN");
+        }
+    }
+
+    private sealed class DispatcherHost : IDisposable
+    {
+        private readonly ManualResetEventSlim ready = new ManualResetEventSlim();
+        private readonly Thread worker;
+        private Dispatcher? dispatcher;
+        private Exception? startupFailure;
+
+        public DispatcherHost(string name)
+        {
+            this.worker = new Thread(this.Run) { IsBackground = true, Name = name };
+            this.worker.SetApartmentState(ApartmentState.STA);
+            this.worker.Start();
+            if (!this.ready.Wait(TimeSpan.FromSeconds(10)))
+            {
+                throw new TimeoutException("Dispatcher did not start");
+            }
+
+            if (this.startupFailure != null)
+            {
+                throw new InvalidOperationException("Dispatcher failed", this.startupFailure);
+            }
+        }
+
+        public T Invoke<T>(Func<T> action)
+        {
+            var current = this.dispatcher ?? throw new InvalidOperationException("Dispatcher not started");
+            return current.Invoke(action);
+        }
+
+        public void Invoke(Action action)
+        {
+            var current = this.dispatcher ?? throw new InvalidOperationException("Dispatcher not started");
+            current.Invoke(action);
+        }
+
+        public void Dispose()
+        {
+            var current = this.dispatcher;
+            if (current != null && !current.HasShutdownStarted && !current.HasShutdownFinished)
+            {
+                current.BeginInvokeShutdown(DispatcherPriority.Send);
+            }
+
+            if (!this.worker.Join(TimeSpan.FromSeconds(10)))
+            {
+                throw new TimeoutException("Dispatcher did not shut down");
+            }
+
+            this.ready.Dispose();
+        }
+
+        private void Run()
+        {
+            try
+            {
+                this.dispatcher = Dispatcher.CurrentDispatcher;
+                this.ready.Set();
+                Dispatcher.Run();
+            }
+            catch (Exception exception)
+            {
+                this.startupFailure = exception;
+                this.ready.Set();
+            }
         }
     }
 
