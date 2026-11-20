@@ -23,6 +23,8 @@
 
             <Files Directory="net60" Include="net6.0-windows/Snoop.*" />
 
+            <Files Directory="SnoopHostZhCn" Include="zh-CN/Snoop.Next.Localization.resources.dll" />
+
             <ComponentGroupRef Id="MainFiles"/>
 
             <ComponentRef Id="SnoopScriptsComponent"/>
@@ -40,6 +42,9 @@
             <Files Include="Snoop.InjectorLauncher.*.pdb" />
 
             <Files Include="Snoop.Core.*" />
+
+            <!-- Host-side RESX library: do not include in net462/net6 injected core directories. -->
+            <Files Include="Snoop.Next.Localization.dll" />
 
             <File Source="Snoop.exe">
                 <Shortcut Id="desktopSnoopShortcut" Directory="DesktopFolder" Name="Snoop"
@@ -60,6 +65,7 @@
             <Directory Id="INSTALLDIR" Name="Snoop">
                 <Directory Id="net462" Name="net462" />
                 <Directory Id="net60" Name="net6.0-windows" />
+                <Directory Id="SnoopHostZhCn" Name="zh-CN" />
 
                 <Directory Id="SnoopScriptsFolder" Name="Scripts">
                     <Component Id="SnoopScriptsComponent" Guid="65AD97C3-5B32-4020-892C-1D0E38656D6D">

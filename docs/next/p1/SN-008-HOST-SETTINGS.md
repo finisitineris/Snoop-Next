@@ -48,3 +48,17 @@ The normal continuous workflow independently builds/tests/packages Snoop.
   initial host Settings view.
 
 No Github-hosted step injects or launches arbitrary WPF inspectee processes.
+
+
+## Packaging correction
+
+The upstream Chocolatey nuspec and WiX MSI define explicit file lists,
+not a wildcard for every dependency of the host. Both packaging manifests
+now include the root-level Snoop.Next.Localization.dll alongside Snoop.exe
+plus the zh-CN/Snoop.Next.Localization.resources.dll satellite assembly.
+Neither injected Snoop.Core net462 nor net6 runtime directory is modified.
+
+The targeted CI checks the build output paths and manifest references.
+The full Nuke CI must additionally produce Chocolatey ZIP/nupkg and MSI.
+This proves expected package inclusion, but a separate installation and
+real process attach smoke is required to certify the runtime loader.

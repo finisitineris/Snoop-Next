@@ -52,6 +52,26 @@ jobs:
           if (-not (Test-Path $smoke)) { throw "Missing CLR4 smoke executable: $smoke" }
           & $smoke
           if ($LASTEXITCODE -ne 0) { throw 'Snoop host settings XML smoke failed' }
+      - name: Check host-side DLL and explicit install manifests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($file in @(
+            'bin/Release/Snoop.Next.Localization.dll',
+            'bin/Release/zh-CN/Snoop.Next.Localization.resources.dll')) {
+            if (-not (Test-Path $file)) { throw "Missing host localization output: $file" }
+          }
+
+          $choco = Get-Content 'chocolatey/snoop.nuspec' -Raw
+          $wix = Get-Content 'Snoop.wxs' -Raw
+          if ($choco -notmatch 'Snoop.Next.Localization.dll' -or
+              $choco -notmatch 'zh-CN\\Snoop.Next.Localization.resources.dll' -or
+              $wix -notmatch 'Snoop.Next.Localization.dll' -or
+              $wix -notmatch 'SnoopHostZhCn') {
+            throw 'Host localization DLL or satellite resources absent from explicit package manifests'
+          }
+
+          Write-Host 'Host localization DLL and zh-CN satellite resources are included in explicit packaging manifests'
       - name: Verify localization reference is host-only
         shell: pwsh
         run: |

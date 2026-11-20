@@ -28,6 +28,10 @@
     <file src="..\bin\$Configuration$\Snoop.Core*.pdb" target="tools\" />
     <file src="..\bin\$Configuration$\Snoop.Core*.json" target="tools\" />
 
+    <!-- Snoop host only; never copied into the injected Snoop.Core runtime directories. -->
+    <file src="..\bin\$Configuration$\Snoop.Next.Localization.dll" target="tools\" />
+    <file src="..\bin\$Configuration$\zh-CN\Snoop.Next.Localization.resources.dll" target="tools\zh-CN\" />
+
     <file src="..\bin\$Configuration$\Snoop.exe" target="tools\" />
     <file src="..\bin\$Configuration$\Snoop.exe.config" target="tools\" />
     <file src="..\bin\$Configuration$\Snoop.pdb" target="tools\" />
