@@ -459,7 +459,7 @@
                         <TextBlock>
                             <Run Text="{localization:InspectorLoc Tab.Diagnostics}" />
                             <Run Text=" (" />
-                            <Run Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count}" />
+                            <Run Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count, Mode=OneWay}" />
                             <Run Text=")" />
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
