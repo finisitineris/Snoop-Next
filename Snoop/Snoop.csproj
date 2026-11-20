@@ -28,7 +28,7 @@
   <ItemGroup>
      <ProjectReference Include="../Snoop.Core/Snoop.Core.csproj" />
      <!-- Host-only localization: never add this reference to the injected core/launcher. -->
-     <ProjectReference Include="../Snoop.Next.Localization/Snoop.Next.Localization.csproj" /> 
+     <ProjectReference Include="../Snoop.Next.Localization/Snoop.Next.Localization.csproj" />
   </ItemGroup>
 
   <ItemGroup>

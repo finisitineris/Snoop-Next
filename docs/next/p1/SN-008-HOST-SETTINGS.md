@@ -47,7 +47,7 @@ The normal continuous workflow independently builds/tests/packages Snoop.
 - Broader translations and shell/window resource localization beyond the
   initial host Settings view.
 
-No Github-hosted step injects or launches arbitrary WPF inspectee processes.
+No GitHub-hosted step injects or launches arbitrary WPF inspectee processes.
 
 
 ## Packaging correction
