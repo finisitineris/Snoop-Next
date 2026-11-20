@@ -1,0 +1,4 @@
+<Project>
+  <!-- Do not inherit the parent repository's GitVersion, analyzers, and build
+       instrumentation: they would pollute PolyfillLib dependency closure. -->
+</Project>
