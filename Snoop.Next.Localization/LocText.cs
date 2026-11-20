@@ -37,7 +37,7 @@ public static class LocText
         if (!string.IsNullOrWhiteSpace(key))
         {
             BindingOperations.SetBinding(textBlock, TextBlock.TextProperty,
-                new LocExtension(key).CreateBinding());
+                new LocExtension(key!).CreateBinding());
             return;
         }
 
