@@ -13,6 +13,7 @@ using Snoop;
 /// </summary>
 internal static class Program
 {
+    [STAThread]
     private static int Main()
     {
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
@@ -60,6 +61,19 @@ internal static class Program
 
             Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
                 "settings preference modified the thread UI culture");
+
+            // Instantiate the real host SettingsView on STA without showing a
+            // window or attaching Snoop to any external process. This catches
+            // runtime BAML, static resource, and selector wiring failures.
+            var settingsView = new Snoop.Views.SettingsView();
+            var languagePicker = settingsView.FindName("LanguageSelector") as System.Windows.Controls.ComboBox;
+            Require(languagePicker != null, "host SettingsView language selector was not created");
+            Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
+            Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
+                "host picker selection does not match the Snoop host setting");
+            Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
+                "constructing Snoop host SettingsView modified thread UI culture");
+            Console.WriteLine("PASS: host SettingsView BAML loaded and language selector wired on STA");
 
             Console.WriteLine("PASS: CLR4 Snoop host-only XML language preference, reload, reset, legacy fallback and culture isolation");
             return 0;
