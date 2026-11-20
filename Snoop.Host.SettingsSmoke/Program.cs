@@ -5,8 +5,8 @@ using System.Globalization;
 using System.IO;
 using System.Threading;
 using Snoop;
-using Snoop.Next.Localization;
 using Snoop.Data;
+using Snoop.Next.Localization;
 
 /// <summary>
 /// Tests Snoop's host-only XML preference without launching any WPF inspector,
@@ -77,7 +77,8 @@ internal static class Program
                 var transientSerializer = new System.Xml.Serialization.XmlSerializer(typeof(TransientSettingsData));
                 using (var stream = File.OpenRead(transientPath))
                 {
-                    var loadedTransient = (TransientSettingsData)transientSerializer.Deserialize(stream);
+                    var loadedTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
+                        ?? throw new InvalidOperationException("Transient settings could not be deserialized");
                     Require(loadedTransient.LanguageTag == "en-US", "transient language preference did not round-trip");
                 }
 
@@ -86,7 +87,8 @@ internal static class Program
                 var legacyTransientXml = transientXml.Replace("<LanguageTag>en-US</LanguageTag>", string.Empty);
                 using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(legacyTransientXml)))
                 {
-                    var legacyTransient = (TransientSettingsData)transientSerializer.Deserialize(stream);
+                    var legacyTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
+                        ?? throw new InvalidOperationException("Legacy transient settings could not be deserialized");
                     Require(legacyTransient.LanguageTag == "system", "legacy transient XML did not default to system");
                 }
             }
