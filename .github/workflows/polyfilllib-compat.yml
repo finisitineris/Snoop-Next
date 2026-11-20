@@ -1,0 +1,56 @@
+name: polyfilllib-compat
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/polyfilllib-compat.yml'
+      - 'experiments/polyfilllib/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-smoke:
+    name: polyfilllib-net462-net10-smoke
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore and audit experimental dependency closure
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $proj = 'experiments/polyfilllib/PolyfillCompat.csproj'
+          New-Item -ItemType Directory -Force -Path 'output/polyfilllib-compat' | Out-Null
+          dotnet restore $proj --nologo
+          if ($LASTEXITCODE -ne 0) { throw 'PolyfillLib restore failed.' }
+          dotnet list $proj package --include-transitive |
+            Tee-Object -FilePath 'output/polyfilllib-compat/dependencies.txt'
+          if ($LASTEXITCODE -ne 0) { throw 'PolyfillLib dependency listing failed.' }
+
+      - name: Compile and load on net462 and net10.0 (NO WPF injection)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $project = 'experiments/polyfilllib/PolyfillCompat.csproj'
+          foreach ($framework in @('net462', 'net10.0')) {
+            dotnet build $project --configuration Release --framework $framework --no-restore --nologo
+            if ($LASTEXITCODE -ne 0) { throw "PolyfillLib build failed for $framework" }
+            $exe = Join-Path 'experiments/polyfilllib/bin/Release' $framework
+            $exe = Join-Path $exe 'PolyfillCompat.exe'
+            if (-not (Test-Path $exe)) { throw "Missing $framework executable: $exe" }
+            & $exe | Tee-Object -FilePath "output/polyfilllib-compat/$framework-runtime.txt"
+            if ($LASTEXITCODE -ne 0) { throw "PolyfillLib runtime smoke failed for $framework" }
+          }
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: polyfilllib-compat-evidence
+          path: output/polyfilllib-compat
+          if-no-files-found: warn
