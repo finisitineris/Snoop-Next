@@ -76,7 +76,7 @@
     const valid=validateProperty(s.elements[req.target],req.key,req.value);
     if(!valid.ok){recordAudit(s,{...req,result:'denied',reason:valid.error});s.ui.toast=valid.error;return s;}
     const after=editCommitted(s,{elementId:req.target,key:req.key,value:req.value});
-    if(grant==='session')after.mcp.permission={clientId:req.clientId,instanceKey:req.instanceKey,tools:[req.tool],scope:'session'};
+    if(grant==='session')after.mcp.permission={clientId:req.clientId,instanceKey:req.instanceKey,tool:req.tool,tools:[req.tool],scope:'session'};
     recordAudit(after,{...req,result:'allowed'});
     after.ui.toast='MCP simulated write: '+req.target+'.'+req.key;
     return after;

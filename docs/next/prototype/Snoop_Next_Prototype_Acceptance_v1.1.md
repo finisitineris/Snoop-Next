@@ -1,9 +1,9 @@
 # Snoop Next · HTML 交互原型验收清单
 
-**原型版本**：v0.1 / 2026-11-19  
+**原型版本**：v1.1 / 2026-11-20  
 **定位**：独立 Snoop WPF Fork 的视觉与交互基准，不是 WPF 实现，也不是真实 MCP Server。  
 **设计基准**：Visual Studio 专业工作台布局 × Fluent 视觉 × DevTools 属性检查交互。  
-**运行方式**：现代 Edge / Chrome 双击 `Snoop_Next_Interactive_Prototype.html` 离线打开；不需要 HTTP 服务、CDN 或 npm。
+**运行方式**：现代 Edge / Chrome 双击 `Snoop_Next_Interactive_Prototype_v1.1.html` 离线打开；不需要 HTTP 服务、CDN 或 npm。
 
 ## 1. 视觉与布局约束
 

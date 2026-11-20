@@ -1,7 +1,7 @@
 # Snoop Next — 可直接转成 GitHub Issues / PR 的实施清单 v1.0
 
 设计基准：HTML v1.1 + `02-ui-interaction-mapping.md` + `03-resx-localization.md` + `04-mcp-host-and-ipc-contract.md`。  
-建议先在 Fork 的 `develop` 上以小 PR 实施，不直接改 `main`；保留 `upstream/develop` 的追踪。**以下全部是待开发工作，尚未改动 Snoop GitHub 仓库。**
+建议先在 Fork 的 `develop` 上以小 PR 实施，不直接改默认分支 `develop`（当前不存在 `main`）；保留 `upstream/develop` 的追踪。**以下是产品实施任务，文档已纳入 PR，但生产功能尚未实现。**
 
 ## 0. 开发纪律（提交到 docs/CONTRIBUTING.md）
 
@@ -18,11 +18,11 @@
 
 | Issue | 范围 | 最小产出 | 验收/证据 |
 |---|---|---|---|
-| `SN-001` | Fork 与 upstream 关联 | Branch strategy、LICENSE、ADR、VERSIONING | main 受保护；可 fetch/merge 上游 |
+| `SN-001` | Fork 与 upstream 关联 | Branch strategy、LICENSE、ADR、VERSIONING | `develop` 受保护；可 fetch/merge 上游 |
 | `SN-002` | Snoop 基线环境 | 原版 compile + `dotnet --info` + package lock | net462、net10 WPF Harness 成功附加 |
 | `SN-003` | 多目标与 PolyfillLib 实验 | 中央包版本、TFM 条件构建、依赖闭包报告 | net462 加载、net6/8/10/11 smoke；没有 BCL 缺失异常 |
 | `SN-004` | 目标进程 Harness | net462 x86/x64、net6/8/10/11 WPF 进程 | 进程退出/重附加/错误案例可重复运行 |
-| `SN-005` | 确立 UI 视觉基线 | 将 HTML v1.1 与 Acceptance 纳入 `docs/prototype` | HTML SHA256、关键状态截图、差异审批流程 |
+| `SN-005` | 确立 UI 视觉基线 | 将 HTML v1.1 与 Acceptance 纳入 `docs/next/prototype` | HTML SHA256、关键状态截图、差异审批流程 |
 
 **P0 exit**：原版有可回归的附加能力与测试对象；未来任何架构拆分不能破坏它。
 
