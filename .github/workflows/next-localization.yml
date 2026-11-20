@@ -16,6 +16,11 @@ on:
       - 'Snoop/Views/SettingsView.xaml.cs'
       - 'Snoop/ProcessInfo.cs'
       - 'Snoop.Core/Data/TransientSettingsData.cs'
+      - 'Snoop.Core/Infrastructure/SnoopManager.cs'
+      - 'Snoop.Core/Localization/**'
+      - 'Snoop.Core/Snoop.Core.csproj'
+      - 'Snoop.Core/Windows/SnoopUI.xaml'
+      - 'Snoop.Core/Windows/SnoopUI.xaml.cs'
   workflow_dispatch:
 
 permissions:
@@ -44,7 +49,7 @@ jobs:
         run: |
           dotnet build Snoop.Next.Localization.Demo/Snoop.Next.Localization.Demo.csproj -c Release --nologo
           if ($LASTEXITCODE -ne 0) { throw 'WPF localization demo compilation failed' }
-      - name: Build and run host settings XML smoke (CLR4 only, no injection)
+      - name: Build and run host/inspector UI smoke (CLR4, no external injection)
         shell: pwsh
         run: |
           $project = 'Snoop.Host.SettingsSmoke/Snoop.Host.SettingsSmoke.csproj'

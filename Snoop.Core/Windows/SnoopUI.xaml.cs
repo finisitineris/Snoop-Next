@@ -25,6 +25,7 @@ using Snoop.Core;
 using Snoop.Data.Tree;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 using Snoop.Views;
 
 public sealed partial class SnoopUI : INotifyPropertyChanged
@@ -92,7 +93,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         };
 
         {
-            this.snoopVersion.Header = $"Version: {this.GetType().Assembly.GetName().Version}";
+            this.snoopVersion.Header = $"{InspectorLocalization.Default["Menu.Version"]}: {this.GetType().Assembly.GetName().Version}";
         }
     }
 

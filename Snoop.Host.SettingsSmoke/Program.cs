@@ -8,6 +8,8 @@ using System.Threading;
 using Snoop;
 using Snoop.Data;
 using Snoop.Next.Localization;
+using Snoop.Localization;
+using Snoop.Windows;
 
 /// <summary>
 /// Tests Snoop's host-only XML preference without launching any WPF inspector,
@@ -178,6 +180,94 @@ internal static class Program
                 Require(LocalizationManager.Default.LanguageTag == "zh-CN", "Save after Reset did not apply default language");
 
                 Console.WriteLine("PASS: SettingsView pending selection, Save, Discard and Reset behavior");
+
+                // Exercise Snoop.Core's actual inspector XAML in this isolated
+                // process. No other WPF application is attached or injected.
+                var inspectorCulture = Thread.CurrentThread.CurrentUICulture;
+                var inspectorSettingsPath = new TransientSettingsData { LanguageTag = "zh-CN" }.WriteToFile();
+                try
+                {
+                    var loadedInspectorSettings = TransientSettingsData.LoadCurrent(inspectorSettingsPath);
+                    InspectorLocalization.Default.InitializeFrom(loadedInspectorSettings);
+
+                    var coreAssembly = typeof(SnoopUI).Assembly;
+                    var resourceNames = coreAssembly.GetManifestResourceNames();
+                    Require(Array.IndexOf(resourceNames, "Snoop.Localization.InspectorStrings.resources") >= 0,
+                        "inspector strings were not embedded into Snoop.Core");
+                    Require(!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "zh-CN", "Snoop.Core.resources.dll")),
+                        "inspector localization unexpectedly emitted a satellite assembly");
+
+                    var resourceManager = new System.Resources.ResourceManager(
+                        "Snoop.Localization.InspectorStrings", coreAssembly);
+                    var resourceSet = resourceManager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
+                    if (resourceSet == null)
+                    {
+                        throw new InvalidOperationException("embedded inspector resource set was not found");
+                    }
+
+                    var resourceKeys = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+                    var resourceEnumerator = resourceSet.GetEnumerator();
+                    while (resourceEnumerator.MoveNext())
+                    {
+                        resourceKeys.Add((string)resourceEnumerator.Key);
+                    }
+
+                    var englishKeyCount = 0;
+                    foreach (var key in resourceKeys)
+                    {
+                        if (key.StartsWith("en-US.", StringComparison.Ordinal))
+                        {
+                            englishKeyCount++;
+                            Require(resourceKeys.Contains("zh-CN." + key.Substring("en-US.".Length)),
+                                "missing zh-CN inspector resource for " + key);
+                        }
+                    }
+
+                    Require(englishKeyCount == 54, "unexpected number of paired inspector resource keys");
+
+                    var app = System.Windows.Application.Current
+                        ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+                    var inspector = new SnoopUI();
+                    try
+                    {
+                        var fileMenu = FindRequired<System.Windows.Controls.MenuItem>(inspector, "FileMenuItem");
+                        var treeHeader = FindRequired<System.Windows.Controls.Label>(inspector, "TreeHeaderLabel");
+                        Require(fileMenu.Header as string == "文件", "SnoopUI did not load the zh-CN File menu resource");
+                        Require(treeHeader.Content as string == "可视化树：", "SnoopUI did not load the zh-CN tree header");
+                        Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
+                            "inspector localization modified the inspected thread CurrentUICulture");
+
+                        InspectorLocalization.Default.SetLanguage("en-US");
+                        System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(
+                            System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() => { }));
+                        Require(fileMenu.Header as string == "File", "SnoopUI File menu did not live-switch to en-US");
+                        Require(treeHeader.Content as string == "Tree:", "SnoopUI tree header did not live-switch to en-US");
+
+                        InspectorLocalization.Default.SetLanguage("system");
+                        var expectedSystemFile = CultureInfo.InstalledUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                            ? "文件"
+                            : "File";
+                        Require(fileMenu.Header as string == expectedSystemFile,
+                            "system language did not resolve independently of target thread culture");
+                        Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
+                            "system language resolution changed the inspected thread CurrentUICulture");
+                    }
+                    finally
+                    {
+                        inspector.Close();
+                        app.Shutdown();
+                    }
+
+                    Thread.CurrentThread.CurrentUICulture = inspectorCulture;
+                    Console.WriteLine("PASS: SnoopUI embedded EN/ZH resources, live bindings and target thread culture isolation");
+                }
+                finally
+                {
+                    Thread.CurrentThread.CurrentUICulture = inspectorCulture;
+                    File.Delete(inspectorSettingsPath);
+                }
+
 
                 Settings.Default.SettingsFile = persistedSettingsPath;
                 Settings.Default.LanguageTag = persistedLanguage;

@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using JetBrains.Annotations;
 using Snoop.Data;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 using Snoop.Windows;
 
 [Serializable]
@@ -175,6 +176,9 @@ public class SnoopManager
 
         try
         {
+            // Apply host-provided Snoop chrome language before any window XAML is constructed.
+            // This is AppDomain-local and never changes the inspected thread's Culture.
+            InspectorLocalization.Default.InitializeFrom(settingsData);
             AttachAssemblyResolveHandler(AppDomain.CurrentDomain);
 
             var instanceCreator = GetInstanceCreator(settingsData.StartTarget);

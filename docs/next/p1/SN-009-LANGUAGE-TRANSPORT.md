@@ -45,3 +45,31 @@ is \`system\`. The existing localization/SettingsView tests continue to run.
 - Old payloads that do not contain \`LanguageTag\` deserialize to \`system\` because the property initializer supplies the default.
 - The transport object is part of \`Snoop.Core\`, which is already loaded by the injector. This step adds no localization assembly reference, satellite resource or new runtime dependency to the inspected process.
 - The payload value is data only; no code in this PR reads it to change a thread culture or create localized controls.
+
+
+## Step 2 — injected inspector UI localization proof of concept
+
+The inspector UI localization implementation is linked into the existing
+\`Snoop.Core\` assembly, avoiding a new runtime code DLL:
+
+- One neutral \`Localization/InspectorStrings.resx\` contains paired
+  \`en-US.*\` and \`zh-CN.*\` keys and is embedded as
+  \`Snoop.Localization.InspectorStrings.resources\` in \`Snoop.Core.dll\`.
+- No culture-specific .resx or satellite assembly is generated.
+- \`InspectorLocalization\` reads the host-provided \`TransientSettingsData.LanguageTag\`
+  per AppDomain and exposes an indexer for WPF bindings.
+- \`system\` resolves via \`CultureInfo.InstalledUICulture\`, not the
+  inspected thread's \`CurrentUICulture\`; no target Culture or
+  \`Application.Resources\` mutation occurs.
+- \`InspectorLocExtension\` binds Snoop-owned labels/menu/tooltips in
+  \`SnoopUI.xaml\`. Inspected property names, values and enum labels remain
+  untouched.
+- \`SnoopManager.RunInCurrentAppDomain\` initializes the manager before
+  constructing the inspector window. Each AppDomain gets its own static
+  language state; multiple Dispatchers within one AppDomain share it.
+
+The host CLR4 smoke constructs a real SnoopUI window in the isolated test
+process, verifies the embedded resource and live EN/ZH bindings, checks
+resource key parity and confirms the thread Culture remains unchanged.
+This is **not** a real inspectee-process attach test; SN-004 still owns that
+runtime acceptance gate.

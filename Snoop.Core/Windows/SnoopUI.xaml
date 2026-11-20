@@ -19,6 +19,7 @@
                              xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                              xmlns:powerShell="clr-namespace:Snoop.PowerShell"
                              xmlns:selectionHighlight="clr-namespace:Snoop.Infrastructure.SelectionHighlight"
+                             xmlns:localization="clr-namespace:Snoop.Localization"
                              xmlns:snoop="clr-namespace:Snoop"
                              xmlns:tree="clr-namespace:Snoop.Data.Tree"
                              xmlns:triggersTab="clr-namespace:Snoop.Views.TriggersTab"
@@ -113,56 +114,57 @@
     <DockPanel>
         <StackPanel DockPanel.Dock="Top"
                     Orientation="Horizontal">
-            <Label Padding="2"
-                   Content="Tree:"
+            <Label x:Name="TreeHeaderLabel"
+                   Padding="2"
+                   Content="{localization:InspectorLoc Tree.Label}"
                    Target="{Binding ElementName=TreeTypeComboBox}" />
             <ComboBox x:Name="TreeTypeComboBox"
                       Padding="4 2"
                       ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type tree:TreeType}}}"
                       SelectedItem="{Binding CurrentTreeType, Mode=TwoWay}" />
             <Menu>
-                <MenuItem Header="File">
-                    <MenuItem Header="Close window"
+                <MenuItem x:Name="FileMenuItem" Header="{localization:InspectorLoc Menu.File}">
+                    <MenuItem Header="{localization:InspectorLoc Menu.CloseWindow}"
                               Command="{x:Static ApplicationCommands.Close}" />
                 </MenuItem>
-                <MenuItem Header="Settings">
+                <MenuItem Header="{localization:InspectorLoc Menu.Settings}">
                     <MenuItem Header="{Binding Path=SettingsFile, Source={x:Static core:Settings.Default}}" />
-                    <MenuItem Header="Make settings application specific"
+                    <MenuItem Header="{localization:InspectorLoc Menu.MakeSettingsApplicationSpecific}"
                               Click="HandleMakeSettingsApplicationsSpecific_OnClick" />
-                    <MenuItem Header="Delete application specific settings"
+                    <MenuItem Header="{localization:InspectorLoc Menu.DeleteApplicationSpecificSettings}"
                               Click="HandleDeleteApplicationSpecificSettings_OnClick" />
-                    <MenuItem Header="Open settings folder"
+                    <MenuItem Header="{localization:InspectorLoc Menu.OpenSettingsFolder}"
                               Click="HandleOpenSettingsFolder_OnClick" />
                     <Separator />
-                    <MenuItem Header="Reset settings"
+                    <MenuItem Header="{localization:InspectorLoc Menu.ResetSettings}"
                               Click="HandleResetSettings_OnClick" />
                 </MenuItem>
-                <MenuItem Header="_Tracking options">
-                    <MenuItem Header="Track on mouse move when CTRL + _SHIFT is pressed"
+                <MenuItem Header="{localization:InspectorLoc Menu.TrackingOptions}">
+                    <MenuItem Header="{localization:InspectorLoc Menu.TrackOnMouseMove}"
                               IsCheckable="True"
                               IsChecked="{Binding TrackOnMouseMove}"
-                              ToolTip="When enabled and CTRL + _SHIFT is pressed tracks all parts of the UI." />
-                    <MenuItem Header="Track on click"
+                              ToolTip="{localization:InspectorLoc Tooltip.TrackOnMouseMove}" />
+                    <MenuItem Header="{localization:InspectorLoc Menu.TrackOnClick}"
                               IsCheckable="True"
                               IsChecked="{Binding TrackOnClick}"
-                              ToolTip="When enabled, automatically tracks UI elements when left clicked." />
-                    <MenuItem Header="Skip template parts"
+                              ToolTip="{localization:InspectorLoc Tooltip.TrackOnClick}" />
+                    <MenuItem Header="{localization:InspectorLoc Menu.SkipTemplateParts}"
                               IsCheckable="True"
                               IsChecked="{Binding SkipTemplateParts}"
-                              ToolTip="When enabled: Tracking tries to skip template parts." />
-                    <MenuItem Header="Ignore hit test visibility"
+                              ToolTip="{localization:InspectorLoc Tooltip.SkipTemplateParts}" />
+                    <MenuItem Header="{localization:InspectorLoc Menu.IgnoreHitTestVisibility}"
                               IsCheckable="True"
                               IsChecked="{Binding IgnoreHitTestVisibility}"
-                              ToolTip="When enabled: Tracking also selects UI elements that are have IsHitTestVisible set to false." />
+                              ToolTip="{localization:InspectorLoc Tooltip.IgnoreHitTestVisibility}" />
                     <Separator />
-                    <MenuItem Header="Highlight selected item"
+                    <MenuItem Header="{localization:InspectorLoc Menu.HighlightSelectedItem}"
                               IsCheckable="True"
                               IsChecked="{Binding HighlightSelectedItem, Source={x:Static selectionHighlight:SelectionHighlightOptions.Default}}" />
-                    <MenuItem Header="Highlight options ..."
+                    <MenuItem Header="{localization:InspectorLoc Menu.HighlightOptions}"
                               Click="HandleHighlightOptions_OnClick" />
                 </MenuItem>
-                <MenuItem Header="_Debug">
-                    <MenuItem Header="Launch debugger"
+                <MenuItem Header="{localization:InspectorLoc Menu.Debug}">
+                    <MenuItem Header="{localization:InspectorLoc Menu.LaunchDebugger}"
                               Click="HandleLaunchDebugger_OnClick" />
                     <MenuItem Header="Snoop Snoop"
                               Click="HandleSnoopSnoop_OnClick" />
@@ -175,7 +177,7 @@
             <StackPanel HorizontalAlignment="Right"
                         Orientation="Horizontal">
                 <Label Padding="2"
-                       Content="Theme:"
+                       Content="{localization:InspectorLoc Theme.Label}"
                        Target="{Binding ElementName=ThemeComboBox}" />
                 <ComboBox x:Name="ThemeComboBox"
                           Padding="4 2"
@@ -204,13 +206,13 @@
                       IsEditable="True"
                       Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
                 <ComboBoxItem>
-                    <TextBlock Text="Clear any filter applied to the tree view" />
+                    <TextBlock Text="{localization:InspectorLoc Tooltip.ClearFilter}" />
                 </ComboBoxItem>
                 <ComboBoxItem>
-                    <TextBlock Text="Show only elements with binding errors" />
+                    <TextBlock Text="{localization:InspectorLoc Tooltip.ShowBindingErrors}" />
                 </ComboBoxItem>
                 <ComboBox.ToolTip>
-                    <TextBlock Text="Enter text in the combo box to filter the tree view by name or type" />
+                    <TextBlock Text="{localization:InspectorLoc Tooltip.FilterByNameOrType}" />
                 </ComboBox.ToolTip>
             </ComboBox>
 
@@ -224,7 +226,7 @@
                     Command="{x:Static windows:SnoopUI.RefreshCommand}">
                 <Image Source="{DynamicResource reloadDrawingImage}" />
                 <Button.ToolTip>
-                    <TextBlock Text="Refresh the tree view" />
+                    <TextBlock Text="{localization:InspectorLoc Tooltip.RefreshTree}" />
                 </Button.ToolTip>
             </Button>
 
@@ -288,7 +290,7 @@
                 </TreeView.ItemContainerStyle>
 
                 <controls:ProperTreeView.ToolTip>
-                    <TextBlock Text="Hold down Ctrl + Shift and mouse over elements in the target app to select them." />
+                    <TextBlock Text="{localization:InspectorLoc Tooltip.TreeSelect}" />
                 </controls:ProperTreeView.ToolTip>
             </controls:ProperTreeView>
 
@@ -309,11 +311,11 @@
                         Margin="2 2 2 0">
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Properties">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Properties}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Properties View" />
-                                    <TextBlock Text="Lists all the properties of the currently selected object. You can even edit these properties or right-click and then delve into them."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PropertiesTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PropertiesDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -326,11 +328,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Data Context">
+                        <TextBlock Text="{localization:InspectorLoc Tab.DataContext}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Data Context View" />
-                                    <TextBlock Text="Lists all the properties of the DataContext of the currently selected object. You can even edit these properties or right-click and then delve into them."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DataContextTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DataContextDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -343,11 +345,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Events">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Events}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Events View" />
-                                    <TextBlock Text="Lists all the all routed events in the application, so you can see how they route, and where and/or whether they are handled."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -359,11 +361,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Triggers">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Triggers}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Triggers View" />
-                                    <TextBlock Text="Lists all triggers on currently selected object."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.TriggersTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.TriggersDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -376,11 +378,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Behaviors">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Behaviors}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Behaviors View" />
-                                    <TextBlock Text="Lists all behaviors on currently selected object."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.BehaviorsTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.BehaviorsDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -393,11 +395,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Methods">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Methods}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Methods View" />
-                                    <TextBlock Text="A rudimentary view that lets you call methods on the selected visual or the data context of the selected visual."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.MethodsTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.MethodsDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -410,11 +412,11 @@
 
                 <TabItem Visibility="{Binding Converter={x:Static converters:IsPowerShellAvailableToVisibilityConverter.DefaultInstance}}">
                     <TabItem.Header>
-                        <TextBlock Text="PowerShell">
+                        <TextBlock Text="{localization:InspectorLoc Tab.PowerShell}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="PowerShell View" />
-                                    <TextBlock Text="A view which lets you script the Snooped app using PowerShell."
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PowerShellTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PowerShellDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -426,11 +428,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Debug Listener">
+                        <TextBlock Text="{localization:InspectorLoc Tab.DebugListener}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Debug Listener" />
-                                    <TextBlock Text="Shows and filters debug output from the application being Snooped."
+                                    <TextBlock Text="{localization:InspectorLoc Tab.DebugListener}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DebugListenerDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -454,11 +456,15 @@
                         Margin="2 4 2 0">
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count, StringFormat={}Diagnostics ({0})}">
+                        <TextBlock>
+                            <Run Text="{localization:InspectorLoc Tab.Diagnostics}" />
+                            <Run Text=" (" />
+                            <Run Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count}" />
+                            <Run Text=")" />
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Diagnostics" />
-                                    <TextBlock Text="Lists all available diagnostics."
+                                    <TextBlock Text="{localization:InspectorLoc Tab.Diagnostics}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DiagnosticsDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -470,11 +476,11 @@
 
                 <TabItem>
                     <TabItem.Header>
-                        <TextBlock Text="Preview">
+                        <TextBlock Text="{localization:InspectorLoc Tab.Preview}">
                             <TextBlock.ToolTip>
                                 <StackPanel MaxWidth="300">
-                                    <TextBlock Text="Preview" />
-                                    <TextBlock Text="Previews the currently selected element."
+                                    <TextBlock Text="{localization:InspectorLoc Tab.Preview}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PreviewDescription}"
                                                TextWrapping="Wrap" />
                                 </StackPanel>
                             </TextBlock.ToolTip>
@@ -492,7 +498,7 @@
                        Grid.ColumnSpan="2">
                 <StackPanel Orientation="Horizontal">
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Keyboard.FocusedElement:" />
+                        <TextBlock Text="{localization:InspectorLoc Status.KeyboardFocusedElement}" />
                         <TextBlock Margin="3 0 0 0">
                             <controls:NoFocusHyperlink Command="{x:Static windows:SnoopUI.SelectFocusCommand}"
                                                        CommandParameter="{Binding CurrentFocus}"
@@ -503,14 +509,14 @@
                         <TextBlock Text="; " />
                         <StackPanel.ToolTip>
                             <StackPanel>
-                                <TextBlock Text="This is the object that has keyboard focus." />
-                                <TextBlock Text="Click the link to select this object." />
+                                <TextBlock Text="{localization:InspectorLoc Tooltip.KeyboardFocusDescription}" />
+                                <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
                             </StackPanel>
                         </StackPanel.ToolTip>
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="Current FocusScope:" />
+                        <TextBlock Text="{localization:InspectorLoc Status.CurrentFocusScope}" />
                         <TextBlock Margin="3 0 0 0">
                             <controls:NoFocusHyperlink Command="{x:Static windows:SnoopUI.SelectFocusScopeCommand}"
                                                        CommandParameter="{Binding CurrentFocusScope}"
@@ -520,8 +526,8 @@
                         </TextBlock>
                         <StackPanel.ToolTip>
                             <StackPanel>
-                                <TextBlock Text="This is the object that is the root of the current focus scope." />
-                                <TextBlock Text="Click the link to select this object." />
+                                <TextBlock Text="{localization:InspectorLoc Tooltip.FocusScopeDescription}" />
+                                <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
                             </StackPanel>
                         </StackPanel.ToolTip>
                     </StackPanel>
