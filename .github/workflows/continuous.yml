@@ -14,17 +14,24 @@ on:
 permissions:
   contents: read
 
+# CI has no need to send NUKE telemetry. Opting out avoids the
+# telemetry-only MSBuild project-model load that emits the suppressed
+# NuGet.Frameworks assembly-mismatch warning on the .NET 10 runner.
+# Keep actual build errors and NuGet security auditing enabled.
+env:
+  NUKE_TELEMETRY_OPTOUT: '1'
+
 jobs:
   windows-latest:
     name: windows-latest
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # GitVersion/Nuke need history to determine version information.
           fetch-depth: 0
       - name: Set up .NET SDKs
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           # Retain .NET 6 for the existing legacy WPF test targets.
           dotnet-version: '6.0.400'
@@ -61,12 +68,12 @@ jobs:
           }
       - name: Run './build.cmd CI'
         run: ./build.cmd CI
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: output/test-results
         if: ${{ always() }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: artifacts
           path: artifacts

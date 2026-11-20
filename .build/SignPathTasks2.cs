@@ -65,11 +65,11 @@ public static class SignPathTasks2
 
         using var httpClient = CreateAuthorizedHttpClient(authToken, DefaultHttpClientTimeout);
         var response = await httpClient.PostAsync(
-            GetSignPathAppVeyorIntegrationUrl(organizationId, projectSlug, signingPolicySlug),
+            new Uri(GetSignPathAppVeyorIntegrationUrl(organizationId, projectSlug, signingPolicySlug), UriKind.Absolute),
             new StringContent(content.ToJson(), Encoding.UTF8, contentType));
         response.AssertStatusCode(HttpStatusCode.Created);
 
-        Log.Information("Signing request created: {Url}", response.Headers.Location!.AbsoluteUri.Replace("api/v1", "Web"));
+        Log.Information("Signing request created: {Url}", response.Headers.Location!.AbsoluteUri.Replace("api/v1", "Web", StringComparison.Ordinal));
         return response.Headers.Location.AbsoluteUri;
     }
 
