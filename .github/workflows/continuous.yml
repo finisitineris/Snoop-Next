@@ -39,71 +39,14 @@ jobs:
           $expected = [version]$pinned
           $selectedText = (& dotnet --version).Trim()
           # dotnet --version may include -preview/-rc when allowPrerelease is true.
-          $selectedNumeric = $selectedText -replace '-.*          Write-Host "SDK pinned in global.json: $pinned"
-          Write-Host "SDK selected by dotnet: $selectedText"
-          # global.json uses rollForward=feature: a newer feature band is allowed.
-          if ($selected.Major -ne $expected.Major -or
-              $selected.Minor -ne $expected.Minor -or
-              $selected.Build -lt $expected.Build) {
-            throw "Selected SDK $selectedText does not satisfy global.json SDK $pinned (feature roll-forward)."
-          }
-      - name: Run './build.cmd CI'
-        run: ./build.cmd CI
-      - uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: output/test-results
-        if: ${{ always() }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: artifacts
-, ''
-          if ($selectedNumeric -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?          Write-Host "SDK pinned in global.json: $pinned"
-          Write-Host "SDK selected by dotnet: $selectedText"
-          # global.json uses rollForward=feature: a newer feature band is allowed.
-          if ($selected.Major -ne $expected.Major -or
-              $selected.Minor -ne $expected.Minor -or
-              $selected.Build -lt $expected.Build) {
-            throw "Selected SDK $selectedText does not satisfy global.json SDK $pinned (feature roll-forward)."
-          }
-      - name: Run './build.cmd CI'
-        run: ./build.cmd CI
-      - uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: output/test-results
-        if: ${{ always() }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: artifacts
-) {
+          $selectedNumeric = $selectedText -replace '-.*$', ''
+          if ($selectedNumeric -notmatch '^\d+\.\d+\.\d+(?:\.\d+)?$') {
             throw "Unexpected .NET SDK version format: $selectedText"
           }
           $selected = [version]$selectedNumeric
           # Regression guard: stable and prerelease output must parse identically.
           foreach ($example in @('10.0.400', '10.0.400-preview.1', '10.0.400-rc.2')) {
-            $core = $example -replace '-.*          Write-Host "SDK pinned in global.json: $pinned"
-          Write-Host "SDK selected by dotnet: $selectedText"
-          # global.json uses rollForward=feature: a newer feature band is allowed.
-          if ($selected.Major -ne $expected.Major -or
-              $selected.Minor -ne $expected.Minor -or
-              $selected.Build -lt $expected.Build) {
-            throw "Selected SDK $selectedText does not satisfy global.json SDK $pinned (feature roll-forward)."
-          }
-      - name: Run './build.cmd CI'
-        run: ./build.cmd CI
-      - uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: output/test-results
-        if: ${{ always() }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: artifacts
-, ''
+            $core = $example -replace '-.*$', ''
             if ([version]$core -ne [version]'10.0.400') {
               throw "SDK version parser regression for $example"
             }
