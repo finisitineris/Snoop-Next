@@ -46,7 +46,7 @@ public partial class SettingsView
 
     private void SaveSettingsAndClose_OnClick(object sender, RoutedEventArgs e)
     {
-        Settings.Default.LanguageTag = this.LanguageSelector.SelectedValue as string;
+        Settings.Default.LanguageTag = this.LanguageSelector.SelectedValue as string ?? LanguageTagPolicy.DefaultLanguageTag;
         Settings.Default.Save();
 
         // This code runs on the Snoop-owned Settings window Dispatcher.

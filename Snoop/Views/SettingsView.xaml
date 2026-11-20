@@ -90,7 +90,7 @@
                     <GridViewColumn Width="200"
                                     CellTemplateSelector="{DynamicResource EditorSelector}">
                         <GridViewColumn.Header>
-                            <TextBlock Text="{local:Loc Property.Value}" />
+                            <TextBlock Text="{local:Loc Property.Value}">
                                 <TextBlock.ToolTip>
                                     <TextBlock Text="{local:Loc Property.ValueDescription}" />
                                 </TextBlock.ToolTip>
