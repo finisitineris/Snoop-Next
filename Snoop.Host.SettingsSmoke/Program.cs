@@ -79,17 +79,12 @@ internal static class Program
                 // window or attaching Snoop to any external process. This catches
                 // runtime BAML, static resource, and selector wiring failures.
                 var settingsView = new Snoop.Views.SettingsView();
-            var languagePicker = settingsView.FindName("LanguageSelector") as System.Windows.Controls.ComboBox;
-            if (languagePicker == null)
-            {
-                throw new InvalidOperationException("host SettingsView language selector was not created");
-            }
-
-            Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
-            Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
-                "host picker selection does not match the Snoop host setting");
-            Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
-                "constructing Snoop host SettingsView modified thread UI culture");
+                var languagePicker = FindRequired<System.Windows.Controls.ComboBox>(settingsView, "LanguageSelector");
+                Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
+                Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
+                    "host picker selection does not match the Snoop host setting");
+                Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
+                    "constructing Snoop host SettingsView modified thread UI culture");
                 Console.WriteLine("PASS: host SettingsView BAML loaded and language selector wired on STA");
 
                 // Selecting a new language is a pending edit: no settings file
@@ -98,15 +93,13 @@ internal static class Program
                 Require(Settings.Default.LanguageTag == "zh-CN", "language selection previewed into persisted settings");
                 Require(LocalizationManager.Default.LanguageTag == "zh-CN", "language selection previewed live before Save");
 
-                var discardButton = settingsView.FindName("DiscardSettings") as System.Windows.Controls.Button;
-                Require(discardButton != null, "Discard button was not created");
+                var discardButton = FindRequired<System.Windows.Controls.Button>(settingsView, "DiscardSettings");
                 discardButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 Require(languagePicker.SelectedValue as string == "zh-CN", "Discard did not restore persisted language");
                 Require(LocalizationManager.Default.LanguageTag == "zh-CN", "Discard changed live language");
 
                 languagePicker.SelectedValue = "en-US";
-                var saveButton = settingsView.FindName("SaveSettingsAndClose") as System.Windows.Controls.Button;
-                Require(saveButton != null, "Save button was not created");
+                var saveButton = FindRequired<System.Windows.Controls.Button>(settingsView, "SaveSettingsAndClose");
                 saveButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 Require(Settings.Default.LanguageTag == "en-US", "Save did not commit language setting");
                 Require(LocalizationManager.Default.LanguageTag == "en-US", "Save did not apply live host language");
@@ -115,15 +108,15 @@ internal static class Program
                 // Reset changes the pending value to the default but does not
                 // persist or apply it until Save is clicked.
                 var resetView = new Snoop.Views.SettingsView();
-                var resetPicker = (System.Windows.Controls.ComboBox)resetView.FindName("LanguageSelector");
-                var resetButton = (System.Windows.Controls.Button)resetView.FindName("ResetAllSettings");
+                var resetPicker = FindRequired<System.Windows.Controls.ComboBox>(resetView, "LanguageSelector");
+                var resetButton = FindRequired<System.Windows.Controls.Button>(resetView, "ResetAllSettings");
                 resetButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 Require(resetPicker.SelectedValue as string == "zh-CN", "Reset did not select default language");
                 Require(Settings.Default.LanguageTag == "zh-CN", "Reset did not reset in-memory setting");
                 Require(LocalizationManager.Default.LanguageTag == "en-US", "Reset applied language before Save");
                 Require(File.ReadAllText(file).Contains("<LanguageTag>en-US</LanguageTag>"), "Reset unexpectedly persisted before Save");
 
-                var saveResetButton = (System.Windows.Controls.Button)resetView.FindName("SaveSettingsAndClose");
+                var saveResetButton = FindRequired<System.Windows.Controls.Button>(resetView, "SaveSettingsAndClose");
                 saveResetButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
                 Require(LocalizationManager.Default.LanguageTag == "zh-CN", "Save after Reset did not apply default language");
 
@@ -162,6 +155,19 @@ internal static class Program
                 // Test process still exits; temporary files are non-sensitive.
             }
         }
+    }
+
+
+    private static T FindRequired<T>(System.Windows.FrameworkElement element, string name)
+        where T : class
+    {
+        var result = element.FindName(name) as T;
+        if (result == null)
+        {
+            throw new InvalidOperationException("Required SettingsView control was not found: " + name);
+        }
+
+        return result;
     }
 
     private static void Require(bool result, string description)
