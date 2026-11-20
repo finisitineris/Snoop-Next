@@ -4,6 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:snoop="urn:snoopwpf"
+             xmlns:local="clr-namespace:Snoop.Next.Localization;assembly=Snoop.Next.Localization"
              x:Name="Control"
              d:DesignHeight="450"
              d:DesignWidth="800"
@@ -19,6 +20,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
@@ -68,9 +70,9 @@
                 <GridView>
                     <GridViewColumn Width="200">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Name">
+                            <TextBlock Text="{local:Loc Property.Name}">
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="The name of the property" />
+                                    <TextBlock Text="{local:Loc Property.NameDescription}" />
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </GridViewColumn.Header>
@@ -88,9 +90,9 @@
                     <GridViewColumn Width="200"
                                     CellTemplateSelector="{DynamicResource EditorSelector}">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Value">
+                            <TextBlock Text="{local:Loc Property.Value}" />
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="The value of the property" />
+                                    <TextBlock Text="{local:Loc Property.ValueDescription}" />
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </GridViewColumn.Header>
@@ -99,22 +101,42 @@
             </ListView.View>
         </ListView>
 
+        <!-- Apply language on Save only: selection has no preview side effects.
+             Reset changes the pending choice; Discard restores persisted value. -->
         <StackPanel Grid.Row="1"
+                    Margin="5,8,5,4"
+                    Orientation="Horizontal"
+                    VerticalAlignment="Center">
+            <TextBlock Text="{local:Loc Settings.Language}"
+                       VerticalAlignment="Center"
+                       Margin="5,0,12,0" />
+            <ComboBox x:Name="LanguageSelector"
+                      SelectedValuePath="Tag"
+                      Width="188"
+                      MinHeight="28"
+                      VerticalAlignment="Center">
+                <ComboBoxItem Tag="zh-CN" Content="{local:Loc Settings.Chinese}" />
+                <ComboBoxItem Tag="en-US" Content="{local:Loc Settings.English}" />
+                <ComboBoxItem Tag="system" Content="{local:Loc Settings.FollowSystem}" />
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2"
                     Orientation="Horizontal">
             <Button x:Name="SaveSettingsAndClose"
                     Style="{StaticResource Snoop.Styles.Button.Large}"
                     Click="SaveSettingsAndClose_OnClick">
-                Save &amp; close
+                <TextBlock Text="{local:Loc Settings.SaveAndClose}" />
             </Button>
             <Button x:Name="DiscardSettings"
                     Style="{StaticResource Snoop.Styles.Button.Large}"
                     Click="DiscardSettings_OnClick">
-                Discard changes
+                <TextBlock Text="{local:Loc Settings.DiscardChanges}" />
             </Button>
             <Button x:Name="ResetAllSettings"
                     Style="{StaticResource Snoop.Styles.Button.Large}"
                     Click="ResetAllSettings_OnClick">
-                Reset all settings
+                <TextBlock Text="{local:Loc Settings.ResetAll}" />
             </Button>
         </StackPanel>
     </Grid>

@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using Snoop.Core;
 using Snoop.Data;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 
 [Serializable]
 public sealed class Settings : SettingsBase<Settings>
@@ -16,6 +17,7 @@ public sealed class Settings : SettingsBase<Settings>
     private bool enableDiagnostics = true;
     private KeyGestureEx? globalHotKey = new(Key.F12, ModifierKeys.Control | ModifierKeys.Windows | ModifierKeys.Alt);
     private string? ilSpyPath = "%path%";
+    private string languageTag = LanguageTagPolicy.DefaultLanguageTag;
     private MultipleAppDomainMode multipleAppDomainMode = MultipleAppDomainMode.Ask;
     private MultipleDispatcherMode multipleDispatcherMode = MultipleDispatcherMode.Ask;
     private bool setOwnerWindow = true;
@@ -35,6 +37,27 @@ public sealed class Settings : SettingsBase<Settings>
     public string Version { get; } = typeof(Settings).Assembly.GetName().Version.ToString();
 
     public WINDOWPLACEMENT? AppChooserWindowPlacement { get; set; }
+
+    /// <summary>
+    /// Serialized Snoop host UI language preference, not a change to the
+    /// process, thread, or target application's actual UI culture.
+    /// Missing/invalid legacy values normalize to the default.
+    /// </summary>
+    public string LanguageTag
+    {
+        get => this.languageTag;
+        set
+        {
+            var normalized = LanguageTagPolicy.Normalize(value);
+            if (normalized == this.languageTag)
+            {
+                return;
+            }
+
+            this.languageTag = normalized;
+            this.OnPropertyChanged();
+        }
+    }
 
     public bool SetOwnerWindow
     {
@@ -161,6 +184,7 @@ public sealed class Settings : SettingsBase<Settings>
     {
         this.SetOwnerWindow = settings.SetOwnerWindow;
         this.ShowActivated = settings.ShowActivated;
+        this.LanguageTag = settings.LanguageTag;
         this.EnableDiagnostics = settings.EnableDiagnostics;
 
         this.MultipleDispatcherMode = settings.MultipleDispatcherMode;

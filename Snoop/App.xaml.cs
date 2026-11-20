@@ -7,6 +7,7 @@ namespace Snoop;
 
 using System;
 using System.Windows;
+using Snoop.Next.Localization;
 using Snoop.Windows;
 
 public partial class App
@@ -19,6 +20,9 @@ public partial class App
     /// <inheritdoc />
     protected override void OnStartup(StartupEventArgs e)
     {
+        // Initialize Snoop-owned RESX selection before the StartupUri window loads.
+        // Never set the inspected application's thread/global Culture or resources.
+        LocalizationManager.Default.SetLanguage(Settings.Default.LanguageTag);
         base.OnStartup(e);
 
         this.Resources.MergedDictionaries.Add(new ResourceDictionary { Source = new Uri($"pack://application:,,,/Snoop.Core;component/Icons.xaml") });

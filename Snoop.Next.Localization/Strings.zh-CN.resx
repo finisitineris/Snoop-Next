@@ -21,4 +21,14 @@
   <data name="Shell.Title" xml:space="preserve"><value>Snoop Next</value></data>
   <data name="Status.ElementsSelected" xml:space="preserve"><value>已选中元素：{0}</value></data>
   <data name="Tree.Title" xml:space="preserve"><value>可视化树</value></data>
+  <data name="Settings.Chinese" xml:space="preserve"><value>简体中文</value></data>
+  <data name="Settings.English" xml:space="preserve"><value>英语（美国）</value></data>
+  <data name="Settings.FollowSystem" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="Settings.SaveAndClose" xml:space="preserve"><value>保存并关闭</value></data>
+  <data name="Settings.DiscardChanges" xml:space="preserve"><value>放弃更改</value></data>
+  <data name="Settings.ResetAll" xml:space="preserve"><value>重置所有设置</value></data>
+  <data name="Property.Name" xml:space="preserve"><value>名称</value></data>
+  <data name="Property.Value" xml:space="preserve"><value>值</value></data>
+  <data name="Property.NameDescription" xml:space="preserve"><value>属性名称</value></data>
+  <data name="Property.ValueDescription" xml:space="preserve"><value>属性值</value></data>
 </root>
