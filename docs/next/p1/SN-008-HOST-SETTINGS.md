@@ -14,9 +14,13 @@ It does **not** reference the library from Snoop.Core or InjectorLauncher.
   new language to Snoop-host-owned UI bindings.
 - Discard changes reloads settings from disk and returns the selector to the
   persisted value without applying an uncommitted language.
-- Reset all settings restores the default value into Settings and the picker
-  without preview. Existing Snoop behavior determines whether a later app
-  shutdown saves the reset values; avoid assuming Reset is transactional.
+- Reset all settings resets the other in-memory settings immediately, but
+  preserves the last committed `LanguageTag` in `Settings.Default`. The picker
+  moves to the default `zh-CN` as a pending language choice. Save commits and
+  applies it; Discard reloads the saved settings and restores the picker.
+  Closing the settings view without Discard retains the existing Snoop behavior
+  for other in-memory settings; this PR only guarantees the language choice
+  itself is not committed until Save.
 - Null, legacy, or malformed LanguageTag XML values normalize to zh-CN, with
   case-insensitive canonicalization of supported language tags.
 - This integration localizes initial SettingsView headers, tooltips and
@@ -62,3 +66,22 @@ The targeted CI checks the build output paths and manifest references.
 The full Nuke CI must additionally produce Chocolatey ZIP/nupkg and MSI.
 This proves expected package inclusion, but a separate installation and
 real process attach smoke is required to certify the runtime loader.
+
+
+## SettingsView interaction regression (latest CLR4 smoke)
+
+The host smoke constructs the actual SettingsView on an STA thread and raises
+the real WPF Button Click routed events against a temporary XML settings file.
+It verifies:
+
+- Selecting en-US is pending: persisted setting and live LocalizationManager
+  remain zh-CN.
+- Discard restores the persisted selection.
+- Save writes en-US and applies it to the host LocalizationManager.
+- Reset changes the picker to zh-CN but preserves the last committed
+  LanguageTag and live manager until Save.
+- Save after Reset persists/applies zh-CN.
+
+The smoke restores the original Settings.Default path/value and manager
+language in a finally block. It does not display the window or inject into
+another process.
