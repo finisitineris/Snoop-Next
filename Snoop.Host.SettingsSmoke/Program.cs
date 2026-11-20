@@ -7,8 +7,8 @@ using System.Reflection;
 using System.Threading;
 using Snoop;
 using Snoop.Data;
-using Snoop.Next.Localization;
 using Snoop.Localization;
+using Snoop.Next.Localization;
 using Snoop.Windows;
 
 /// <summary>
@@ -267,7 +267,6 @@ internal static class Program
                     Thread.CurrentThread.CurrentUICulture = inspectorCulture;
                     File.Delete(inspectorSettingsPath);
                 }
-
 
                 Settings.Default.SettingsFile = persistedSettingsPath;
                 Settings.Default.LanguageTag = persistedLanguage;
