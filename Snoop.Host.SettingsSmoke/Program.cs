@@ -3,6 +3,7 @@ namespace Snoop.Host.SettingsSmoke;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using Snoop;
 using Snoop.Data;
@@ -63,6 +64,28 @@ internal static class Program
 
             Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
                 "settings preference modified the thread UI culture");
+
+            var committedHostLanguage = Settings.Default.LanguageTag;
+            try
+            {
+                Settings.Default.LanguageTag = "en-US";
+                var factory = typeof(ProcessInfo).GetMethod(
+                    "CreateTransientSettingsData", BindingFlags.NonPublic | BindingFlags.Static);
+                if (factory == null)
+                {
+                    throw new InvalidOperationException("ProcessInfo transient settings factory was not found");
+                }
+
+                var hostPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
+                    as TransientSettingsData
+                    ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
+                Require(hostPayload.LanguageTag == "en-US",
+                    "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+            }
+            finally
+            {
+                Settings.Default.LanguageTag = committedHostLanguage;
+            }
 
             // The host transports its committed language choice through the
             // existing transient XML channel used by the injector.
