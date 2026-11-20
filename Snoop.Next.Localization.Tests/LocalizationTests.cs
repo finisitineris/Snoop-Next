@@ -8,8 +8,8 @@ using System.Globalization;
 using System.Linq;
 using System.Resources;
 using System.Threading;
-using NUnit.Framework;
 using System.Windows.Data;
+using NUnit.Framework;
 
 [TestFixture]
 public sealed class LocalizationTests
