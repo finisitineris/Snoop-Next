@@ -1,11 +1,18 @@
 namespace Snoop.Next.Localization;
 
 using System;
+using System.Globalization;
 
 /// <summary>Canonical persisted preference values, independent of OS culture.</summary>
 public static class LanguageTagPolicy
 {
     public const string DefaultLanguageTag = "zh-CN";
+
+    /// <summary>Maps a UI culture to the supported text resource language.</summary>
+    public static string GetResourceLanguageTag(CultureInfo uiCulture)
+    {
+        return uiCulture.TwoLetterISOLanguageName == "zh" ? "zh-CN" : "en-US";
+    }
 
     /// <summary>Malformed or missing legacy XML values safely use the default.</summary>
     public static string Normalize(string? languageTag)

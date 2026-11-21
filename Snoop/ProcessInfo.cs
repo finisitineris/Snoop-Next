@@ -2,6 +2,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using Snoop.Data;
@@ -95,7 +96,7 @@ public class ProcessInfo
             // Resolve "system" in the Snoop host. The injected process must
             // not infer its UI language from the inspected app's thread culture.
             LanguageTag = settings.LanguageTag == "system"
-                ? LocalizationManager.Default.EffectiveLanguageTag
+                ? LanguageTagPolicy.GetResourceLanguageTag(CultureInfo.CurrentUICulture)
                 : settings.LanguageTag,
             ILSpyPath = settings.ILSpyPath
         };

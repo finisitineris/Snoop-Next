@@ -42,7 +42,7 @@ public sealed class LocalizationManager : INotifyPropertyChanged
 
     /// <summary>Maps the host's effective UI culture to one of Snoop's supported resource languages.</summary>
     public string EffectiveLanguageTag =>
-        this.uiCulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase) ? "zh-CN" : "en-US";
+        LanguageTagPolicy.GetResourceLanguageTag(this.uiCulture);
 
     public string this[string key]
     {
@@ -53,8 +53,7 @@ public sealed class LocalizationManager : INotifyPropertyChanged
                 throw new ArgumentException("A localization key is required.", nameof(key));
             }
 
-            var value = Resources.GetString(key, this.uiCulture)
-                        ?? Resources.GetString(key, CultureInfo.GetCultureInfo("en-US"));
+            var value = Resources.GetString(key, CultureInfo.GetCultureInfo(this.EffectiveLanguageTag));
             if (value != null)
             {
                 return value;

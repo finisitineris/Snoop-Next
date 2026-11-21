@@ -34,7 +34,7 @@
   <data name="zh-CN.Tooltip.SkipTemplateParts" xml:space="preserve"><value>启用后，跟踪时会尝试跳过模板部件。</value></data>
   <data name="en-US.Menu.IgnoreHitTestVisibility" xml:space="preserve"><value>Ignore hit test visibility</value></data>
   <data name="zh-CN.Menu.IgnoreHitTestVisibility" xml:space="preserve"><value>忽略命中测试可见性</value></data>
-  <data name="en-US.Tooltip.IgnoreHitTestVisibility" xml:space="preserve"><value>When enabled: Tracking also selects UI elements that are have IsHitTestVisible set to false.</value></data>
+  <data name="en-US.Tooltip.IgnoreHitTestVisibility" xml:space="preserve"><value>When enabled: Tracking also selects UI elements that have IsHitTestVisible set to false.</value></data>
   <data name="zh-CN.Tooltip.IgnoreHitTestVisibility" xml:space="preserve"><value>启用后，也会选择 IsHitTestVisible 为 false 的 UI 元素。</value></data>
   <data name="en-US.Menu.HighlightSelectedItem" xml:space="preserve"><value>Highlight selected item</value></data>
   <data name="zh-CN.Menu.HighlightSelectedItem" xml:space="preserve"><value>高亮所选项</value></data>
@@ -44,6 +44,8 @@
   <data name="zh-CN.Menu.Debug" xml:space="preserve"><value>_调试</value></data>
   <data name="en-US.Menu.LaunchDebugger" xml:space="preserve"><value>Launch debugger</value></data>
   <data name="zh-CN.Menu.LaunchDebugger" xml:space="preserve"><value>启动调试器</value></data>
+  <data name="en-US.Menu.SnoopSnoop" xml:space="preserve"><value>Snoop Snoop</value></data>
+  <data name="zh-CN.Menu.SnoopSnoop" xml:space="preserve"><value>检查 Snoop</value></data>
   <data name="en-US.Menu.Version" xml:space="preserve"><value>Version</value></data>
   <data name="zh-CN.Menu.Version" xml:space="preserve"><value>版本</value></data>
   <data name="en-US.Tree.Label" xml:space="preserve"><value>Tree:</value></data>
@@ -76,7 +78,7 @@
   <data name="zh-CN.Tab.Events" xml:space="preserve"><value>事件</value></data>
   <data name="en-US.Tooltip.EventsTitle" xml:space="preserve"><value>Events View</value></data>
   <data name="zh-CN.Tooltip.EventsTitle" xml:space="preserve"><value>事件视图</value></data>
-  <data name="en-US.Tooltip.EventsDescription" xml:space="preserve"><value>Lists all the all routed events in the application, so you can see how they route, and where and/or whether they are handled.</value></data>
+  <data name="en-US.Tooltip.EventsDescription" xml:space="preserve"><value>Lists all routed events in the application, so you can see how they route, and where and/or whether they are handled.</value></data>
   <data name="zh-CN.Tooltip.EventsDescription" xml:space="preserve"><value>列出应用程序中的所有路由事件，查看事件的路由路径以及是否被处理。</value></data>
   <data name="en-US.Tab.Triggers" xml:space="preserve"><value>Triggers</value></data>
   <data name="zh-CN.Tab.Triggers" xml:space="preserve"><value>触发器</value></data>

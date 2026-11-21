@@ -166,12 +166,25 @@
                 <MenuItem Header="{localization:InspectorLoc Menu.Debug}">
                     <MenuItem Header="{localization:InspectorLoc Menu.LaunchDebugger}"
                               Click="HandleLaunchDebugger_OnClick" />
-                    <MenuItem Header="Snoop Snoop"
+                    <MenuItem x:Name="InspectSnoopMenuItem"
+                              Header="{localization:InspectorLoc Menu.SnoopSnoop}"
                               Click="HandleSnoopSnoop_OnClick" />
                 </MenuItem>
                 <MenuItem Header="?">
-                    <MenuItem x:Name="snoopVersion"
-                              Click="HandleSnoopVersion_OnClick" />
+                    <MenuItem Click="HandleSnoopVersion_OnClick">
+                        <MenuItem.Header>
+                            <TextBlock x:Name="SnoopVersionHeader">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0}: {1}">
+                                        <Binding Path="[Menu.Version]"
+                                                 Source="{x:Static localization:InspectorLocalization.Default}"
+                                                 Mode="OneWay" />
+                                        <Binding Source="{x:Static windows:SnoopUI.AssemblyVersion}" Mode="OneTime" />
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
+                        </MenuItem.Header>
+                    </MenuItem>
                 </MenuItem>
             </Menu>
             <StackPanel HorizontalAlignment="Right"
@@ -205,12 +218,10 @@
                       infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
                       IsEditable="True"
                       Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
-                <ComboBoxItem>
-                    <TextBlock Text="{localization:InspectorLoc Tooltip.ClearFilter}" />
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="{localization:InspectorLoc Tooltip.ShowBindingErrors}" />
-                </ComboBoxItem>
+                <ComboBoxItem x:Name="ClearTreeFilterItem"
+                              Content="{localization:InspectorLoc Tooltip.ClearFilter}" />
+                <ComboBoxItem x:Name="BindingErrorsFilterItem"
+                              Content="{localization:InspectorLoc Tooltip.ShowBindingErrors}" />
                 <ComboBox.ToolTip>
                     <TextBlock Text="{localization:InspectorLoc Tooltip.FilterByNameOrType}" />
                 </ComboBox.ToolTip>
