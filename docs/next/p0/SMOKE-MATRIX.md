@@ -27,3 +27,14 @@ Use the repository-owned HelloWorld target for the secondary AppDomain reattach 
 4. Click **Refresh target state** in both HelloWorld windows and compare the displayed cultures, resource markers, and counts with step 1. Close the primary HelloWorld window to finish.
 
 Record the Snoop and harness artifact links, Windows and CLR versions, PID, and the result for each AppDomain. Mark the row after running the real attach/detach/reattach sequence.
+
+## CLR4 multi-Dispatcher language reattach
+
+Use the repository-owned CLR4 x64 `sn009-clr4-multi-dispatcher-harness` artifact from `next-harness-build` for [SN-009 #17](https://github.com/finisitineris/Snoop-Next/issues/17).
+
+1. Extract the artifact and run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that **Primary** and **Secondary** have the same PID and AppDomain ID and different STA thread IDs. Record both windows' culture values and the shared application resource marker and counts shown by Primary.
+2. In Snoop settings, set `MultipleDispatcherMode` to `Ask` or `AlwaysUse` and save English as the UI language. Open the workbench for that fixture PID. If prompted to enter multiple Dispatcher mode, choose **Yes**. Confirm that both workbenches show **File**. Use the target tree to identify `PrimaryDispatcherWindow` and `SecondaryDispatcherWindow`.
+3. Close both workbenches while leaving both fixture windows open. Save Simplified Chinese in Snoop and reattach to the same PID in multiple Dispatcher mode. Both workbenches should now show **文件** and still inspect the separate target windows.
+4. Select **Refresh target state** on both fixture windows. Compare cultures and Primary's shared application resource marker and counts with step 1. Confirm both targets remain responsive, then close the workbenches and fixture windows.
+
+Record the MSI and fixture artifact links, Windows and CLR versions, same PID and AppDomain, distinct thread IDs, both workbench languages, and the culture and resource comparison. Keep the manual result pending until the real attach and reattach sequence is complete.
