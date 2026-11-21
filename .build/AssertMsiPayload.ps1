@@ -116,4 +116,4 @@ if ($problems.Count -gt 0) {
     $problems | ForEach-Object { Write-Host "  $_" }
     throw "MSI payload verification failed with $($problems.Count) mismatches."
 }
-Write-Host "Verified $($requiredPaths.Count) required MSI install paths."
+Write-Host "Verified $($requiredPaths.Count) required MSI install paths across $($actualPaths.Count) File table entries under INSTALLDIR."
