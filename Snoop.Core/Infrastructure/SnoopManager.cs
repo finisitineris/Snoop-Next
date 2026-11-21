@@ -32,7 +32,8 @@ public class SnoopCrossAppDomainInjector : MarshalByRefObject
 
     private void RunInCurrentAppDomain(string settingsFile)
     {
-        var settingsData = TransientSettingsData.LoadCurrentIfRequired(settingsFile);
+        // A secondary AppDomain can outlive an attachment and still hold its settings.
+        var settingsData = TransientSettingsData.LoadCurrent(settingsFile);
         new SnoopManager().RunInCurrentAppDomain(settingsData);
     }
 }

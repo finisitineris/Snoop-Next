@@ -63,6 +63,8 @@ internal static class Program
             Require(Snoop.Core.Settings.Default.SettingsFile == inspectorFile,
                 "inspector settings did not use the temporary settings root");
 
+            AppDomainLanguageSmoke.Verify(Path.GetDirectoryName(file)!);
+
             var settings = new Settings { SettingsFile = file };
             Require(settings.LanguageTag == "zh-CN", "default language must be zh-CN");
 
