@@ -10,6 +10,8 @@ on:
   pull_request:
     branches:
       - develop
+      - feat/sn-008-host-language-settings
+      - feat/sn-009-transient-language-transport
 
 permissions:
   contents: read
