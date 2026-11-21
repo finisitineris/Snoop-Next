@@ -43,7 +43,7 @@ internal static class AppDomainLanguageSmoke
     private static void VerifyReattach()
     {
         // With no presentation source, the actual callback initializes localization without creating an inspector window.
-        if (PresentationSource.CurrentSources.GetEnumerator().MoveNext())
+        foreach (var source in PresentationSource.CurrentSources)
         {
             throw new InvalidOperationException("The secondary AppDomain smoke test requires a windowless AppDomain.");
         }
