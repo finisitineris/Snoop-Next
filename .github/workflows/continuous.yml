@@ -70,12 +70,22 @@ jobs:
           }
       - name: Run './build.cmd CI'
         run: ./build.cmd CI
+      - name: Verify packaged MSI payload
+        id: verify-msi
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem -LiteralPath artifacts -File -Filter 'Snoop.*.msi')
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one generated Snoop MSI, found $($packages.Count)."
+          }
+          ./.build/AssertMsiPayload.ps1 -MsiPath $packages[0].FullName
       - uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: output/test-results
         if: ${{ always() }}
       - uses: actions/upload-artifact@v7
+        if: ${{ success() || steps.verify-msi.outcome == 'failure' }}
         with:
           name: artifacts
           path: artifacts

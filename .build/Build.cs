@@ -286,7 +286,11 @@ class Build : NukeBuild
         .Executes(() =>
         {
             var outputFile = $"{ArtifactsDirectory / $"{ProjectName}.{SemVer}.msi"}";
-            ProcessTasks.StartProcess("dotnet", $"wix build -bindpath \"{CurrentBuildOutputDirectory}\" -define ProductVersion=\"{MajorMinorPatch}\" -ext {WixUIExtension} -o \"{outputFile}\" -nologo {ProjectName}.wxs")
+            // WiX 7 resolves relative Files globs from the .wxs source directory.
+            var arguments = $"wix build -bindpath \"{CurrentBuildOutputDirectory}\" " +
+                            $"-define BuildOutputDirectory=\"{CurrentBuildOutputDirectory}\" -define ProductVersion=\"{MajorMinorPatch}\" " +
+                            $"-ext {WixUIExtension} -o \"{outputFile}\" -nologo {ProjectName}.wxs";
+            ProcessTasks.StartProcess("dotnet", arguments)
                 .AssertZeroExitCode();
             CheckSumFiles.Add(outputFile);
             AppVeyor.Instance?.PushArtifact(outputFile);
