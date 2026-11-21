@@ -77,11 +77,19 @@ runtime acceptance gate.
 
 ### Host "system" preference transport semantics
 
-For a newly attached inspector, \`ProcessInfo.CreateTransientSettingsData\`
-resolves the host's \`system\` preference to the supported resource tag
-(\`zh-CN\` when the host UI culture is Chinese, otherwise \`en-US\`) **before**
-crossing the process boundary. This prevents the inspected application's
-thread culture from influencing the Snoop chrome. Legacy transient payloads
-without a language field still default to \`system\`; the injected manager's
-legacy fallback uses \`CultureInfo.InstalledUICulture\` without mutating the
-target thread.
+`ProcessInfo.CreateTransientSettingsData` resolves the persisted `system`
+preference from the current Snoop host thread's UI culture. The GUI and
+command-line entry points use the same rule, including when the live GUI
+localization manager has not been initialized. Both the host RESX lookup
+and the outgoing payload use `zh-CN` for Chinese cultures (including
+`zh-TW`) and `en-US` for other cultures. The host keeps the original
+UI culture for formatting.
+
+Legacy payloads without a language field default to `system`. The
+inspector resolves those payloads from `CultureInfo.InstalledUICulture`
+without changing the inspected thread's culture.
+
+The isolated Windows smoke uses temporary host and inspector settings.
+It verifies the actual workbench's bilingual filter commands, ordinary
+tree search and live version header without displaying a window or
+attaching to another process.
