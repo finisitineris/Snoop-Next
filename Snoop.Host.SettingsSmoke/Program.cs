@@ -3,8 +3,10 @@ namespace Snoop.Host.SettingsSmoke;
 using System;
 using System.Globalization;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using Snoop;
+using Snoop.Data;
 using Snoop.Next.Localization;
 
 /// <summary>
@@ -62,6 +64,61 @@ internal static class Program
 
             Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
                 "settings preference modified the thread UI culture");
+
+            var committedHostLanguage = Settings.Default.LanguageTag;
+            try
+            {
+                Settings.Default.LanguageTag = "en-US";
+                var factory = typeof(ProcessInfo).GetMethod(
+                    "CreateTransientSettingsData", BindingFlags.NonPublic | BindingFlags.Static);
+                if (factory == null)
+                {
+                    throw new InvalidOperationException("ProcessInfo transient settings factory was not found");
+                }
+
+                var hostPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
+                    as TransientSettingsData
+                    ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
+                Require(hostPayload.LanguageTag == "en-US",
+                    "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+            }
+            finally
+            {
+                Settings.Default.LanguageTag = committedHostLanguage;
+            }
+
+            // The host transports its committed language choice through the
+            // existing transient XML channel used by the injector.
+            var transient = new TransientSettingsData { LanguageTag = "en-US" };
+            var transientPath = transient.WriteToFile();
+            try
+            {
+                var transientXml = File.ReadAllText(transientPath);
+                Require(transientXml.Contains("<LanguageTag>en-US</LanguageTag>"),
+                    "transient settings XML did not include LanguageTag");
+
+                var transientSerializer = new System.Xml.Serialization.XmlSerializer(typeof(TransientSettingsData));
+                using (var stream = File.OpenRead(transientPath))
+                {
+                    var loadedTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
+                        ?? throw new InvalidOperationException("Transient settings could not be deserialized");
+                    Require(loadedTransient.LanguageTag == "en-US", "transient language preference did not round-trip");
+                }
+
+                // Old host XML has no LanguageTag; the new injector side must
+                // safely default to system rather than fail deserialization.
+                var legacyTransientXml = transientXml.Replace("<LanguageTag>en-US</LanguageTag>", string.Empty);
+                using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(legacyTransientXml)))
+                {
+                    var legacyTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
+                        ?? throw new InvalidOperationException("Legacy transient settings could not be deserialized");
+                    Require(legacyTransient.LanguageTag == "system", "legacy transient XML did not default to system");
+                }
+            }
+            finally
+            {
+                File.Delete(transientPath);
+            }
 
             // Exercise the actual host settings view against a temporary
             // settings file. No real user profile settings are read or changed.

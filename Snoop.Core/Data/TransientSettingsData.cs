@@ -31,6 +31,12 @@ public sealed class TransientSettingsData
 
     public bool EnableDiagnostics { get; set; } = true;
 
+    /// <summary>
+    /// Host-selected Snoop UI language. Defaults to system for older callers
+    /// and transient XML files that predate this field.
+    /// </summary>
+    public string LanguageTag { get; set; } = "system";
+
     public string? SnoopInstallPath { get; set; } = Environment.GetEnvironmentVariable(SettingsHelper.SNOOP_INSTALL_PATH_ENV_VAR);
 
     public string WriteToFile()
