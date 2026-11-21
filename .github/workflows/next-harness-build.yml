@@ -48,3 +48,8 @@ jobs:
           name: sn004-compile-manifest
           path: output/next-harness-build/manifest.json
           if-no-files-found: warn
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sn009-clr4-multi-appdomain-harness
+          path: output/next-harness-build/HelloWorld/net462/x64/
+          if-no-files-found: error

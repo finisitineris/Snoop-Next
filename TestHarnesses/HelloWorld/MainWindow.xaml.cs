@@ -5,6 +5,10 @@
         public MainWindow()
         {
             this.InitializeComponent();
+
+#if NETFRAMEWORK
+            MultiAppDomainFixture.StartIfRequested(this);
+#endif
         }
     }
 }
