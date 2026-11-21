@@ -4,27 +4,65 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Snoop;
 using Snoop.Data;
+using Snoop.Localization;
 using Snoop.Next.Localization;
+using Snoop.Windows;
 
 /// <summary>
-/// Tests Snoop's host-only XML preference without launching any WPF inspector,
-/// network endpoint, process attachment, or injection. The runner may have a
-/// newer .NET Framework 4.x installed; this is not a 4.6.2-only runtime test.
+/// Tests host language preferences and WPF controls without displaying windows
+/// or attaching to another process. This can run on newer .NET Framework 4.x runtimes.
 /// </summary>
 internal static class Program
 {
     [STAThread]
     private static int Main()
     {
+        const string settingsRootVariable = Snoop.Core.SettingsHelper.SNOOP_SETTINGS_PATH_ENV_VAR;
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
         var file = Path.Combine(path, "SnoopSettings.xml");
+        var originalSettingsRoot = Environment.GetEnvironmentVariable(settingsRootVariable);
+        try
+        {
+            // Seed both settings lookups before touching the settings singletons.
+            var appSettings = Directory.CreateDirectory(Path.Combine(path, "AppSettings"));
+            var inspectorFile = Path.Combine(appSettings.FullName, $"{Snoop.Core.EnvironmentEx.CurrentProcessName}.xml");
+            File.WriteAllText(file, "<Settings />");
+            File.WriteAllText(inspectorFile, "<Settings />");
+            Environment.SetEnvironmentVariable(settingsRootVariable, path);
+            return RunSmoke(file, inspectorFile);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(settingsRootVariable, originalSettingsRoot);
+            try
+            {
+                if (Directory.Exists(path))
+                {
+                    Directory.Delete(path, true);
+                }
+            }
+            catch (IOException)
+            {
+                // Test process still exits; temporary files are non-sensitive.
+            }
+        }
+    }
+
+    // Keep the JIT from initializing the settings singletons before Main sets the temporary root.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int RunSmoke(string file, string inspectorFile)
+    {
         var originalCulture = Thread.CurrentThread.CurrentUICulture;
         try
         {
-            Directory.CreateDirectory(path);
+            Require(Settings.Default.SettingsFile == file, "host settings did not use the temporary settings root");
+            Require(Snoop.Core.Settings.Default.SettingsFile == inspectorFile,
+                "inspector settings did not use the temporary settings root");
+
             var settings = new Settings { SettingsFile = file };
             Require(settings.LanguageTag == "zh-CN", "default language must be zh-CN");
 
@@ -66,9 +104,10 @@ internal static class Program
                 "settings preference modified the thread UI culture");
 
             var committedHostLanguage = Settings.Default.LanguageTag;
+            var committedManagerLanguage = LocalizationManager.Default.LanguageTag;
+            var originalHostCulture = Thread.CurrentThread.CurrentUICulture;
             try
             {
-                Settings.Default.LanguageTag = "en-US";
                 var factory = typeof(ProcessInfo).GetMethod(
                     "CreateTransientSettingsData", BindingFlags.NonPublic | BindingFlags.Static);
                 if (factory == null)
@@ -76,15 +115,40 @@ internal static class Program
                     throw new InvalidOperationException("ProcessInfo transient settings factory was not found");
                 }
 
+                Settings.Default.LanguageTag = "en-US";
+                LocalizationManager.Default.SetLanguage("en-US");
                 var hostPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
                     as TransientSettingsData
                     ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
                 Require(hostPayload.LanguageTag == "en-US",
                     "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+
+                // The CLI does not run App.OnStartup to initialize the live manager.
+                LocalizationManager.Default.SetLanguage("zh-CN");
+                Settings.Default.LanguageTag = "system";
+                var systemCases = new[]
+                {
+                    new { Culture = "de-DE", ExpectedTag = "en-US" },
+                    new { Culture = "zh-TW", ExpectedTag = "zh-CN" }
+                };
+                foreach (var systemCase in systemCases)
+                {
+                    var culture = systemCase.Culture;
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(culture);
+                    var systemPayload = factory.Invoke(null, new object[] { SnoopStartTarget.SnoopUI, IntPtr.Zero })
+                        as TransientSettingsData
+                        ?? throw new InvalidOperationException("ProcessInfo did not create system-language payload");
+                    Require(systemPayload.LanguageTag == systemCase.ExpectedTag,
+                        "ProcessInfo did not resolve the supported system language for " + culture);
+                    Require(Thread.CurrentThread.CurrentUICulture.Name == culture,
+                        "resolving system language modified the host thread CurrentUICulture");
+                }
             }
             finally
             {
+                Thread.CurrentThread.CurrentUICulture = originalHostCulture;
                 Settings.Default.LanguageTag = committedHostLanguage;
+                LocalizationManager.Default.SetLanguage(committedManagerLanguage);
             }
 
             // The host transports its committed language choice through the
@@ -179,6 +243,102 @@ internal static class Program
 
                 Console.WriteLine("PASS: SettingsView pending selection, Save, Discard and Reset behavior");
 
+                // Exercise Snoop.Core's actual inspector XAML in this isolated
+                // process. No other WPF application is attached or injected.
+                var inspectorCulture = Thread.CurrentThread.CurrentUICulture;
+                var inspectorSettingsPath = new TransientSettingsData { LanguageTag = "zh-CN" }.WriteToFile();
+                try
+                {
+                    var loadedInspectorSettings = TransientSettingsData.LoadCurrent(inspectorSettingsPath);
+                    InspectorLocalization.Default.InitializeFrom(loadedInspectorSettings);
+
+                    var coreAssembly = typeof(SnoopUI).Assembly;
+                    var resourceNames = coreAssembly.GetManifestResourceNames();
+                    Require(Array.IndexOf(resourceNames, "Snoop.Localization.InspectorStrings.resources") >= 0,
+                        "inspector strings were not embedded into Snoop.Core");
+                    Require(!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "zh-CN", "Snoop.Core.resources.dll")),
+                        "inspector localization unexpectedly emitted a satellite assembly");
+
+                    var resourceManager = new System.Resources.ResourceManager(
+                        "Snoop.Localization.InspectorStrings", coreAssembly);
+                    var resourceSet = resourceManager.GetResourceSet(CultureInfo.InvariantCulture, true, true);
+                    if (resourceSet == null)
+                    {
+                        throw new InvalidOperationException("embedded inspector resource set was not found");
+                    }
+
+                    var resourceKeys = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+                    var resourceEnumerator = resourceSet.GetEnumerator();
+                    while (resourceEnumerator.MoveNext())
+                    {
+                        resourceKeys.Add((string)resourceEnumerator.Key);
+                    }
+
+                    var englishKeyCount = 0;
+                    foreach (var key in resourceKeys)
+                    {
+                        if (key.StartsWith("en-US.", StringComparison.Ordinal))
+                        {
+                            englishKeyCount++;
+                            Require(resourceKeys.Contains("zh-CN." + key.Substring("en-US.".Length)),
+                                "missing zh-CN inspector resource for " + key);
+                        }
+                    }
+
+                    Require(englishKeyCount == 64, "unexpected number of paired inspector resource keys");
+
+                    var app = System.Windows.Application.Current
+                        ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+                    Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
+                    var inspector = new SnoopUI();
+                    try
+                    {
+                        var fileMenu = FindRequired<System.Windows.Controls.MenuItem>(inspector, "FileMenuItem");
+                        var treeHeader = FindRequired<System.Windows.Controls.Label>(inspector, "TreeHeaderLabel");
+                        var inspectSnoop = FindRequired<System.Windows.Controls.MenuItem>(inspector, "InspectSnoopMenuItem");
+                        var versionHeader = FindRequired<System.Windows.Controls.TextBlock>(inspector, "SnoopVersionHeader");
+                        var version = coreAssembly.GetName().Version;
+                        Require(inspectSnoop.Header as string == "检查 Snoop", "SnoopUI did not localize the self-inspection command");
+                        Require(versionHeader.Text == $"版本: {version}", "SnoopUI did not localize the version header");
+                        Require(fileMenu.Header as string == "文件", "SnoopUI did not load the zh-CN File menu resource");
+                        Require(treeHeader.Content as string == "可视化树：", "SnoopUI did not load the zh-CN tree header");
+                        Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
+                            "inspector localization modified the inspected thread CurrentUICulture");
+
+                        InspectorLocalization.Default.SetLanguage("en-US");
+                        System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(
+                            System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() => { }));
+                        Require(fileMenu.Header as string == "File", "SnoopUI File menu did not live-switch to en-US");
+                        Require(treeHeader.Content as string == "Tree:", "SnoopUI tree header did not live-switch to en-US");
+                        Require(inspectSnoop.Header as string == "Snoop Snoop", "self-inspection command did not live-switch to en-US");
+                        Require(versionHeader.Text == $"Version: {version}", "version header did not live-switch to en-US");
+
+                        InspectorLocalization.Default.SetLanguage("system");
+                        var expectedSystemFile = CultureInfo.InstalledUICulture.Name.StartsWith("zh", StringComparison.OrdinalIgnoreCase)
+                            ? "文件"
+                            : "File";
+                        Require(fileMenu.Header as string == expectedSystemFile,
+                            "system language did not resolve independently of target thread culture");
+                        Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
+                            "system language resolution changed the inspected thread CurrentUICulture");
+
+                        InspectorFilterSmoke.Verify(inspector);
+                    }
+                    finally
+                    {
+                        inspector.Close();
+                        app.Shutdown();
+                    }
+
+                    Thread.CurrentThread.CurrentUICulture = inspectorCulture;
+                    Console.WriteLine("PASS: SnoopUI embedded EN/ZH resources, live bindings and target thread culture isolation");
+                }
+                finally
+                {
+                    Thread.CurrentThread.CurrentUICulture = inspectorCulture;
+                    File.Delete(inspectorSettingsPath);
+                }
+
                 Settings.Default.SettingsFile = persistedSettingsPath;
                 Settings.Default.LanguageTag = persistedLanguage;
                 LocalizationManager.Default.SetLanguage(originalManagerLanguage);
@@ -197,20 +357,6 @@ internal static class Program
         {
             Console.Error.WriteLine("FAIL: " + ex);
             return 1;
-        }
-        finally
-        {
-            try
-            {
-                if (Directory.Exists(path))
-                {
-                    Directory.Delete(path, true);
-                }
-            }
-            catch (IOException)
-            {
-                // Test process still exits; temporary files are non-sensitive.
-            }
         }
     }
 

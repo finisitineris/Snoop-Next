@@ -33,4 +33,10 @@
   <PropertyGroup Condition="'$(TargetFramework)' != '$(MinTargetFramework)'">
     <!--<DefineConstants>$(DefineConstants);USE_WPF_BINDING_DIAG</DefineConstants>-->
   </PropertyGroup>
+  <ItemGroup>
+    <!-- A single neutral RESX with EN/ZH key pairs: no satellite or extra runtime DLL. -->
+    <EmbeddedResource Update="Localization\\InspectorStrings.resx">
+      <LogicalName>Snoop.Localization.InspectorStrings.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

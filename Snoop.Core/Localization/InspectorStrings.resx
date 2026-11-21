@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="en-US.Menu.File" xml:space="preserve"><value>File</value></data>
+  <data name="zh-CN.Menu.File" xml:space="preserve"><value>文件</value></data>
+  <data name="en-US.Menu.CloseWindow" xml:space="preserve"><value>Close window</value></data>
+  <data name="zh-CN.Menu.CloseWindow" xml:space="preserve"><value>关闭窗口</value></data>
+  <data name="en-US.Menu.Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="zh-CN.Menu.Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="en-US.Menu.MakeSettingsApplicationSpecific" xml:space="preserve"><value>Make settings application specific</value></data>
+  <data name="zh-CN.Menu.MakeSettingsApplicationSpecific" xml:space="preserve"><value>将设置应用于当前应用</value></data>
+  <data name="en-US.Menu.DeleteApplicationSpecificSettings" xml:space="preserve"><value>Delete application specific settings</value></data>
+  <data name="zh-CN.Menu.DeleteApplicationSpecificSettings" xml:space="preserve"><value>删除当前应用专属设置</value></data>
+  <data name="en-US.Menu.OpenSettingsFolder" xml:space="preserve"><value>Open settings folder</value></data>
+  <data name="zh-CN.Menu.OpenSettingsFolder" xml:space="preserve"><value>打开设置文件夹</value></data>
+  <data name="en-US.Menu.ResetSettings" xml:space="preserve"><value>Reset settings</value></data>
+  <data name="zh-CN.Menu.ResetSettings" xml:space="preserve"><value>重置设置</value></data>
+  <data name="en-US.Menu.TrackingOptions" xml:space="preserve"><value>_Tracking options</value></data>
+  <data name="zh-CN.Menu.TrackingOptions" xml:space="preserve"><value>_跟踪选项</value></data>
+  <data name="en-US.Menu.TrackOnMouseMove" xml:space="preserve"><value>Track on mouse move when CTRL + _SHIFT is pressed</value></data>
+  <data name="zh-CN.Menu.TrackOnMouseMove" xml:space="preserve"><value>按住 CTRL + _SHIFT 时在鼠标移动时跟踪</value></data>
+  <data name="en-US.Tooltip.TrackOnMouseMove" xml:space="preserve"><value>When enabled and CTRL + _SHIFT is pressed tracks all parts of the UI.</value></data>
+  <data name="zh-CN.Tooltip.TrackOnMouseMove" xml:space="preserve"><value>启用后，按住 CTRL + SHIFT 并移动鼠标时跟踪界面中的所有元素。</value></data>
+  <data name="en-US.Menu.TrackOnClick" xml:space="preserve"><value>Track on click</value></data>
+  <data name="zh-CN.Menu.TrackOnClick" xml:space="preserve"><value>单击时跟踪</value></data>
+  <data name="en-US.Tooltip.TrackOnClick" xml:space="preserve"><value>When enabled, automatically tracks UI elements when left clicked.</value></data>
+  <data name="zh-CN.Tooltip.TrackOnClick" xml:space="preserve"><value>启用后，单击鼠标左键时自动跟踪 UI 元素。</value></data>
+  <data name="en-US.Menu.SkipTemplateParts" xml:space="preserve"><value>Skip template parts</value></data>
+  <data name="zh-CN.Menu.SkipTemplateParts" xml:space="preserve"><value>跳过模板部件</value></data>
+  <data name="en-US.Tooltip.SkipTemplateParts" xml:space="preserve"><value>When enabled: Tracking tries to skip template parts.</value></data>
+  <data name="zh-CN.Tooltip.SkipTemplateParts" xml:space="preserve"><value>启用后，跟踪时会尝试跳过模板部件。</value></data>
+  <data name="en-US.Menu.IgnoreHitTestVisibility" xml:space="preserve"><value>Ignore hit test visibility</value></data>
+  <data name="zh-CN.Menu.IgnoreHitTestVisibility" xml:space="preserve"><value>忽略命中测试可见性</value></data>
+  <data name="en-US.Tooltip.IgnoreHitTestVisibility" xml:space="preserve"><value>When enabled: Tracking also selects UI elements that have IsHitTestVisible set to false.</value></data>
+  <data name="zh-CN.Tooltip.IgnoreHitTestVisibility" xml:space="preserve"><value>启用后，也会选择 IsHitTestVisible 为 false 的 UI 元素。</value></data>
+  <data name="en-US.Menu.HighlightSelectedItem" xml:space="preserve"><value>Highlight selected item</value></data>
+  <data name="zh-CN.Menu.HighlightSelectedItem" xml:space="preserve"><value>高亮所选项</value></data>
+  <data name="en-US.Menu.HighlightOptions" xml:space="preserve"><value>Highlight options ...</value></data>
+  <data name="zh-CN.Menu.HighlightOptions" xml:space="preserve"><value>高亮选项…</value></data>
+  <data name="en-US.Menu.Debug" xml:space="preserve"><value>_Debug</value></data>
+  <data name="zh-CN.Menu.Debug" xml:space="preserve"><value>_调试</value></data>
+  <data name="en-US.Menu.LaunchDebugger" xml:space="preserve"><value>Launch debugger</value></data>
+  <data name="zh-CN.Menu.LaunchDebugger" xml:space="preserve"><value>启动调试器</value></data>
+  <data name="en-US.Menu.SnoopSnoop" xml:space="preserve"><value>Snoop Snoop</value></data>
+  <data name="zh-CN.Menu.SnoopSnoop" xml:space="preserve"><value>检查 Snoop</value></data>
+  <data name="en-US.Menu.Version" xml:space="preserve"><value>Version</value></data>
+  <data name="zh-CN.Menu.Version" xml:space="preserve"><value>版本</value></data>
+  <data name="en-US.Tree.Label" xml:space="preserve"><value>Tree:</value></data>
+  <data name="zh-CN.Tree.Label" xml:space="preserve"><value>可视化树：</value></data>
+  <data name="en-US.Theme.Label" xml:space="preserve"><value>Theme:</value></data>
+  <data name="zh-CN.Theme.Label" xml:space="preserve"><value>主题：</value></data>
+  <data name="en-US.Tooltip.ClearFilter" xml:space="preserve"><value>Clear any filter applied to the tree view</value></data>
+  <data name="zh-CN.Tooltip.ClearFilter" xml:space="preserve"><value>清除应用于可视化树的筛选条件</value></data>
+  <data name="en-US.Tooltip.ShowBindingErrors" xml:space="preserve"><value>Show only elements with binding errors</value></data>
+  <data name="zh-CN.Tooltip.ShowBindingErrors" xml:space="preserve"><value>仅显示存在绑定错误的元素</value></data>
+  <data name="en-US.Tooltip.FilterByNameOrType" xml:space="preserve"><value>Enter text in the combo box to filter the tree view by name or type</value></data>
+  <data name="zh-CN.Tooltip.FilterByNameOrType" xml:space="preserve"><value>在组合框中输入文本，按名称或类型筛选可视化树</value></data>
+  <data name="en-US.Tooltip.RefreshTree" xml:space="preserve"><value>Refresh the tree view</value></data>
+  <data name="zh-CN.Tooltip.RefreshTree" xml:space="preserve"><value>刷新可视化树</value></data>
+  <data name="en-US.Tooltip.TreeSelect" xml:space="preserve"><value>Hold down Ctrl + Shift and mouse over elements in the target app to select them.</value></data>
+  <data name="zh-CN.Tooltip.TreeSelect" xml:space="preserve"><value>在目标应用中按住 Ctrl + Shift 并将鼠标悬停在元素上以选择它们。</value></data>
+  <data name="en-US.Tab.Properties" xml:space="preserve"><value>Properties</value></data>
+  <data name="zh-CN.Tab.Properties" xml:space="preserve"><value>属性</value></data>
+  <data name="en-US.Tooltip.PropertiesTitle" xml:space="preserve"><value>Properties View</value></data>
+  <data name="zh-CN.Tooltip.PropertiesTitle" xml:space="preserve"><value>属性视图</value></data>
+  <data name="en-US.Tooltip.PropertiesDescription" xml:space="preserve"><value>Lists all the properties of the currently selected object. You can even edit these properties or right-click and then delve into them.</value></data>
+  <data name="zh-CN.Tooltip.PropertiesDescription" xml:space="preserve"><value>列出当前选中对象的所有属性。你可以编辑这些属性，或右键进一步检查。</value></data>
+  <data name="en-US.Tab.DataContext" xml:space="preserve"><value>Data Context</value></data>
+  <data name="zh-CN.Tab.DataContext" xml:space="preserve"><value>数据上下文</value></data>
+  <data name="en-US.Tooltip.DataContextTitle" xml:space="preserve"><value>Data Context View</value></data>
+  <data name="zh-CN.Tooltip.DataContextTitle" xml:space="preserve"><value>数据上下文视图</value></data>
+  <data name="en-US.Tooltip.DataContextDescription" xml:space="preserve"><value>Lists all the properties of the DataContext of the currently selected object. You can even edit these properties or right-click and then delve into them.</value></data>
+  <data name="zh-CN.Tooltip.DataContextDescription" xml:space="preserve"><value>列出当前选中对象的 DataContext 的所有属性。你可以编辑这些属性，或右键进一步检查。</value></data>
+  <data name="en-US.Tab.Events" xml:space="preserve"><value>Events</value></data>
+  <data name="zh-CN.Tab.Events" xml:space="preserve"><value>事件</value></data>
+  <data name="en-US.Tooltip.EventsTitle" xml:space="preserve"><value>Events View</value></data>
+  <data name="zh-CN.Tooltip.EventsTitle" xml:space="preserve"><value>事件视图</value></data>
+  <data name="en-US.Tooltip.EventsDescription" xml:space="preserve"><value>Lists all routed events in the application, so you can see how they route, and where and/or whether they are handled.</value></data>
+  <data name="zh-CN.Tooltip.EventsDescription" xml:space="preserve"><value>列出应用程序中的所有路由事件，查看事件的路由路径以及是否被处理。</value></data>
+  <data name="en-US.Tab.Triggers" xml:space="preserve"><value>Triggers</value></data>
+  <data name="zh-CN.Tab.Triggers" xml:space="preserve"><value>触发器</value></data>
+  <data name="en-US.Tooltip.TriggersTitle" xml:space="preserve"><value>Triggers View</value></data>
+  <data name="zh-CN.Tooltip.TriggersTitle" xml:space="preserve"><value>触发器视图</value></data>
+  <data name="en-US.Tooltip.TriggersDescription" xml:space="preserve"><value>Lists all triggers on currently selected object.</value></data>
+  <data name="zh-CN.Tooltip.TriggersDescription" xml:space="preserve"><value>列出当前选中对象上的所有触发器。</value></data>
+  <data name="en-US.Tab.Behaviors" xml:space="preserve"><value>Behaviors</value></data>
+  <data name="zh-CN.Tab.Behaviors" xml:space="preserve"><value>行为</value></data>
+  <data name="en-US.Tooltip.BehaviorsTitle" xml:space="preserve"><value>Behaviors View</value></data>
+  <data name="zh-CN.Tooltip.BehaviorsTitle" xml:space="preserve"><value>行为视图</value></data>
+  <data name="en-US.Tooltip.BehaviorsDescription" xml:space="preserve"><value>Lists all behaviors on currently selected object.</value></data>
+  <data name="zh-CN.Tooltip.BehaviorsDescription" xml:space="preserve"><value>列出当前选中对象上的所有行为。</value></data>
+  <data name="en-US.Tab.Methods" xml:space="preserve"><value>Methods</value></data>
+  <data name="zh-CN.Tab.Methods" xml:space="preserve"><value>方法</value></data>
+  <data name="en-US.Tooltip.MethodsTitle" xml:space="preserve"><value>Methods View</value></data>
+  <data name="zh-CN.Tooltip.MethodsTitle" xml:space="preserve"><value>方法视图</value></data>
+  <data name="en-US.Tooltip.MethodsDescription" xml:space="preserve"><value>A rudimentary view that lets you call methods on the selected visual or the data context of the selected visual.</value></data>
+  <data name="zh-CN.Tooltip.MethodsDescription" xml:space="preserve"><value>一个基础视图，可调用所选可视元素或其 DataContext 的方法。</value></data>
+  <data name="en-US.Tab.PowerShell" xml:space="preserve"><value>PowerShell</value></data>
+  <data name="zh-CN.Tab.PowerShell" xml:space="preserve"><value>PowerShell</value></data>
+  <data name="en-US.Tooltip.PowerShellTitle" xml:space="preserve"><value>PowerShell View</value></data>
+  <data name="zh-CN.Tooltip.PowerShellTitle" xml:space="preserve"><value>PowerShell 视图</value></data>
+  <data name="en-US.Tooltip.PowerShellDescription" xml:space="preserve"><value>A view which lets you script the Snooped app using PowerShell.</value></data>
+  <data name="zh-CN.Tooltip.PowerShellDescription" xml:space="preserve"><value>使用 PowerShell 对正在检查的应用进行脚本操作的视图。</value></data>
+  <data name="en-US.Tab.DebugListener" xml:space="preserve"><value>Debug Listener</value></data>
+  <data name="zh-CN.Tab.DebugListener" xml:space="preserve"><value>调试侦听器</value></data>
+  <data name="en-US.Tooltip.DebugListenerTitle" xml:space="preserve"><value>Debug Listener</value></data>
+  <data name="zh-CN.Tooltip.DebugListenerTitle" xml:space="preserve"><value>调试侦听器</value></data>
+  <data name="en-US.Tooltip.DebugListenerDescription" xml:space="preserve"><value>Shows and filters debug output from the application being Snooped.</value></data>
+  <data name="zh-CN.Tooltip.DebugListenerDescription" xml:space="preserve"><value>显示并筛选被检查应用输出的调试信息。</value></data>
+  <data name="en-US.Tab.Diagnostics" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="zh-CN.Tab.Diagnostics" xml:space="preserve"><value>诊断</value></data>
+  <data name="en-US.Tooltip.DiagnosticsTitle" xml:space="preserve"><value>Diagnostics</value></data>
+  <data name="zh-CN.Tooltip.DiagnosticsTitle" xml:space="preserve"><value>诊断</value></data>
+  <data name="en-US.Tooltip.DiagnosticsDescription" xml:space="preserve"><value>Lists all available diagnostics.</value></data>
+  <data name="zh-CN.Tooltip.DiagnosticsDescription" xml:space="preserve"><value>列出所有可用诊断信息。</value></data>
+  <data name="en-US.Tab.Preview" xml:space="preserve"><value>Preview</value></data>
+  <data name="zh-CN.Tab.Preview" xml:space="preserve"><value>预览</value></data>
+  <data name="en-US.Tooltip.PreviewTitle" xml:space="preserve"><value>Preview</value></data>
+  <data name="zh-CN.Tooltip.PreviewTitle" xml:space="preserve"><value>预览</value></data>
+  <data name="en-US.Tooltip.PreviewDescription" xml:space="preserve"><value>Previews the currently selected element.</value></data>
+  <data name="zh-CN.Tooltip.PreviewDescription" xml:space="preserve"><value>预览当前选中的元素。</value></data>
+  <data name="en-US.Status.KeyboardFocusedElement" xml:space="preserve"><value>Keyboard.FocusedElement:</value></data>
+  <data name="zh-CN.Status.KeyboardFocusedElement" xml:space="preserve"><value>键盘焦点元素：</value></data>
+  <data name="en-US.Tooltip.KeyboardFocusDescription" xml:space="preserve"><value>This is the object that has keyboard focus.</value></data>
+  <data name="zh-CN.Tooltip.KeyboardFocusDescription" xml:space="preserve"><value>这是当前拥有键盘焦点的对象。</value></data>
+  <data name="en-US.Tooltip.ClickLinkToSelect" xml:space="preserve"><value>Click the link to select this object.</value></data>
+  <data name="zh-CN.Tooltip.ClickLinkToSelect" xml:space="preserve"><value>单击链接以选择此对象。</value></data>
+  <data name="en-US.Status.CurrentFocusScope" xml:space="preserve"><value>Current FocusScope:</value></data>
+  <data name="zh-CN.Status.CurrentFocusScope" xml:space="preserve"><value>当前焦点范围：</value></data>
+  <data name="en-US.Tooltip.FocusScopeDescription" xml:space="preserve"><value>This is the object that is the root of the current focus scope.</value></data>
+  <data name="zh-CN.Tooltip.FocusScopeDescription" xml:space="preserve"><value>这是当前焦点范围的根对象。</value></data>
+</root>

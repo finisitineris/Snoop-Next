@@ -90,13 +90,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             this.EnqueueAfterSettingFilter();
             this.filterTimer.Stop();
         };
-
-        {
-            this.snoopVersion.Header = $"Version: {this.GetType().Assembly.GetName().Version}";
-        }
     }
 
     #region Public Properties
+
+    public static Version? AssemblyVersion { get; } = typeof(SnoopUI).Assembly.GetName().Version;
 
     #region Tree
 
@@ -839,12 +837,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         this.TreeItems.Clear();
 
-        // cplotts todo: we've got to come up with a better way to do this.
-        if (this.filter == "Clear any filter applied to the tree view")
+        if (this.filterComboBox.SelectedItem == this.ClearTreeFilterItem)
         {
             this.SetFilter(string.Empty);
         }
-        else if (this.filter == "Show only elements with binding errors")
+        else if (this.filterComboBox.SelectedItem == this.BindingErrorsFilterItem)
         {
             this.FilterBindings(this.RootTreeItem!);
         }
@@ -1024,7 +1021,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleSnoopVersion_OnClick(object sender, RoutedEventArgs e)
     {
-        ClipboardHelper.SetText((string)this.snoopVersion.Header);
+        ClipboardHelper.SetText(this.SnoopVersionHeader.Text);
     }
 }
 

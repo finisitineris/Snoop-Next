@@ -29,6 +29,28 @@ public sealed class LocalizationTests
         Assert.That(changes.Count(x => x == "Item[]"), Is.EqualTo(2));
     }
 
+    [TestCase("de-DE", "en-US", "Attach")]
+    [TestCase("zh-CN", "zh-CN", "附加")]
+    [TestCase("zh-TW", "zh-CN", "附加")]
+    public void SystemPreferenceUsesTheSameResourceLanguageAsTheInspectorPayload(
+        string cultureName, string expectedLanguageTag, string expectedLabel)
+    {
+        var original = Thread.CurrentThread.CurrentUICulture;
+        try
+        {
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo(cultureName);
+            var manager = new LocalizationManager("system");
+
+            Assert.That(manager.EffectiveLanguageTag, Is.EqualTo(expectedLanguageTag));
+            Assert.That(manager["Process.Attach"], Is.EqualTo(expectedLabel));
+            Assert.That(manager.UICulture.Name, Is.EqualTo(cultureName));
+        }
+        finally
+        {
+            Thread.CurrentThread.CurrentUICulture = original;
+        }
+    }
+
     [Test]
     public void UnknownKeyIsDiagnosable()
     {
