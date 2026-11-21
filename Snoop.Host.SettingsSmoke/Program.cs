@@ -325,6 +325,7 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
+                        InspectorDispatcherSmoke.Verify(app, fileMenu);
                     }
                     finally
                     {
