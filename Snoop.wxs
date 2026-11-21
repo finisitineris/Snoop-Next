@@ -18,10 +18,12 @@
 
         <Feature Id="ProductFeature" Title="Snoop" Description="Snoop, the WPF Spying Utility" Level="1"
                  ConfigurableDirectory="INSTALLDIR">
-            <Files Directory="net462" Include="net462/Snoop.*" />
-            <Files Directory="net462" Include="net462/System.Management.Automation.dll" />
+            <Files Directory="net462" Include="$(var.BuildOutputDirectory)\net462\Snoop.*" />
+            <Files Directory="net462" Include="$(var.BuildOutputDirectory)\net462\System.Management.Automation.dll" />
 
-            <Files Directory="net60" Include="net6.0-windows/Snoop.*" />
+            <Files Directory="net60" Include="$(var.BuildOutputDirectory)\net6.0-windows\Snoop.*" />
+
+            <Files Directory="SnoopHostZhCn" Include="$(var.BuildOutputDirectory)\zh-CN\Snoop.Next.Localization.resources.dll" />
 
             <ComponentGroupRef Id="MainFiles"/>
 
@@ -30,16 +32,19 @@
         </Feature>
 
         <ComponentGroup Id="MainFiles" Directory="INSTALLDIR">
-            <Files Include="Snoop.GenericInjector.*.dll" />
-            <Files Include="Snoop.GenericInjector.*.pdb" />
-            <Files Include="Snoop.InjectorLauncher.*.json" />
-            <Files Include="Snoop.InjectorLauncher.*.dll" />
-            <Files Include="Snoop.InjectorLauncher.*.dll.config" />
-            <Files Include="Snoop.InjectorLauncher.*.exe" />
-            <Files Include="Snoop.InjectorLauncher.*.exe.config" />
-            <Files Include="Snoop.InjectorLauncher.*.pdb" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.GenericInjector.*.dll" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.GenericInjector.*.pdb" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.json" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.dll" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.dll.config" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.exe" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.exe.config" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.InjectorLauncher.*.pdb" />
 
-            <Files Include="Snoop.Core.*" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.Core.*" />
+
+            <!-- Host-side RESX library: do not include in net462/net6 injected core directories. -->
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.Next.Localization.dll" />
 
             <File Source="Snoop.exe">
                 <Shortcut Id="desktopSnoopShortcut" Directory="DesktopFolder" Name="Snoop"
@@ -48,18 +53,19 @@
                           WorkingDirectory="INSTALLDIR" Icon="Snoop.exe" IconIndex="0" Advertise="yes"/>
             </File>
 
-            <Files Include="Snoop.exe.config" />
-            <Files Include="Snoop.pdb" />
-            <Files Include="Snoop.com" />
-            <Files Include="Snoop.com.config" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.exe.config" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.pdb" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.com" />
+            <Files Include="$(var.BuildOutputDirectory)\Snoop.com.config" />
 
-            <Files Include="CommandLine.dll" />
+            <Files Include="$(var.BuildOutputDirectory)\CommandLine.dll" />
         </ComponentGroup>
 
         <StandardDirectory Id="ProgramFilesFolder">
             <Directory Id="INSTALLDIR" Name="Snoop">
                 <Directory Id="net462" Name="net462" />
                 <Directory Id="net60" Name="net6.0-windows" />
+                <Directory Id="SnoopHostZhCn" Name="zh-CN" />
 
                 <Directory Id="SnoopScriptsFolder" Name="Scripts">
                     <Component Id="SnoopScriptsComponent" Guid="65AD97C3-5B32-4020-892C-1D0E38656D6D">

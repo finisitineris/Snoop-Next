@@ -8,6 +8,12 @@ on:
       - 'Snoop.Next.Localization/**'
       - 'Snoop.Next.Localization.Tests/**'
       - 'Snoop.Next.Localization.Demo/**'
+      - 'Snoop.Host.SettingsSmoke/**'
+      - 'Snoop/Snoop.csproj'
+      - 'Snoop/Settings.cs'
+      - 'Snoop/App.xaml.cs'
+      - 'Snoop/Views/SettingsView.xaml'
+      - 'Snoop/Views/SettingsView.xaml.cs'
   workflow_dispatch:
 
 permissions:
@@ -36,6 +42,46 @@ jobs:
         run: |
           dotnet build Snoop.Next.Localization.Demo/Snoop.Next.Localization.Demo.csproj -c Release --nologo
           if ($LASTEXITCODE -ne 0) { throw 'WPF localization demo compilation failed' }
+      - name: Build and run host settings XML smoke (CLR4 only, no injection)
+        shell: pwsh
+        run: |
+          $project = 'Snoop.Host.SettingsSmoke/Snoop.Host.SettingsSmoke.csproj'
+          dotnet build $project -c Release --nologo
+          if ($LASTEXITCODE -ne 0) { throw 'Snoop host settings smoke compilation failed' }
+          $smoke = 'bin/Release/net462/Snoop.Host.SettingsSmoke.exe'
+          if (-not (Test-Path $smoke)) { throw "Missing CLR4 smoke executable: $smoke" }
+          & $smoke
+          if ($LASTEXITCODE -ne 0) { throw 'Snoop host settings XML smoke failed' }
+      - name: Check host-side DLL and explicit install manifests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($file in @(
+            'bin/Release/Snoop.Next.Localization.dll',
+            'bin/Release/zh-CN/Snoop.Next.Localization.resources.dll')) {
+            if (-not (Test-Path $file)) { throw "Missing host localization output: $file" }
+          }
+
+          $choco = Get-Content 'chocolatey/snoop.nuspec' -Raw
+          $wix = Get-Content 'Snoop.wxs' -Raw
+          if ($choco -notmatch 'Snoop.Next.Localization.dll' -or
+              $choco -notmatch 'zh-CN\\Snoop.Next.Localization.resources.dll' -or
+              $wix -notmatch 'Snoop.Next.Localization.dll' -or
+              $wix -notmatch 'SnoopHostZhCn') {
+            throw 'Host localization DLL or satellite resources absent from explicit package manifests'
+          }
+
+          Write-Host 'Host localization DLL and zh-CN satellite resources are included in explicit packaging manifests'
+      - name: Verify localization reference is host-only
+        shell: pwsh
+        run: |
+          $hostProj = Get-Content 'Snoop/Snoop.csproj' -Raw
+          if ($hostProj -notmatch 'Snoop.Next.Localization.csproj') { throw 'Host project reference missing' }
+          foreach ($file in @('Snoop.Core/Snoop.Core.csproj', 'Snoop.InjectorLauncher/Snoop.InjectorLauncher.csproj')) {
+            $source = Get-Content $file -Raw
+            if ($source -match 'Snoop.Next.Localization') { throw "Injected project unexpectedly references localization: $file" }
+          }
+          Write-Host 'Localization project reference is host-only in source projects'
       - name: Run isolated localization tests (no injection)
         shell: pwsh
         run: |

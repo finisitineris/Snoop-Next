@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 
 public partial class SettingsView
 {
@@ -28,6 +29,9 @@ public partial class SettingsView
     {
         this.InitializeComponent();
 
+        // This selector is a pending preference; no live preview until Save.
+        this.LanguageSelector.SelectedValue = Settings.Default.LanguageTag;
+
         this.Properties = new ObservableCollection<PropertyInformation>(TypeDescriptor.GetProperties(Settings.Default)
             .OfType<PropertyDescriptor>()
             .Where(x => realSettingsProperties.Contains(x.Name))
@@ -42,7 +46,11 @@ public partial class SettingsView
 
     private void SaveSettingsAndClose_OnClick(object sender, RoutedEventArgs e)
     {
+        Settings.Default.LanguageTag = this.LanguageSelector.SelectedValue as string ?? LanguageTagPolicy.DefaultLanguageTag;
         Settings.Default.Save();
+
+        // This code runs on the Snoop-owned Settings window Dispatcher.
+        LocalizationManager.Default.SetLanguage(Settings.Default.LanguageTag);
 
         if (Window.GetWindow(this) is { } ownerWindow)
         {
@@ -54,10 +62,17 @@ public partial class SettingsView
     private void DiscardSettings_OnClick(object sender, RoutedEventArgs e)
     {
         Settings.Default.Reload();
+        this.LanguageSelector.SelectedValue = Settings.Default.LanguageTag;
     }
 
     private void ResetAllSettings_OnClick(object sender, RoutedEventArgs e)
     {
+        // Reset the rest of the settings immediately, but keep the persisted
+        // language as the committed value until the user clicks Save. The
+        // picker represents the pending default language in the meantime.
+        var persistedLanguageTag = Settings.Default.LanguageTag;
         Settings.Default.Reset();
+        Settings.Default.LanguageTag = persistedLanguageTag;
+        this.LanguageSelector.SelectedValue = LanguageTagPolicy.DefaultLanguageTag;
     }
 }

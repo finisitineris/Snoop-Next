@@ -21,4 +21,14 @@
   <data name="Shell.Title" xml:space="preserve"><value>Snoop Next</value></data>
   <data name="Status.ElementsSelected" xml:space="preserve"><value>Selected elements: {0}</value></data>
   <data name="Tree.Title" xml:space="preserve"><value>Visual tree</value></data>
+  <data name="Settings.Chinese" xml:space="preserve"><value>Chinese (Simplified)</value></data>
+  <data name="Settings.English" xml:space="preserve"><value>English (United States)</value></data>
+  <data name="Settings.FollowSystem" xml:space="preserve"><value>Follow system</value></data>
+  <data name="Settings.SaveAndClose" xml:space="preserve"><value>Save &amp; close</value></data>
+  <data name="Settings.DiscardChanges" xml:space="preserve"><value>Discard changes</value></data>
+  <data name="Settings.ResetAll" xml:space="preserve"><value>Reset all settings</value></data>
+  <data name="Property.Name" xml:space="preserve"><value>Name</value></data>
+  <data name="Property.Value" xml:space="preserve"><value>Value</value></data>
+  <data name="Property.NameDescription" xml:space="preserve"><value>The name of the property</value></data>
+  <data name="Property.ValueDescription" xml:space="preserve"><value>The value of the property</value></data>
 </root>
