@@ -20,7 +20,14 @@
 
             <DataTemplate DataType="{x:Type diagnostics:DiagnosticProvider}">
                 <CheckBox IsChecked="{Binding IsActive}">
-                    <TextBlock Text="{Binding Name}" />
+                    <TextBlock>
+                        <TextBlock.Text>
+                            <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}">
+                                <Binding />
+                                <Binding Path="EffectiveLanguageTag" Source="{x:Static localization:InspectorLocalization.Default}" />
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
                 </CheckBox>
             </DataTemplate>
 
@@ -90,7 +97,7 @@
                                           IsSynchronizedWithCurrentItem="True"
                                           ItemsSource="{Binding ElementName=self, Path=DiagnosticProvidersView}"
                                           ResetSettingsCommand="{x:Static views:DiagnosticsView.ResetEnabledDiagnosticsToDefaultCommand}"
-                                          ResetSettingsToolTip="{localization:InspectorLoc Diagnostics.ResetProvidersTip}">
+                                          ResetSettingsToolTip="{localization:InspectorLoc Common.ResetDefaults}">
                 <controls:NoSelectionComboBox.ToolTip>
                     <TextBlock Text="{localization:InspectorLoc Diagnostics.ChooseProvidersTip}" />
                 </controls:NoSelectionComboBox.ToolTip>
@@ -135,10 +142,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="diagnostics:DiagnosticItem">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Level, Mode=OneWay}">
-                                        <TextBlock.ToolTip>
-                                            <TextBlock Text="{Binding Level}" />
-                                        </TextBlock.ToolTip>
+                                    <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}">
+                                                <Binding Path="Level" />
+                                                <Binding Path="EffectiveLanguageTag" Source="{x:Static localization:InspectorLocalization.Default}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
                             </DataTemplate>
@@ -158,10 +168,14 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="diagnostics:DiagnosticItem">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Name, Mode=OneWay}">
-                                        <TextBlock.ToolTip>
-                                            <TextBlock Text="{Binding Name}" />
-                                        </TextBlock.ToolTip>
+                                    <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}"
+                                                          ConverterParameter="Name">
+                                                <Binding />
+                                                <Binding Path="EffectiveLanguageTag" Source="{x:Static localization:InspectorLocalization.Default}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
                             </DataTemplate>
@@ -181,10 +195,14 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="diagnostics:DiagnosticItem">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Description, Mode=OneWay}">
-                                        <TextBlock.ToolTip>
-                                            <TextBlock Text="{Binding Description}" />
-                                        </TextBlock.ToolTip>
+                                    <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}"
+                                                          ConverterParameter="Description">
+                                                <Binding />
+                                                <Binding Path="EffectiveLanguageTag" Source="{x:Static localization:InspectorLocalization.Default}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
                             </DataTemplate>
@@ -204,10 +222,13 @@
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="diagnostics:DiagnosticItem">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding Area, Mode=OneWay}">
-                                        <TextBlock.ToolTip>
-                                            <TextBlock Text="{Binding Area}" />
-                                        </TextBlock.ToolTip>
+                                    <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                        <TextBlock.Text>
+                                            <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}">
+                                                <Binding Path="Area" />
+                                                <Binding Path="EffectiveLanguageTag" Source="{x:Static localization:InspectorLocalization.Default}" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
                             </DataTemplate>

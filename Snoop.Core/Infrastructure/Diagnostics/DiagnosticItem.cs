@@ -13,6 +13,8 @@ public class DiagnosticItem : INotifyPropertyChanged
         this.DiagnosticProvider = diagnosticProvider;
         this.Name = name ?? diagnosticProvider.Name;
         this.Description = description ?? diagnosticProvider.Description;
+        this.UsesProviderName = name is null;
+        this.UsesProviderDescription = description is null;
         this.Area = area;
         this.Level = level;
     }
@@ -26,6 +28,16 @@ public class DiagnosticItem : INotifyPropertyChanged
     public string Name { get; }
 
     public string Description { get; }
+
+    internal bool UsesProviderName { get; }
+
+    internal bool UsesProviderDescription { get; }
+
+    internal string? DisplayNameResourceKey { get; set; }
+
+    internal string? DisplayDescriptionResourceKey { get; set; }
+
+    internal object[]? DisplayDescriptionArguments { get; set; }
 
     public object? SourceObject { get; set; }
 

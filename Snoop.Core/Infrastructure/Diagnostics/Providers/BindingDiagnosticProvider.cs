@@ -13,7 +13,10 @@ namespace Snoop.Infrastructure.Diagnostics.Providers
         {
             foreach (var failedBinding in BindingDiagnosticHelper.Instance.FailedBindings)
             {
-                yield return new(this, "Binding error", failedBinding.Messages, DiagnosticArea.Binding, DiagnosticLevel.Error);
+                yield return new(this, "Binding error", failedBinding.Messages, DiagnosticArea.Binding, DiagnosticLevel.Error)
+                {
+                    DisplayNameResourceKey = "Diagnostics.Result.BindingError"
+                };
             }
         }
     }

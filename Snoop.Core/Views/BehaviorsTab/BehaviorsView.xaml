@@ -4,6 +4,7 @@
       xmlns:controls="clr-namespace:Snoop.Controls"
       xmlns:converters="clr-namespace:Snoop.Converters"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:localization="clr-namespace:Snoop.Localization"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:snoop="clr-namespace:Snoop"
       x:Name="behaviorView"
@@ -29,7 +30,7 @@
 
     <TextBlock HorizontalAlignment="Center"
                VerticalAlignment="Center"
-               Text="The element has no behaviors"
+               Text="{localization:InspectorLoc Behaviors.NoBehaviors}"
                Visibility="{Binding HasBehaviors, ElementName=behaviorView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}"
                Opacity="0.6" />
 </Grid>

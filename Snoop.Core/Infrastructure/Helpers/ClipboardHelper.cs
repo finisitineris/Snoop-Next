@@ -2,6 +2,7 @@
 
 using System;
 using System.Windows;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public static class ClipboardHelper
@@ -14,7 +15,8 @@ public static class ClipboardHelper
         }
         catch (Exception exception)
         {
-            ErrorDialog.ShowExceptionMessageBox(exception, "Error copying to clipboard", "There was an error copying to the clipboard.\nPlease copy the error details from the above textbox manually.");
+            var localization = InspectorLocalization.Default;
+            ErrorDialog.ShowExceptionMessageBox(exception, localization["Clipboard.CopyFailedTitle"], localization["Clipboard.CopyFailedMessage"]);
         }
     }
 }

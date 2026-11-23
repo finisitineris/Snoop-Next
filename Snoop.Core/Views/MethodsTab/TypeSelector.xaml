@@ -8,6 +8,7 @@
                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                         xmlns:localization="clr-namespace:Snoop.Localization"
                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                          xmlns:windows="clr-namespace:Snoop.Windows"
                          d:DesignHeight="173"
@@ -29,7 +30,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Click="ButtonCreateInstance_Click"
-                Content="Create Instance" />
+                Content="{localization:InspectorLoc Methods.CreateInstance}" />
         <Button Name="buttonCancel"
                 Width="130"
                 Height="30"
@@ -37,6 +38,6 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Click="ButtonCancel_Click"
-                Content="Cancel" />
+                Content="{localization:InspectorLoc Common.Cancel}" />
     </Grid>
 </windows:SnoopBaseWindow>

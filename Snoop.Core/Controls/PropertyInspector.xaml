@@ -152,28 +152,28 @@
                     <TextBlock Text="{localization:InspectorLoc PropertyInspector.FilterSetTip}" />
                 </ComboBox.ToolTip>
             </ComboBox>
-            <ToggleButton Width="18"
+            <ToggleButton x:Name="defaultsToggle"
+                          MinWidth="18"
                           Height="18"
                           Margin="0 0 2 0"
                           Padding="0"
                           IsChecked="{Binding ElementName=propertyInspector, Path=ShowDefaults}">
-                <TextBlock FontWeight="Bold">
-                    D
-                </TextBlock>
+                <TextBlock FontWeight="Bold"
+                           Text="{localization:InspectorLoc PropertyInspector.ShowDefaultsBadge}" />
                 <ToggleButton.ToolTip>
                     <TextBlock MaxWidth="300"
                                Text="{localization:InspectorLoc PropertyInspector.ShowDefaultsTip}"
                                TextWrapping="Wrap" />
                 </ToggleButton.ToolTip>
             </ToggleButton>
-            <ToggleButton Width="18"
+            <ToggleButton x:Name="uncommonToggle"
+                          MinWidth="18"
                           Height="18"
                           Margin="0 0 2 0"
                           Padding="0"
                           IsChecked="{Binding ElementName=propertyInspector, Path=ShowUncommonProperties}">
-                <TextBlock FontWeight="Bold">
-                    U
-                </TextBlock>
+                <TextBlock FontWeight="Bold"
+                           Text="{localization:InspectorLoc PropertyInspector.ShowUncommonBadge}" />
                 <ToggleButton.ToolTip>
                     <TextBlock MaxWidth="300"
                                Text="{localization:InspectorLoc PropertyInspector.ShowUncommonTip}"

@@ -3,9 +3,10 @@
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                          xmlns:details="clr-namespace:Snoop.Controls.ValueEditors.Details"
+                         xmlns:localization="clr-namespace:Snoop.Localization"
                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                          xmlns:windows="clr-namespace:Snoop.Windows"
-                         Title="Value editor"
+                         Title="{localization:InspectorLoc ValueEditor.Title}"
                          Width="480"
                          Height="320"
                          mc:Ignorable="d">
@@ -23,14 +24,12 @@
                     Orientation="Horizontal">
             <Button Margin="2"
                     HorizontalAlignment="Right"
-                    Click="ChangeValue_OnClick">
-                Change value
-            </Button>
+                    Click="ChangeValue_OnClick"
+                    Content="{localization:InspectorLoc ValueEditor.ChangeValue}" />
             <Button Margin="2"
                     HorizontalAlignment="Right"
-                    Click="Cancel_OnClick">
-                Cancel
-            </Button>
+                    Click="Cancel_OnClick"
+                    Content="{localization:InspectorLoc Common.Cancel}" />
         </StackPanel>
     </Grid>
 </windows:SnoopBaseWindow>

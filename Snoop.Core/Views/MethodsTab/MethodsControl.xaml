@@ -10,6 +10,7 @@
              xmlns:controls="clr-namespace:Snoop.Controls"
              xmlns:converters="clr-namespace:Snoop.Converters"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:methodsTab="clr-namespace:Snoop.Views.MethodsTab"
              xmlns:snoop="clr-namespace:Snoop"
@@ -90,14 +91,14 @@
                         Height="25"
                         HorizontalAlignment="Left"
                         Command="{Binding CreateCustomParameterCommand}">
-                    <TextBlock Text="Create/Modify Parameter" />
+                    <TextBlock Text="{localization:InspectorLoc Methods.CreateOrModifyParameter}" />
                 </Button>
                 <Button Grid.Column="2"
                         Width="150"
                         Height="25"
                         HorizontalAlignment="Left"
                         Command="{Binding NullOutParameterCommand}">
-                    <TextBlock Text="Clear Parameter" />
+                    <TextBlock Text="{localization:InspectorLoc Methods.ClearParameter}" />
                 </Button>
                 <TextBlock Grid.Column="3"
                            VerticalAlignment="Center"
@@ -124,7 +125,7 @@
                     Margin="0 0 15 0"
                     VerticalAlignment="Center"
                     Click="ChangeTarget_Click">
-                <TextBlock Text="Change Target" />
+                <TextBlock Text="{localization:InspectorLoc Methods.ChangeTarget}" />
             </Button>
 
             <Grid VerticalAlignment="Center">
@@ -136,7 +137,7 @@
                 <TextBlock Grid.Row="0"
                            VerticalAlignment="Center"
                            FontWeight="Bold"
-                           Text="Current Target:" />
+                           Text="{localization:InspectorLoc Methods.CurrentTarget}" />
                 <TextBlock Grid.Row="1"
                            VerticalAlignment="Center"
                            Text="{Binding Path=Target, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type methodsTab:MethodsControl}}}" />
@@ -145,7 +146,7 @@
 
         <CheckBox x:Name="checkBoxUseDataContext"
                   Grid.Row="1">
-            <TextBlock Text="Use DataContext Property" />
+            <TextBlock Text="{localization:InspectorLoc Methods.UseDataContext}" />
         </CheckBox>
 
         <StackPanel Grid.Row="2"
@@ -153,7 +154,7 @@
             <TextBlock Margin="0 0 5 0"
                        VerticalAlignment="Center"
                        FontWeight="Bold"
-                       Text="Method:" />
+                       Text="{localization:InspectorLoc Methods.Method}" />
             <ComboBox x:Name="comboBoxMethods"
                       Width="350"
                       Height="25" />
@@ -165,7 +166,7 @@
                     Visibility="Collapsed">
             <TextBlock Margin="0 0 0 10"
                        FontWeight="Bold"
-                       Text="Parameters:" />
+                       Text="{localization:InspectorLoc Methods.Parameters}" />
             <ItemsControl x:Name="itemsControlParameters"
                           Grid.Row="1"
                           Margin="0 10 0 0"
@@ -177,7 +178,7 @@
                 Height="25"
                 HorizontalAlignment="Left"
                 Click="InvokeMethodClick">
-            <TextBlock Text="Invoke" />
+            <TextBlock Text="{localization:InspectorLoc Methods.Invoke}" />
         </Button>
 
         <StackPanel x:Name="resultStringContainer"
@@ -189,7 +190,7 @@
                        Margin="0 0 5 0"
                        VerticalAlignment="Center"
                        FontWeight="Bold"
-                       Text="Result as string:" />
+                       Text="{localization:InspectorLoc Methods.ResultAsString}" />
             <TextBox x:Name="textBlockResult"
                      Grid.Row="3"
                      VerticalAlignment="Center"
@@ -207,7 +208,7 @@
             </Grid.RowDefinitions>
 
             <TextBlock FontWeight="Bold"
-                       Text="Result Properties:" />
+                       Text="{localization:InspectorLoc Methods.ResultProperties}" />
             <controls:PropertyInspector x:Name="propertyInspector"
                                         Grid.Row="1" />
         </Grid>

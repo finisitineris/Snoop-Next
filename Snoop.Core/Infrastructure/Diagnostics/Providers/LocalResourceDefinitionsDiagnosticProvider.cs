@@ -46,30 +46,46 @@ public class LocalResourceDefinitionsDiagnosticProvider : DiagnosticProvider
                     switch (localValue)
                     {
                         case Brush brush when brush != Brushes.Transparent:
+                        {
+                            var propertyName = dpd.DisplayName;
+                            var localValueText = $"{localValue}";
+
                             yield return
                                 new(this,
                                     "Local brush",
-                                    $"Property '{dpd.DisplayName}' contains the local brush '{localValue}'. Prevent local brushes to keep the design maintainable.",
+                                    $"Property '{propertyName}' contains the local brush '{localValueText}'. Prevent local brushes to keep the design maintainable.",
                                     DiagnosticArea.Maintainability)
                                 {
+                                    DisplayNameResourceKey = "Diagnostics.Result.LocalBrush",
+                                    DisplayDescriptionResourceKey = "Diagnostics.Result.LocalBrushDescription",
+                                    DisplayDescriptionArguments = new object[] { propertyName, localValueText },
                                     TreeItem = treeItem,
                                     Dispatcher = dependencyObject.Dispatcher,
                                     SourceObject = dependencyObject
                                 };
                             break;
+                        }
 
                         case Color color when color != Colors.Transparent:
+                        {
+                            var propertyName = dpd.DisplayName;
+                            var localValueText = $"{localValue}";
+
                             yield return
                                 new(this,
                                     "Local color",
-                                    $"Property '{dpd.DisplayName}' contains the local color '{localValue}'. Prevent local colors to keep the design maintainable.",
+                                    $"Property '{propertyName}' contains the local color '{localValueText}'. Prevent local colors to keep the design maintainable.",
                                     DiagnosticArea.Maintainability)
                                 {
+                                    DisplayNameResourceKey = "Diagnostics.Result.LocalColor",
+                                    DisplayDescriptionResourceKey = "Diagnostics.Result.LocalColorDescription",
+                                    DisplayDescriptionArguments = new object[] { propertyName, localValueText },
                                     TreeItem = treeItem,
                                     Dispatcher = dependencyObject.Dispatcher,
                                     SourceObject = dependencyObject
                                 };
                             break;
+                        }
                     }
                 }
             }

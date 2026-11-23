@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -25,6 +26,7 @@ using Snoop.Core;
 using Snoop.Data.Tree;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 using Snoop.Views;
 
 public sealed partial class SnoopUI : INotifyPropertyChanged
@@ -531,10 +533,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             options.RoundDecimals = TreeItem.DefaultExportOptions.RoundDecimals;
 
             var treeItem = options.TreeItem ?? this.CurrentSelection;
+            var localization = InspectorLocalization.Default;
 
             if (treeItem is null)
             {
-                MessageBox.Show("No tree item found for export.", "Tree not exported", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(localization["Workbench.ExportMissingTreeMessage"], localization["Workbench.ExportMissingTreeTitle"], MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
@@ -545,7 +548,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
                 TreeExporter.Export(treeItem, streamWriter, propertyFilter, options);
             }
 
-            MessageBox.Show($"The data has been exported to \"{filePath}\".", "Data exported", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                string.Format(CultureInfo.InvariantCulture, localization["Diagnostics.ExportCompletedMessage"], filePath),
+                localization["Diagnostics.ExportCompletedTitle"],
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
         finally
         {
@@ -969,7 +976,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleResetSettings_OnClick(object sender, RoutedEventArgs e)
     {
-        if (MessageBox.Show(this, "Are you sure that you want to reset all settings?", string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
+        if (MessageBox.Show(this, InspectorLocalization.Default["Workbench.ResetSettingsMessage"], string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
         {
             return;
         }
@@ -1007,7 +1014,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         var window = new SnoopBaseWindow
         {
             Content = new HighlightSettingsView(),
-            Title = "Highlight options",
             Owner = this,
             MinWidth = 480,
             MinHeight = 360,
@@ -1016,6 +1022,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             WindowStyle = WindowStyle.ToolWindow
         };
+        window.SetBinding(TitleProperty, new InspectorLocExtension("HighlightSettings.Title").CreateBinding());
         window.ShowDialog();
     }
 

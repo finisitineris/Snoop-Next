@@ -9,6 +9,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:Snoop.Controls"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
              xmlns:snoop="clr-namespace:Snoop"
@@ -314,10 +315,9 @@
             <Image x:Name="Image"
                    Source="{DynamicResource magnifyingGlassDrawingImage}" />
             <Button.ToolTip>
-                <StackPanel>
-                    <TextBlock Text="Bring up the Magnify window on" />
-                    <TextBlock Text="the currently selected object." />
-                </StackPanel>
+                <TextBlock MaxWidth="260"
+                           Text="{localization:InspectorLoc Previewer.MagnifyTip}"
+                           TextWrapping="Wrap" />
             </Button.ToolTip>
         </Button>
 
@@ -330,10 +330,9 @@
                       Template="{DynamicResource ButtonMiddle}">
             <Image Source="{DynamicResource powerDrawingImage}" />
             <ToggleButton.ToolTip>
-                <StackPanel>
-                    <TextBlock Text="Enable/disable preview area (i.e. the" />
-                    <TextBlock Text="display of the currently selected object)." />
-                </StackPanel>
+                <TextBlock MaxWidth="260"
+                           Text="{localization:InspectorLoc Previewer.ToggleTip}"
+                           TextWrapping="Wrap" />
             </ToggleButton.ToolTip>
         </ToggleButton>
 
@@ -346,7 +345,7 @@
             <Image Margin="1"
                    Source="{DynamicResource cameraDrawingImage}" />
             <Button.ToolTip>
-                <TextBlock Text="Save the current preview to a file." />
+                <TextBlock Text="{localization:InspectorLoc Previewer.ScreenshotTip}" />
             </Button.ToolTip>
         </Button>
     </Grid>

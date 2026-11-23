@@ -9,6 +9,7 @@ namespace Snoop.PowerShell;
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
@@ -18,6 +19,7 @@ using System.Windows.Input;
 using Snoop.Data.Tree;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public partial class EmbeddedShellView
@@ -127,9 +129,14 @@ public partial class EmbeddedShellView
 
             this.outputTextBox.Clear();
 
-            this.Invoke("write-host 'Welcome to the Snoop PowerShell console!'");
-            this.Invoke("write-host '----------------------------------------'");
-            this.Invoke($"write-host 'To get started, try using the ${ShellConstants.Root} and ${ShellConstants.Selected} variables.'");
+            var localization = InspectorLocalization.Default;
+            this.WriteConsoleMessage(localization["PowerShell.Welcome"]);
+            this.WriteConsoleMessage("----------------------------------------");
+            this.WriteConsoleMessage(string.Format(
+                CultureInfo.CurrentCulture,
+                localization["PowerShell.GetStarted"],
+                "$" + ShellConstants.Root,
+                "$" + ShellConstants.Selected));
 
             this.FindAndLoadProfile(folder);
 
@@ -264,14 +271,24 @@ public partial class EmbeddedShellView
     {
         if (File.Exists(scriptPath))
         {
-            this.Invoke("write-host ''");
+            this.WriteConsoleMessage(string.Empty);
             this.Invoke(string.Format("${0} = '{1}'; . ${0}", ShellConstants.Profile, scriptPath));
-            this.Invoke(string.Format("write-host \"Loaded `$profile: ${0}\"", ShellConstants.Profile));
+            this.WriteConsoleMessage(string.Format(
+                CultureInfo.CurrentCulture,
+                InspectorLocalization.Default["PowerShell.ProfileLoaded"],
+                "$" + ShellConstants.Profile,
+                scriptPath));
 
             return true;
         }
 
         return false;
+    }
+
+    private void WriteConsoleMessage(string message)
+    {
+        this.host?.UI.WriteLine(message);
+        this.outputTextBox.ScrollToEnd();
     }
 
     private void OnCommandTextBoxPreviewKeyDown(object sender, KeyEventArgs e)
@@ -346,7 +363,10 @@ public partial class EmbeddedShellView
             }
             catch (Exception ex)
             {
-                this.outputTextBox.AppendText(string.Format("Oops! Uncaught exception invoking on the PowerShell runspace: {0}", ex));
+                this.outputTextBox.AppendText(string.Format(
+                    CultureInfo.CurrentCulture,
+                    InspectorLocalization.Default["PowerShell.RunspaceError"],
+                    ex));
             }
         }
 

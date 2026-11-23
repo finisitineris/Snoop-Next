@@ -9,11 +9,12 @@
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:controls="clr-namespace:Snoop.Controls"
                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                         xmlns:localization="clr-namespace:Snoop.Localization"
                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                          xmlns:methodsTab="clr-namespace:Snoop.Views.MethodsTab"
                          xmlns:snoop="clr-namespace:Snoop"
                          xmlns:windows="clr-namespace:Snoop.Windows"
-                         Title="ParameterCreator"
+                         Title="{localization:InspectorLoc Methods.ParameterCreatorTitle}"
                          Width="700"
                          Height="350"
                          mc:Ignorable="d">
@@ -48,7 +49,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Click="OKClick"
-                    Content="OK" />
+                    Content="{localization:InspectorLoc Common.OK}" />
             <Button Name="btnCancel"
                     Grid.Row="1"
                     Width="100"
@@ -57,7 +58,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Click="CancelClick"
-                    Content="Cancel" />
+                    Content="{localization:InspectorLoc Common.Cancel}" />
         </StackPanel>
 
     </Grid>

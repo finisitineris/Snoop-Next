@@ -2,11 +2,13 @@ namespace Snoop.Views.TriggersTab.Triggers;
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 using JetBrains.Annotations;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 
 public class ConditionItem : DependencyObject, IDisposable, INotifyPropertyChanged
 {
@@ -38,7 +40,8 @@ public class ConditionItem : DependencyObject, IDisposable, INotifyPropertyChang
         if (this.dependencyPropertyDescriptor is null)
         {
             this.HasError = true;
-            this.Error = $"DependencyPropertyDescriptor for '{this.DisplayName}' could not be found.{Environment.NewLine}In case of an attached property this might be caused by a missing \"get\"-method for that property.";
+            this.Error = string.Format(CultureInfo.CurrentCulture,
+                InspectorLocalization.Default["Triggers.MissingPropertyDescriptor"], this.DisplayName, Environment.NewLine);
         }
 
         this.BindCurrentValue(conditionContainer, dependencyProperty);
@@ -161,7 +164,8 @@ public class ConditionItem : DependencyObject, IDisposable, INotifyPropertyChang
     {
         get
         {
-            return $"{this.DisplayName} == {this.TargetValue} [Current value: {this.StringValue}]";
+            return string.Format(CultureInfo.CurrentCulture,
+                InspectorLocalization.Default["Triggers.ConditionValue"], this.DisplayName, this.TargetValue, this.StringValue);
         }
     }
 

@@ -49,13 +49,18 @@ public class FreezeFreezablesDiagnosticProvider : DiagnosticProvider
             if (dictionary.TryGetValue(resourceKey, out var resource)
                 && resource is Freezable { IsFrozen: false } freezable)
             {
+                var resourceKeyText = $"{resourceKey}";
+
                 yield return
                     new(this,
                         "Freeze freezables",
-                        $"Freezing the resource '{resourceKey}' can save memory and increase performance.",
+                        $"Freezing the resource '{resourceKeyText}' can save memory and increase performance.",
                         DiagnosticArea.Performance,
                         DiagnosticLevel.Info)
                     {
+                        DisplayNameResourceKey = "Diagnostics.Provider.FreezeFreezables",
+                        DisplayDescriptionResourceKey = "Diagnostics.Result.FreezeResourceDescription",
+                        DisplayDescriptionArguments = new object[] { resourceKeyText },
                         TreeItem = treeItem,
                         Dispatcher = freezable.Dispatcher,
                         SourceObject = dictionary
