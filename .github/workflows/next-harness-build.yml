@@ -58,3 +58,8 @@ jobs:
           name: sn009-clr4-multi-dispatcher-harness
           path: output/next-harness-build/MultipleDispatchers/net462/x64/
           if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sn009-net10-x64-multi-dispatcher-harness
+          path: output/next-harness-build/MultipleDispatchers/net10.0-windows/x64/
+          if-no-files-found: error

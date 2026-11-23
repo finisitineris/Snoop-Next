@@ -65,6 +65,7 @@
             void RefreshState()
             {
                 readout.Text = $"{identity}\nAppDomain name: {domain.FriendlyName}\n"
+                               + $"Runtime: {Environment.Version} ({(Environment.Is64BitProcess ? "64-bit" : "32-bit")})\n"
                                + $"CurrentCulture: {thread.CurrentCulture.Name}\n"
                                + $"CurrentUICulture: {thread.CurrentUICulture.Name}\n"
                                + $"DefaultThreadCurrentCulture: {CultureInfo.DefaultThreadCurrentCulture?.Name ?? "(unset)"}\n"
