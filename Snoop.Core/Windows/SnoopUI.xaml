@@ -139,6 +139,23 @@
                     <MenuItem Header="{localization:InspectorLoc Menu.CloseWindow}"
                               Command="{x:Static ApplicationCommands.Close}" />
                 </MenuItem>
+                <MenuItem x:Name="WorkbenchViewMenu" Header="{localization:InspectorLoc Menu.View}">
+                    <MenuItem x:Name="ShowTreePaneItem"
+                              Header="{localization:InspectorLoc Workbench.ShowTree}"
+                              IsCheckable="True"
+                              IsChecked="True"
+                              Click="HandleToggleWorkbenchPane_OnClick" />
+                    <MenuItem x:Name="ShowPropertiesPaneItem"
+                              Header="{localization:InspectorLoc Workbench.ShowProperties}"
+                              IsCheckable="True"
+                              IsChecked="True"
+                              Click="HandleToggleWorkbenchPane_OnClick" />
+                    <MenuItem x:Name="ShowDiagnosticsPaneItem"
+                              Header="{localization:InspectorLoc Workbench.ShowDiagnostics}"
+                              IsCheckable="True"
+                              IsChecked="True"
+                              Click="HandleToggleWorkbenchPane_OnClick" />
+                </MenuItem>
                 <MenuItem Header="{localization:InspectorLoc Menu.Settings}">
                     <MenuItem Header="{Binding Path=SettingsFile, Source={x:Static core:Settings.Default}}" />
                     <MenuItem Header="{localization:InspectorLoc Menu.MakeSettingsApplicationSpecific}"
@@ -250,14 +267,13 @@
         <Grid x:Name="WorkbenchGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition x:Name="PropertiesPaneRow" Height="5*" MinHeight="80" />
-                <RowDefinition x:Name="DiagnosticsPaneRow" Height="1.5*"
-                               MinHeight="100" />
+                <RowDefinition x:Name="PropertiesPaneRow" Height="5*" />
+                <RowDefinition x:Name="DiagnosticsPaneRow" Height="1.5*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="TreePaneColumn" Width="1*" MinWidth="120" />
-                <ColumnDefinition x:Name="InspectorPaneColumn" Width="2*" MinWidth="220" />
+                <ColumnDefinition x:Name="TreePaneColumn" Width="1*" />
+                <ColumnDefinition x:Name="InspectorPaneColumn" Width="2*" />
             </Grid.ColumnDefinitions>
 
             <!-- Filter Combo Box -->
@@ -378,7 +394,8 @@
                           HorizontalAlignment="Left" />
 
             <!-- Tab Control (for the property grid, the data context property grid, and the events view) -->
-            <TabControl Grid.RowSpan="2"
+            <TabControl x:Name="PropertiesWorkbenchPane"
+                        Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="2 2 2 0">
                 <TabItem>
@@ -527,7 +544,8 @@
                           HorizontalAlignment="Stretch"
                           VerticalAlignment="Top" />
 
-            <TabControl Grid.Row="2"
+            <TabControl x:Name="DiagnosticsWorkbenchPane"
+                        Grid.Row="2"
                         Grid.Column="1"
                         Margin="2 4 2 0">
                 <TabItem>

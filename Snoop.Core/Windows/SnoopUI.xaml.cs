@@ -932,6 +932,8 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private double savedTreeFraction;
     private double savedDiagnosticsFraction;
+    private double expandedTreeFraction;
+    private double expandedDiagnosticsFraction;
 
     #endregion
 
@@ -998,27 +1000,82 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         var settings = Settings.Default;
         this.savedTreeFraction = ReadPaneFraction(settings.WorkbenchTreeFraction, 1d / 3);
         this.savedDiagnosticsFraction = ReadPaneFraction(settings.WorkbenchDiagnosticsFraction, 3d / 13);
+        this.expandedTreeFraction = this.savedTreeFraction;
+        this.expandedDiagnosticsFraction = this.savedDiagnosticsFraction;
+        this.ApplyWorkbenchPaneLayout();
+    }
 
-        this.TreePaneColumn.Width = new GridLength(this.savedTreeFraction, GridUnitType.Star);
-        this.InspectorPaneColumn.Width = new GridLength(1 - this.savedTreeFraction, GridUnitType.Star);
-        this.DiagnosticsPaneRow.Height = new GridLength(this.savedDiagnosticsFraction, GridUnitType.Star);
-        this.PropertiesPaneRow.Height = new GridLength(1 - this.savedDiagnosticsFraction, GridUnitType.Star);
+    private void HandleToggleWorkbenchPane_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.ReadExpandedWorkbenchFractions();
+        this.ApplyWorkbenchPaneLayout();
+    }
+
+    private void ApplyWorkbenchPaneLayout()
+    {
+        var showTree = this.ShowTreePaneItem.IsChecked;
+        var showProperties = this.ShowPropertiesPaneItem.IsChecked;
+        var showDiagnostics = this.ShowDiagnosticsPaneItem.IsChecked;
+        var showRight = showProperties || showDiagnostics;
+        var treeVisibility = showTree ? Visibility.Visible : Visibility.Collapsed;
+        var collapsedSize = new GridLength(0);
+
+        this.TreeHeaderLabel.Visibility = treeVisibility;
+        this.TreeTypeComboBox.Visibility = treeVisibility;
+        this.Tree.Visibility = treeVisibility;
+        this.filterComboBox.Visibility = treeVisibility;
+        this.RefreshTreeButton.Visibility = treeVisibility;
+        this.PropertiesWorkbenchPane.Visibility = showProperties ? Visibility.Visible : Visibility.Collapsed;
+        this.DiagnosticsWorkbenchPane.Visibility = showDiagnostics ? Visibility.Visible : Visibility.Collapsed;
+        this.GridSplitter.Visibility = showTree && showRight ? Visibility.Visible : Visibility.Collapsed;
+        this.DiagnosticsSplitter.Visibility = showProperties && showDiagnostics ? Visibility.Visible : Visibility.Collapsed;
+
+        this.TreePaneColumn.MinWidth = showTree ? 120 : 0;
+        this.InspectorPaneColumn.MinWidth = showRight ? 220 : 0;
+        this.PropertiesPaneRow.MinHeight = showProperties ? 80 : 0;
+        this.DiagnosticsPaneRow.MinHeight = showDiagnostics ? 100 : 0;
+
+        // Retain one star column for the status bar and one star row for a tree-only layout.
+        this.TreePaneColumn.Width = showTree ? new GridLength(this.expandedTreeFraction, GridUnitType.Star) : collapsedSize;
+        this.InspectorPaneColumn.Width = showRight || !showTree ? new GridLength(1 - this.expandedTreeFraction, GridUnitType.Star) : collapsedSize;
+        this.PropertiesPaneRow.Height = showProperties || !showDiagnostics ? new GridLength(1 - this.expandedDiagnosticsFraction, GridUnitType.Star) : collapsedSize;
+        this.DiagnosticsPaneRow.Height = showDiagnostics ? new GridLength(this.expandedDiagnosticsFraction, GridUnitType.Star) : collapsedSize;
+
+        Grid.SetRow(this.DiagnosticsWorkbenchPane, showProperties ? 2 : 0);
+        Grid.SetRowSpan(this.DiagnosticsWorkbenchPane, showProperties ? 1 : 3);
+    }
+
+    private void ReadExpandedWorkbenchFractions()
+    {
+        // A closed splitter axis retains the last ratio measured with both panes open.
+        if (this.GridSplitter.Visibility == Visibility.Visible
+            && TryGetPaneFraction(this.TreePaneColumn.Width, this.InspectorPaneColumn.Width, out var treeFraction))
+        {
+            this.expandedTreeFraction = treeFraction;
+        }
+
+        if (this.DiagnosticsSplitter.Visibility == Visibility.Visible
+            && TryGetPaneFraction(this.DiagnosticsPaneRow.Height, this.PropertiesPaneRow.Height, out var diagnosticsFraction))
+        {
+            this.expandedDiagnosticsFraction = diagnosticsFraction;
+        }
     }
 
     private void CaptureWorkbenchLayout()
     {
+        this.ReadExpandedWorkbenchFractions();
         var settings = Settings.Default;
         // Save only changed axes so closing an untouched inspector cannot overwrite another window's layout.
-        if (TryGetChangedFraction(this.TreePaneColumn.Width, this.InspectorPaneColumn.Width, this.savedTreeFraction, out var treeFraction))
+        if (Math.Abs(this.expandedTreeFraction - this.savedTreeFraction) > 0.000001)
         {
-            settings.WorkbenchTreeFraction = treeFraction.ToString("R", CultureInfo.InvariantCulture);
-            this.savedTreeFraction = treeFraction;
+            settings.WorkbenchTreeFraction = this.expandedTreeFraction.ToString("R", CultureInfo.InvariantCulture);
+            this.savedTreeFraction = this.expandedTreeFraction;
         }
 
-        if (TryGetChangedFraction(this.DiagnosticsPaneRow.Height, this.PropertiesPaneRow.Height, this.savedDiagnosticsFraction, out var diagnosticsFraction))
+        if (Math.Abs(this.expandedDiagnosticsFraction - this.savedDiagnosticsFraction) > 0.000001)
         {
-            settings.WorkbenchDiagnosticsFraction = diagnosticsFraction.ToString("R", CultureInfo.InvariantCulture);
-            this.savedDiagnosticsFraction = diagnosticsFraction;
+            settings.WorkbenchDiagnosticsFraction = this.expandedDiagnosticsFraction.ToString("R", CultureInfo.InvariantCulture);
+            this.savedDiagnosticsFraction = this.expandedDiagnosticsFraction;
         }
     }
 
@@ -1028,17 +1085,24 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             && fraction is > 0 and < 1 ? fraction : fallback;
     }
 
-    private static bool TryGetChangedFraction(GridLength pane, GridLength otherPane, double previousFraction, out double fraction)
+    private static bool TryGetPaneFraction(GridLength pane, GridLength otherPane, out double fraction)
     {
         fraction = pane.Value / (pane.Value + otherPane.Value);
-        return pane.IsStar && otherPane.IsStar && fraction is > 0 and < 1
-            && Math.Abs(fraction - previousFraction) > 0.000001;
+        return pane.IsStar && otherPane.IsStar && fraction is > 0 and < 1;
+    }
+
+    private void ShowAllWorkbenchPanes()
+    {
+        this.ShowTreePaneItem.IsChecked = true;
+        this.ShowPropertiesPaneItem.IsChecked = true;
+        this.ShowDiagnosticsPaneItem.IsChecked = true;
     }
 
     private void HandleResetWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
     {
         Settings.Default.WorkbenchTreeFraction = null;
         Settings.Default.WorkbenchDiagnosticsFraction = null;
+        this.ShowAllWorkbenchPanes();
         this.RestoreWorkbenchLayout();
     }
 
@@ -1050,6 +1114,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         Settings.Default.Reset();
+        this.ShowAllWorkbenchPanes();
         this.RestoreWorkbenchLayout();
 
         // load whether all properties are shown by default

@@ -6,6 +6,8 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="en-US.Menu.File" xml:space="preserve"><value>File</value></data>
   <data name="zh-CN.Menu.File" xml:space="preserve"><value>文件</value></data>
+  <data name="en-US.Menu.View" xml:space="preserve"><value>_View</value></data>
+  <data name="zh-CN.Menu.View" xml:space="preserve"><value>视图(_V)</value></data>
   <data name="en-US.Menu.CloseWindow" xml:space="preserve"><value>Close window</value></data>
   <data name="zh-CN.Menu.CloseWindow" xml:space="preserve"><value>关闭窗口</value></data>
   <data name="en-US.Menu.Settings" xml:space="preserve"><value>Settings</value></data>
@@ -562,6 +564,12 @@
   <data name="zh-CN.Workbench.ResetSettingsMessage" xml:space="preserve"><value>确定要重置所有设置吗？</value></data>
   <data name="en-US.Workbench.ResetLayout" xml:space="preserve"><value>Reset layout</value></data>
   <data name="zh-CN.Workbench.ResetLayout" xml:space="preserve"><value>重置布局</value></data>
+  <data name="en-US.Workbench.ShowTree" xml:space="preserve"><value>Element tree</value></data>
+  <data name="zh-CN.Workbench.ShowTree" xml:space="preserve"><value>元素树</value></data>
+  <data name="en-US.Workbench.ShowProperties" xml:space="preserve"><value>Properties</value></data>
+  <data name="zh-CN.Workbench.ShowProperties" xml:space="preserve"><value>属性</value></data>
+  <data name="en-US.Workbench.ShowDiagnostics" xml:space="preserve"><value>Diagnostics and preview</value></data>
+  <data name="zh-CN.Workbench.ShowDiagnostics" xml:space="preserve"><value>诊断和预览</value></data>
   <data name="en-US.HighlightSettings.Title" xml:space="preserve"><value>Highlight options</value></data>
   <data name="zh-CN.HighlightSettings.Title" xml:space="preserve"><value>高亮选项</value></data>
   <data name="en-US.PropertyInspector.ShowDefaultsBadge" xml:space="preserve"><value>D</value></data>
