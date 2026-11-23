@@ -27,7 +27,7 @@
                              xmlns:windows="clr-namespace:Snoop.Windows"
                              Title="Snoop"
                              MinWidth="480"
-                             MinHeight="320"
+                             MinHeight="360"
                              d:DesignHeight="480"
                              d:DesignWidth="640"
                              DataContext="{Binding RelativeSource={RelativeSource Self}}"
@@ -112,54 +112,6 @@
                 <Setter Property="StrokeEndLineCap" Value="Round" />
             </Style>
 
-            <Style x:Key="refreshButton"
-                   TargetType="{x:Type Button}"
-                   BasedOn="{StaticResource BaseButtonStyle}">
-                <Setter Property="Background">
-                    <Setter.Value>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FF69E861" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FF1CC211" Offset="1" />
-                        </LinearGradientBrush>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="BorderBrush" Value="{DynamicResource Snoop.Brushes.Default.Highlight}" />
-                <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.WorkbenchFocusVisual}" />
-                <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.Foreground}" />
-                <Setter Property="HorizontalContentAlignment" Value="Center" />
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ButtonBase}">
-                            <Grid Width="Auto"
-                                  Height="Auto">
-                                <Border x:Name="border"
-                                        BorderBrush="{DynamicResource Snoop.Brushes.Default.ControlDarkDark}"
-                                        BorderThickness="1 1 1 1" />
-                                <ContentPresenter Margin="3 2 2 2" />
-                            </Grid>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsEnabled" Value="False">
-                                    <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
-                                </Trigger>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background">
-                                        <Setter.Value>
-                                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
-                                                <GradientStop Color="#FFCEFFCF" Offset="0" />
-                                                <GradientStop Color="#FFE1FFE3" Offset="0.43888888888888888" />
-                                                <GradientStop Color="#FFC4FFC8" Offset="1" />
-                                            </LinearGradientBrush>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="VerticalContentAlignment" Value="Center" />
-            </Style>
-
             <DataTemplate x:Key="stylelessTextBlockDataTemplate">
                 <TextBlock Text="{Binding}" />
             </DataTemplate>
@@ -167,18 +119,11 @@
     </windows:SnoopMainBaseWindow.Resources>
 
     <DockPanel x:Name="WorkbenchChrome" Background="{DynamicResource SnoopNext.Brush.Background}">
-        <StackPanel DockPanel.Dock="Top"
-                    Orientation="Horizontal">
-            <Label x:Name="TreeHeaderLabel"
-                   Padding="2"
-                   Content="{localization:InspectorLoc Tree.Label}"
-                   Target="{Binding ElementName=TreeTypeComboBox}" />
-            <ComboBox x:Name="TreeTypeComboBox"
-                      Padding="4 2"
-                      FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
-                      ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type tree:TreeType}}}"
-                      SelectedItem="{Binding CurrentTreeType, Mode=TwoWay}" />
-            <Menu>
+        <StackPanel x:Name="WorkbenchHeader" DockPanel.Dock="Top">
+            <Menu x:Name="WorkbenchMenuBar"
+                  Background="{DynamicResource SnoopNext.Brush.Panel}"
+                  BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
+                  BorderThickness="0 0 0 1">
                 <MenuItem x:Name="FileMenuItem" Header="{localization:InspectorLoc Menu.File}">
                     <MenuItem Header="{localization:InspectorLoc Menu.CloseWindow}"
                               Command="{x:Static ApplicationCommands.Close}" />
@@ -312,17 +257,49 @@
                     </MenuItem>
                 </MenuItem>
             </Menu>
-            <StackPanel HorizontalAlignment="Right"
-                        Orientation="Horizontal">
-                <Label Padding="2"
-                       Content="{localization:InspectorLoc Theme.Label}"
-                       Target="{Binding ElementName=ThemeComboBox}" />
-                <ComboBox x:Name="ThemeComboBox"
-                          Padding="4 2"
-                          FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
-                          ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type core:ThemeMode}}}"
-                          SelectedItem="{Binding ThemeMode, Source={x:Static core:Settings.Default}, Mode=TwoWay}" />
-            </StackPanel>
+            <Border x:Name="WorkbenchCommandBar"
+                    Padding="8 4"
+                    Background="{DynamicResource SnoopNext.Brush.Panel}"
+                    BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
+                    BorderThickness="0 0 0 1">
+                <WrapPanel>
+                    <Button x:Name="RefreshTreeButton"
+                            MinHeight="28"
+                            Margin="0 2 8 2"
+                            Padding="8 2"
+                            Content="{localization:InspectorLoc Workbench.RefreshTree}"
+                            ToolTip="{localization:InspectorLoc Tooltip.RefreshTree}"
+                            FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                            Command="{x:Static windows:SnoopUI.RefreshCommand}" />
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Label x:Name="TreeHeaderLabel"
+                               Padding="2 2 4 2"
+                               VerticalAlignment="Center"
+                               Content="{localization:InspectorLoc Tree.Label}"
+                               Target="{Binding ElementName=TreeTypeComboBox}" />
+                        <ComboBox x:Name="TreeTypeComboBox"
+                                  MinHeight="28"
+                                  Margin="0 2 8 2"
+                                  Padding="4 2"
+                                  FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                                  ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type tree:TreeType}}}"
+                                  SelectedItem="{Binding CurrentTreeType, Mode=TwoWay}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Label Padding="2 2 4 2"
+                               VerticalAlignment="Center"
+                               Content="{localization:InspectorLoc Theme.Label}"
+                               Target="{Binding ElementName=ThemeComboBox}" />
+                        <ComboBox x:Name="ThemeComboBox"
+                                  MinHeight="28"
+                                  Margin="0 2"
+                                  Padding="4 2"
+                                  FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                                  ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type core:ThemeMode}}}"
+                                  SelectedItem="{Binding ThemeMode, Source={x:Static core:Settings.Default}, Mode=TwoWay}" />
+                    </StackPanel>
+                </WrapPanel>
+            </Border>
         </StackPanel>
 
         <Border x:Name="WorkbenchNavigationRail"
@@ -388,7 +365,7 @@
 
             <!-- Filter Combo Box -->
             <ComboBox x:Name="filterComboBox"
-                      Margin="2 2 22 2"
+                      Margin="2"
                       infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
                       IsEditable="True"
                       Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
@@ -400,22 +377,6 @@
                     <TextBlock Text="{localization:InspectorLoc Tooltip.FilterByNameOrType}" />
                 </ComboBox.ToolTip>
             </ComboBox>
-
-            <!-- Refresh Button -->
-            <Button x:Name="RefreshTreeButton"
-                    Style="{StaticResource refreshButton}"
-                    Width="22"
-                    Height="22"
-                    Margin="0 2 2 2"
-                    AutomationProperties.Name="{localization:InspectorLoc Tooltip.RefreshTree}"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Command="{x:Static windows:SnoopUI.RefreshCommand}">
-                <Image Source="{DynamicResource reloadDrawingImage}" />
-                <Button.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Tooltip.RefreshTree}" />
-                </Button.ToolTip>
-            </Button>
 
             <!-- Visual Tree TreeView -->
             <controls:ProperTreeView x:Name="Tree"

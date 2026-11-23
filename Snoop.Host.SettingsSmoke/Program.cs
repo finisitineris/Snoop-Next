@@ -338,6 +338,7 @@ internal static class Program
                         WorkbenchLayoutPresetSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchNavigationSmoke.Verify(inspector);
                         WorkbenchStatusSmoke.Verify(inspector);
+                        WorkbenchCommandBarSmoke.Verify(inspector);
                         InspectorAuxiliaryViewSmoke.Verify();
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();

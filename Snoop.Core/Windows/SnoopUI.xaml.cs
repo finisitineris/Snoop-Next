@@ -1090,7 +1090,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.TreeTypeComboBox.Visibility = treeVisibility;
         this.Tree.Visibility = treeVisibility;
         this.filterComboBox.Visibility = treeVisibility;
-        this.RefreshTreeButton.Visibility = treeVisibility;
         this.PropertiesWorkbenchPane.Visibility = showProperties ? Visibility.Visible : Visibility.Collapsed;
         this.DiagnosticsWorkbenchPane.Visibility = showDiagnostics ? Visibility.Visible : Visibility.Collapsed;
         this.GridSplitter.Visibility = showTree && showRight ? Visibility.Visible : Visibility.Collapsed;

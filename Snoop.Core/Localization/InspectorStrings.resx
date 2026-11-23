@@ -66,8 +66,10 @@
   <data name="zh-CN.Tooltip.ShowBindingErrors" xml:space="preserve"><value>仅显示存在绑定错误的元素</value></data>
   <data name="en-US.Tooltip.FilterByNameOrType" xml:space="preserve"><value>Enter text in the combo box to filter the tree view by name or type</value></data>
   <data name="zh-CN.Tooltip.FilterByNameOrType" xml:space="preserve"><value>在组合框中输入文本，按名称或类型筛选可视化树</value></data>
-  <data name="en-US.Tooltip.RefreshTree" xml:space="preserve"><value>Refresh the tree view</value></data>
-  <data name="zh-CN.Tooltip.RefreshTree" xml:space="preserve"><value>刷新可视化树</value></data>
+  <data name="en-US.Workbench.RefreshTree" xml:space="preserve"><value>Refresh tree</value></data>
+  <data name="zh-CN.Workbench.RefreshTree" xml:space="preserve"><value>刷新元素树</value></data>
+  <data name="en-US.Tooltip.RefreshTree" xml:space="preserve"><value>Refresh the tree view (F5)</value></data>
+  <data name="zh-CN.Tooltip.RefreshTree" xml:space="preserve"><value>刷新元素树 (F5)</value></data>
   <data name="en-US.Tooltip.TreeSelect" xml:space="preserve"><value>Hold down Ctrl + Shift and mouse over elements in the target app to select them.</value></data>
   <data name="zh-CN.Tooltip.TreeSelect" xml:space="preserve"><value>在目标应用中按住 Ctrl + Shift 并将鼠标悬停在元素上以选择它们。</value></data>
   <data name="en-US.Tab.Properties" xml:space="preserve"><value>Properties</value></data>
