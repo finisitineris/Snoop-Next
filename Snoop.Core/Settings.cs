@@ -117,6 +117,10 @@ public sealed class Settings : SettingsBase<Settings>
 
     public WINDOWPLACEMENT? ZoomerWindowPlacement { get; set; }
 
+    public string? WorkbenchTreeFraction { get; set; }
+
+    public string? WorkbenchDiagnosticsFraction { get; set; }
+
     public ObservableCollection<PropertyFilterSet> UserDefinedPropertyFilterSets { get; private set; } = new();
 
     public ObservableCollection<SnoopSingleFilter> SnoopDebugFilters { get; private set; } = new();
@@ -179,6 +183,8 @@ public sealed class Settings : SettingsBase<Settings>
 
         this.SnoopUIWindowPlacement = settings.SnoopUIWindowPlacement;
         this.ZoomerWindowPlacement = settings.ZoomerWindowPlacement;
+        this.WorkbenchTreeFraction = settings.WorkbenchTreeFraction;
+        this.WorkbenchDiagnosticsFraction = settings.WorkbenchDiagnosticsFraction;
 
         this.UserDefinedPropertyFilterSets.UpdateWith(settings.UserDefinedPropertyFilterSets);
         this.SnoopDebugFilters.UpdateWith(settings.SnoopDebugFilters);
