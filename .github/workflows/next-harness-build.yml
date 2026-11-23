@@ -42,6 +42,28 @@ jobs:
       - name: Compile WPF smoke harnesses (no injection)
         shell: pwsh
         run: ./scripts/next/Build-SnoopHarnesses.ps1
+      - name: Verify CLR4 harness architectures
+        shell: pwsh
+        run: |
+          [void][Reflection.Assembly]::Load('System.Reflection.Metadata')
+          $manifest = Get-Content -LiteralPath 'output/next-harness-build/manifest.json' -Raw | ConvertFrom-Json
+          $machines = @{ x86 = 'I386'; x64 = 'Amd64' }
+          foreach ($case in $manifest.cases | Where-Object targetFramework -eq 'net462') {
+            $pe = [System.Reflection.PortableExecutable.PEReader]::new([IO.File]::OpenRead($case.executable))
+            try {
+              $machine = $pe.PEHeaders.CoffHeader.Machine.ToString()
+              $flags = $pe.PEHeaders.CorHeader.Flags
+              $requires32 = $flags.HasFlag([System.Reflection.PortableExecutable.CorFlags]::Requires32Bit)
+              $prefers32 = $flags.HasFlag([System.Reflection.PortableExecutable.CorFlags]::Prefers32Bit)
+              if ($machine -ne $machines[$case.platformTarget] -or $requires32 -ne ($case.platformTarget -eq 'x86') -or $prefers32) {
+                throw "Expected $($case.platformTarget) for $($case.project), found $machine with $flags"
+              }
+              Write-Host "Verified CLR4 binary $($case.project) / $($case.platformTarget) ($machine, $flags)"
+            }
+            finally {
+              $pe.Dispose()
+            }
+          }
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -62,4 +84,9 @@ jobs:
         with:
           name: sn009-net10-x64-multi-dispatcher-harness
           path: output/next-harness-build/MultipleDispatchers/net10.0-windows/x64/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sn009-clr4-x86-multi-dispatcher-harness
+          path: output/next-harness-build/MultipleDispatchers/net462/x86/
           if-no-files-found: error
