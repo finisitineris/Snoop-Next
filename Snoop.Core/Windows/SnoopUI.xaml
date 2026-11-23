@@ -68,6 +68,50 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="SnoopNext.WorkbenchNavigationButton" TargetType="{x:Type Button}">
+                <Setter Property="AutomationProperties.Name" Value="{Binding ToolTip, RelativeSource={RelativeSource Self}}" />
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.WorkbenchFocusVisual}" />
+                <Setter Property="Margin" Value="0 0 0 3" />
+                <Setter Property="MinHeight" Value="36" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border x:Name="ButtonSurface"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    SnapsToDevicePixels="True">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Background}" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Accent}" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="ButtonSurface" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="SnoopNext.WorkbenchNavigationGlyph" TargetType="{x:Type Path}">
+                <Setter Property="Width" Value="18" />
+                <Setter Property="Height" Value="18" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Setter Property="IsHitTestVisible" Value="False" />
+                <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                <Setter Property="StrokeThickness" Value="1.6" />
+                <Setter Property="StrokeLineJoin" Value="Round" />
+                <Setter Property="StrokeStartLineCap" Value="Round" />
+                <Setter Property="StrokeEndLineCap" Value="Round" />
+            </Style>
+
             <Style x:Key="refreshButton"
                    TargetType="{x:Type Button}"
                    BasedOn="{StaticResource BaseButtonStyle}">
@@ -281,6 +325,55 @@
             </StackPanel>
         </StackPanel>
 
+        <Border x:Name="WorkbenchNavigationRail"
+                DockPanel.Dock="Left"
+                Width="51"
+                Background="{DynamicResource SnoopNext.Brush.Panel}"
+                BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
+                BorderThickness="0 0 1 0">
+            <ScrollViewer Focusable="False"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="4 7">
+                    <Button x:Name="NavigateTreeButton"
+                            Style="{StaticResource SnoopNext.WorkbenchNavigationButton}"
+                            ToolTip="{localization:InspectorLoc Workbench.ShowTree}"
+                            Click="HandleNavigateToTree_OnClick">
+                        <Path Style="{StaticResource SnoopNext.WorkbenchNavigationGlyph}"
+                              Data="M2,2 H7 V7 H2 Z M4.5,7 V13 H9 M9,10.5 H14 V15.5 H9 Z" />
+                    </Button>
+                    <Button x:Name="NavigatePropertiesButton"
+                            Style="{StaticResource SnoopNext.WorkbenchNavigationButton}"
+                            ToolTip="{localization:InspectorLoc Tab.Properties}"
+                            Click="HandleNavigateToProperties_OnClick">
+                        <Path Style="{StaticResource SnoopNext.WorkbenchNavigationGlyph}"
+                              Data="M2,4 H16 M2,9 H16 M2,14 H16 M6,2 V6 M12,7 V11 M7,12 V16" />
+                    </Button>
+                    <Button x:Name="NavigateDiagnosticsButton"
+                            Style="{StaticResource SnoopNext.WorkbenchNavigationButton}"
+                            ToolTip="{localization:InspectorLoc Tab.Diagnostics}"
+                            Click="HandleNavigateToDiagnostics_OnClick">
+                        <Path Style="{StaticResource SnoopNext.WorkbenchNavigationGlyph}"
+                              Data="M9,2 L16,15 H2 Z M9,6 V10 M9,12 V12.5" />
+                    </Button>
+                    <Button x:Name="NavigateEventsButton"
+                            Style="{StaticResource SnoopNext.WorkbenchNavigationButton}"
+                            ToolTip="{localization:InspectorLoc Tab.Events}"
+                            Click="HandleNavigateToEvents_OnClick">
+                        <Path Style="{StaticResource SnoopNext.WorkbenchNavigationGlyph}"
+                              Data="M10,1 L3,10 H8 L7,17 L15,7 H10 Z" />
+                    </Button>
+                    <Button x:Name="NavigatePreviewButton"
+                            Style="{StaticResource SnoopNext.WorkbenchNavigationButton}"
+                            ToolTip="{localization:InspectorLoc Tab.Preview}"
+                            Click="HandleNavigateToPreview_OnClick">
+                        <Path Style="{StaticResource SnoopNext.WorkbenchNavigationGlyph}"
+                              Data="M2,3 H16 V13 H2 Z M6,16 H12 M9,13 V16" />
+                    </Button>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
         <Grid x:Name="WorkbenchGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -415,7 +508,7 @@
                         Grid.RowSpan="2"
                         Grid.Column="1"
                         Margin="2 2 2 0">
-                <TabItem>
+                <TabItem x:Name="WorkbenchPropertiesTab">
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Properties}">
                             <TextBlock.ToolTip>
@@ -449,7 +542,7 @@
                                                 RootTarget="{Binding CurrentSelection.Target, Converter={x:Static converters:DataContextExtractorConverter.Instance}}" />
                 </TabItem>
 
-                <TabItem>
+                <TabItem x:Name="WorkbenchEventsTab">
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Events}">
                             <TextBlock.ToolTip>
@@ -565,7 +658,7 @@
                         Grid.Row="2"
                         Grid.Column="1"
                         Margin="2 4 2 0">
-                <TabItem>
+                <TabItem x:Name="WorkbenchDiagnosticsTab">
                     <TabItem.Header>
                         <TextBlock>
                             <Run Text="{localization:InspectorLoc Tab.Diagnostics}" />
@@ -585,7 +678,7 @@
                     <views:DiagnosticsView DiagnosticContext="{Binding TreeService.DiagnosticContext}" />
                 </TabItem>
 
-                <TabItem>
+                <TabItem x:Name="WorkbenchPreviewTab">
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Preview}">
                             <TextBlock.ToolTip>
