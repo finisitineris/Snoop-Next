@@ -197,6 +197,23 @@
                             </MenuItem.Style>
                         </MenuItem>
                     </MenuItem>
+                    <MenuItem x:Name="WorkbenchLayoutMenu"
+                              Header="{localization:InspectorLoc Workbench.Layout}"
+                              SubmenuOpened="HandleWorkbenchLayoutMenuOpened">
+                        <MenuItem x:Name="DefaultWorkbenchLayoutItem"
+                                  Header="{localization:InspectorLoc Workbench.LayoutDefault}"
+                                  Click="HandleResetWorkbenchLayout_OnClick" />
+                        <MenuItem x:Name="PreviewWorkbenchLayoutItem"
+                                  Header="{localization:InspectorLoc Workbench.LayoutPreview}"
+                                  Click="HandlePreviewWorkbenchLayout_OnClick" />
+                        <MenuItem x:Name="PropertiesWorkbenchLayoutItem"
+                                  Header="{localization:InspectorLoc Workbench.LayoutProperties}"
+                                  Click="HandlePropertiesWorkbenchLayout_OnClick" />
+                        <MenuItem x:Name="CustomWorkbenchLayoutItem"
+                                  Header="{localization:InspectorLoc Workbench.LayoutCustom}"
+                                  IsEnabled="False"
+                                  Visibility="Collapsed" />
+                    </MenuItem>
                     <MenuItem x:Name="ResetWorkbenchLayoutItem"
                               Header="{localization:InspectorLoc Workbench.ResetLayout}"
                               Click="HandleResetWorkbenchLayout_OnClick" />

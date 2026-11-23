@@ -910,6 +910,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     #region Private Fields
 
+    private const double DefaultTreeFraction = 1d / 3;
+    private const double DefaultDiagnosticsFraction = 3d / 13;
+    private const double PreviewTreeFraction = 1d / 4;
+    private const double PreviewDiagnosticsFraction = 1d / 2;
+    private const double PropertiesTreeFraction = 3d / 10;
+    private const double PropertiesDiagnosticsFraction = 1d / 6;
+    private const double LayoutFractionTolerance = 0.000001;
+
     private bool fromTextBox = true;
     private readonly DispatcherTimer filterTimer;
 
@@ -998,11 +1006,12 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private void RestoreWorkbenchLayout()
     {
         var settings = Settings.Default;
-        this.savedTreeFraction = ReadPaneFraction(settings.WorkbenchTreeFraction, 1d / 3);
-        this.savedDiagnosticsFraction = ReadPaneFraction(settings.WorkbenchDiagnosticsFraction, 3d / 13);
+        this.savedTreeFraction = ReadPaneFraction(settings.WorkbenchTreeFraction, DefaultTreeFraction);
+        this.savedDiagnosticsFraction = ReadPaneFraction(settings.WorkbenchDiagnosticsFraction, DefaultDiagnosticsFraction);
         this.expandedTreeFraction = this.savedTreeFraction;
         this.expandedDiagnosticsFraction = this.savedDiagnosticsFraction;
         this.ApplyWorkbenchPaneLayout();
+        this.RefreshWorkbenchLayoutMenu();
     }
 
     private void HandleToggleWorkbenchPane_OnClick(object sender, RoutedEventArgs e)
@@ -1066,13 +1075,13 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.ReadExpandedWorkbenchFractions();
         var settings = Settings.Default;
         // Save only changed axes so closing an untouched inspector cannot overwrite another window's layout.
-        if (Math.Abs(this.expandedTreeFraction - this.savedTreeFraction) > 0.000001)
+        if (Math.Abs(this.expandedTreeFraction - this.savedTreeFraction) > LayoutFractionTolerance)
         {
             settings.WorkbenchTreeFraction = this.expandedTreeFraction.ToString("R", CultureInfo.InvariantCulture);
             this.savedTreeFraction = this.expandedTreeFraction;
         }
 
-        if (Math.Abs(this.expandedDiagnosticsFraction - this.savedDiagnosticsFraction) > 0.000001)
+        if (Math.Abs(this.expandedDiagnosticsFraction - this.savedDiagnosticsFraction) > LayoutFractionTolerance)
         {
             settings.WorkbenchDiagnosticsFraction = this.expandedDiagnosticsFraction.ToString("R", CultureInfo.InvariantCulture);
             this.savedDiagnosticsFraction = this.expandedDiagnosticsFraction;
@@ -1100,10 +1109,47 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleResetWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
     {
-        Settings.Default.WorkbenchTreeFraction = null;
-        Settings.Default.WorkbenchDiagnosticsFraction = null;
+        this.ApplyWorkbenchLayoutPreset(null, null);
+    }
+
+    private void HandlePreviewWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.ApplyWorkbenchLayoutPreset(PreviewTreeFraction, PreviewDiagnosticsFraction);
+    }
+
+    private void HandlePropertiesWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.ApplyWorkbenchLayoutPreset(PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+    }
+
+    private void ApplyWorkbenchLayoutPreset(double? treeFraction, double? diagnosticsFraction)
+    {
+        Settings.Default.WorkbenchTreeFraction = treeFraction?.ToString("R", CultureInfo.InvariantCulture);
+        Settings.Default.WorkbenchDiagnosticsFraction = diagnosticsFraction?.ToString("R", CultureInfo.InvariantCulture);
         this.ShowAllWorkbenchPanes();
         this.RestoreWorkbenchLayout();
+    }
+
+    private void HandleWorkbenchLayoutMenuOpened(object sender, RoutedEventArgs e)
+    {
+        this.ReadExpandedWorkbenchFractions();
+        this.RefreshWorkbenchLayoutMenu();
+    }
+
+    private void RefreshWorkbenchLayoutMenu()
+    {
+        this.DefaultWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(DefaultTreeFraction, DefaultDiagnosticsFraction);
+        this.PreviewWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PreviewTreeFraction, PreviewDiagnosticsFraction);
+        this.PropertiesWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+        var custom = !this.DefaultWorkbenchLayoutItem.IsChecked && !this.PreviewWorkbenchLayoutItem.IsChecked && !this.PropertiesWorkbenchLayoutItem.IsChecked;
+        this.CustomWorkbenchLayoutItem.IsChecked = custom;
+        this.CustomWorkbenchLayoutItem.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private bool MatchesWorkbenchLayout(double treeFraction, double diagnosticsFraction)
+    {
+        return Math.Abs(this.expandedTreeFraction - treeFraction) <= LayoutFractionTolerance
+            && Math.Abs(this.expandedDiagnosticsFraction - diagnosticsFraction) <= LayoutFractionTolerance;
     }
 
     private void HandleResetSettings_OnClick(object sender, RoutedEventArgs e)
