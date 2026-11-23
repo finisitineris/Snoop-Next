@@ -8,6 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Threading;
 using Snoop.Core;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 
 public partial class DebugListenerControl : IListener, IDisposable
 {
@@ -85,7 +86,11 @@ public partial class DebugListenerControl : IListener, IDisposable
 
     private void ButtonClearFilters_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show("Are you sure you want to clear your filters?", "Clear Filters Confirmation", MessageBoxButton.YesNo);
+        var localization = InspectorLocalization.Default;
+        var result = MessageBox.Show(
+            localization["DebugListener.ClearFiltersMessage"],
+            localization["DebugListener.ClearFiltersTitle"],
+            MessageBoxButton.YesNo);
         if (result == MessageBoxResult.Yes)
         {
             this.FiltersViewModel.ClearFilters();

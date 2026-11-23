@@ -9,6 +9,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:controls="clr-namespace:Snoop.Controls"
       xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+      xmlns:localization="clr-namespace:Snoop.Localization"
       xmlns:snoop="clr-namespace:Snoop"
       xmlns:snoopwpf="clr-namespace:Snoop.Converters"
       x:Name="propertyInspector"
@@ -46,7 +47,7 @@
              Text="{Binding ElementName=propertyInspector, Path=DelvePath, Mode=OneWay}"
              TextWrapping="Wrap">
         <TextBox.ToolTip>
-            <TextBlock Text="This is the delve path of the currently selected object" />
+            <TextBlock Text="{localization:InspectorLoc PropertyInspector.DelvePathTip}" />
         </TextBox.ToolTip>
     </TextBox>
 
@@ -60,21 +61,21 @@
         </Hyperlink>
 
         <TextBlock.ToolTip>
-            <TextBlock Text="This is the type of the currently selected object" />
+            <TextBlock Text="{localization:InspectorLoc PropertyInspector.DelveTypeTip}" />
         </TextBlock.ToolTip>
 
         <TextBlock.ContextMenu>
             <ContextMenu x:Name="delveTypeContextMenu">
-                <MenuItem Header="Open in Explorer"
+                <MenuItem Header="{localization:InspectorLoc PropertyInspector.OpenInExplorer}"
                           Command="{x:Static controls:PropertyInspector.NavigateToAssemblyInExplorerCommand}"
                           CommandParameter="{Binding Path=DelveType, Mode=OneWay}"
                           CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" />
-                <MenuItem Header="Open in ILSpy"
+                <MenuItem Header="{localization:InspectorLoc PropertyInspector.OpenInILSpy}"
                           Command="{x:Static controls:PropertyInspector.OpenTypeInILSpyCommand}"
                           CommandParameter="{Binding Path=DelveType, Mode=OneWay}"
                           CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" />
                 <Separator />
-                <MenuItem Header="Copy FQ Name"
+                <MenuItem Header="{localization:InspectorLoc PropertyInspector.CopyFullName}"
                           Command="{x:Static controls:PropertyInspector.CopyFQNameCommand}"
                           CommandParameter="{Binding Path=DelveType, Mode=OneWay}"
                           CommandTarget="{Binding Path=PlacementTarget, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}" />
@@ -109,11 +110,11 @@
                           Content=" .* "
                           FontWeight="Bold"
                           IsChecked="{Binding Path=UseRegex, ElementName=propertyInspector, Mode=TwoWay}"
-                          ToolTip="Use Regex for the filter." />
+                          ToolTip="{localization:InspectorLoc PropertyInspector.UseRegexTip}" />
             <CheckBox x:Name="checkBoxClearAfterDelve"
                       Margin="0 0 2 0"
                       VerticalAlignment="Center"
-                      Content="Clear after delve" />
+                      Content="{localization:InspectorLoc PropertyInspector.ClearAfterDelve}" />
             <Button Width="18"
                     Height="18"
                     MinWidth="0"
@@ -134,10 +135,9 @@
                 <Image Margin="3"
                        Source="{DynamicResource upDrawingImage}" />
                 <Button.ToolTip>
-                    <StackPanel>
-                        <TextBlock Text="Click this button to pop up 1 level in scope" />
-                        <TextBlock Text="(after you have delved into something)." />
-                    </StackPanel>
+                    <TextBlock MaxWidth="300"
+                               Text="{localization:InspectorLoc PropertyInspector.PopTargetTip}"
+                               TextWrapping="Wrap" />
                 </Button.ToolTip>
             </Button>
             <ComboBox x:Name="FilterSetCombo"
@@ -149,10 +149,7 @@
                       ItemsSource="{Binding Path=AllFilterSets, ElementName=propertyInspector}"
                       SelectedItem="{Binding Path=SelectedFilterSet, ElementName=propertyInspector, Mode=TwoWay}">
                 <ComboBox.ToolTip>
-                    <StackPanel>
-                        <TextBlock Text="With this combo box, you can select" />
-                        <TextBlock Text="a certain set of properties to view." />
-                    </StackPanel>
+                    <TextBlock Text="{localization:InspectorLoc PropertyInspector.FilterSetTip}" />
                 </ComboBox.ToolTip>
             </ComboBox>
             <ToggleButton Width="18"
@@ -164,10 +161,9 @@
                     D
                 </TextBlock>
                 <ToggleButton.ToolTip>
-                    <StackPanel>
-                        <TextBlock Text="Toggle this button ON to show properties" />
-                        <TextBlock Text="that are unchanged from their default values." />
-                    </StackPanel>
+                    <TextBlock MaxWidth="300"
+                               Text="{localization:InspectorLoc PropertyInspector.ShowDefaultsTip}"
+                               TextWrapping="Wrap" />
                 </ToggleButton.ToolTip>
             </ToggleButton>
             <ToggleButton Width="18"
@@ -179,10 +175,9 @@
                     U
                 </TextBlock>
                 <ToggleButton.ToolTip>
-                    <StackPanel>
-                        <TextBlock Text="Toggle this button ON to show properties" />
-                        <TextBlock Text="that are not commonly used in WPF applications." />
-                    </StackPanel>
+                    <TextBlock MaxWidth="300"
+                               Text="{localization:InspectorLoc PropertyInspector.ShowUncommonTip}"
+                               TextWrapping="Wrap" />
                 </ToggleButton.ToolTip>
             </ToggleButton>
         </StackPanel>
@@ -192,8 +187,9 @@
                  DockPanel.Dock="Left"
                  Text="{Binding ElementName=propertyInspector, Path=FilterString, UpdateSourceTrigger=PropertyChanged}">
             <TextBox.ToolTip>
-                <TextBlock Text="Type in this text box to filter properties. The filter is applied to property names and property type names.
-                &#x0a;Press ESC to clear this text box." />
+                <TextBlock MaxWidth="360"
+                           Text="{localization:InspectorLoc PropertyInspector.FilterTip}"
+                           TextWrapping="Wrap" />
             </TextBox.ToolTip>
         </TextBox>
     </DockPanel>

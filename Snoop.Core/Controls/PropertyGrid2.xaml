@@ -10,6 +10,7 @@
                     xmlns:controls="clr-namespace:Snoop.Controls"
                     xmlns:converters="clr-namespace:Snoop.Converters"
                     xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+                    xmlns:localization="clr-namespace:Snoop.Localization"
                     x:Name="PropertyGrid"
                     MinWidth="0"
                     MinHeight="0">
@@ -25,7 +26,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Delve" />
+                               Content="{localization:InspectorLoc PropertyGrid.Delve}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyInspector.DelveBindingCommand}"
@@ -33,7 +34,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Delve Binding" />
+                               Content="{localization:InspectorLoc PropertyGrid.DelveBinding}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyInspector.DelveBindingExpressionCommand}"
@@ -41,7 +42,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Delve BindingExpression" />
+                               Content="{localization:InspectorLoc PropertyGrid.DelveBindingExpression}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyGrid2.ShowBindingErrorsCommand}"
@@ -49,7 +50,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Display Binding Errors" />
+                               Content="{localization:InspectorLoc PropertyGrid.ShowBindingErrors}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyGrid2.ClearCommand}"
@@ -57,7 +58,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Clear/Reset" />
+                               Content="{localization:InspectorLoc PropertyGrid.ClearOrReset}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyInspector.CopyResourceNameCommand}"
@@ -65,7 +66,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Copy Resource Name" />
+                               Content="{localization:InspectorLoc PropertyGrid.CopyResourceName}" />
                     </MenuItem.Header>
                 </MenuItem>
                 <MenuItem Command="{x:Static controls:PropertyInspector.CopyXamlCommand}"
@@ -73,7 +74,7 @@
                     <MenuItem.Header>
                         <Label Margin="0"
                                Padding="0"
-                               Content="Copy XAML" />
+                               Content="{localization:InspectorLoc PropertyGrid.CopyXaml}" />
                     </MenuItem.Header>
                 </MenuItem>
             </ContextMenu>
@@ -180,7 +181,7 @@
                             <CheckBox IsChecked="{Binding BreakOnChange}"
                                       Template="{StaticResource BreakpointTemplate}">
                                 <CheckBox.ToolTip>
-                                    <TextBlock Text="Click here to toggle a debug breakpoint on and off." />
+                                    <TextBlock Text="{localization:InspectorLoc PropertyGrid.BreakpointTip}" />
                                 </CheckBox.ToolTip>
                             </CheckBox>
                         </DataTemplate>
@@ -190,9 +191,9 @@
                 <GridViewColumn Width="200"
                                 infrastructure:GridViewSort.PropertyName=".">
                     <GridViewColumn.Header>
-                        <TextBlock Text="Name">
+                        <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnName}">
                             <TextBlock.ToolTip>
-                                <TextBlock Text="The name of the property" />
+                                <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnNameTip}" />
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
@@ -212,9 +213,9 @@
                                 infrastructure:GridViewSort.PropertyName="StringValue"
                                 CellTemplateSelector="{DynamicResource EditorSelector}">
                     <GridViewColumn.Header>
-                        <TextBlock Text="Value">
+                        <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValue}">
                             <TextBlock.ToolTip>
-                                <TextBlock Text="The value of the property" />
+                                <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueTip}" />
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
@@ -223,12 +224,9 @@
                 <GridViewColumn Width="140"
                                 infrastructure:GridViewSort.PropertyName="ValueSourceText">
                     <GridViewColumn.Header>
-                        <TextBlock Text="Value Source">
+                        <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueSource}">
                             <TextBlock.ToolTip>
-                                <StackPanel>
-                                    <TextBlock Text="This is the value source of the property," />
-                                    <TextBlock Text="i.e. from where the property gets its value." />
-                                </StackPanel>
+                                <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueSourceTip}" />
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
@@ -244,13 +242,11 @@
                 <GridViewColumn Width="200"
                                 infrastructure:GridViewSort.PropertyName="BindingError">
                     <GridViewColumn.Header>
-                        <TextBlock Text="Binding Errors">
+                        <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnBindingErrors}">
                             <TextBlock.ToolTip>
-                                <StackPanel>
-                                    <TextBlock Text="This column gives additional info on any binding errors." />
-                                    <TextBlock Text="Note: the row for any property with binding errors will" />
-                                    <TextBlock Text="have a red background." />
-                                </StackPanel>
+                                <TextBlock MaxWidth="340"
+                                           Text="{localization:InspectorLoc PropertyGrid.ColumnBindingErrorsTip}"
+                                           TextWrapping="Wrap" />
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
@@ -260,7 +256,7 @@
                                        Visibility="{Binding IsInvalidBinding, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}">
                                 <Button Command="{x:Static controls:PropertyInspector.UpdateBindingErrorCommand}"
                                         CommandParameter="{Binding}"
-                                        Content="Get error message"
+                                        Content="{localization:InspectorLoc PropertyGrid.GetErrorMessage}"
                                         DockPanel.Dock="Left">
                                     <Button.Visibility>
                                         <MultiBinding Converter="{x:Static converters:BoolToVisibilityConverter.DefaultInstance}">
@@ -293,9 +289,9 @@
 
                 <GridViewColumn Width="160">
                     <GridViewColumn.Header>
-                        <TextBlock Text="Type">
+                        <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnType}">
                             <TextBlock.ToolTip>
-                                <TextBlock Text="The target type of the property" />
+                                <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnTypeTip}" />
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
