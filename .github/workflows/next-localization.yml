@@ -20,6 +20,7 @@ on:
       - 'Snoop/ProcessInfo.cs'
       - 'Snoop.Core/Data/TransientSettingsData.cs'
       - 'Snoop.Core/Infrastructure/SnoopManager.cs'
+      - 'Snoop.Core/Infrastructure/SnoopPartsRegistry.cs'
       - 'Snoop.Core/Infrastructure/Helpers/ClipboardHelper.cs'
       - 'Snoop.Core/Infrastructure/Diagnostics/**'
       - 'Snoop.Core/Localization/**'
@@ -27,6 +28,8 @@ on:
       - 'Snoop.Core/Windows/**'
       - 'Snoop.Core/Views/**'
       - 'Snoop.Core/Controls/**'
+      - 'Snoop.Core/ThemeManager.cs'
+      - 'Snoop.Core/Themes/**'
       - 'Snoop.Core/PowerShell/**'
       - 'Snoop.Core/Styles.xaml'
   workflow_dispatch:
