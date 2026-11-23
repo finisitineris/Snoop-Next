@@ -564,6 +564,16 @@
   <data name="zh-CN.Workbench.ResetSettingsMessage" xml:space="preserve"><value>确定要重置所有设置吗？</value></data>
   <data name="en-US.Workbench.ResetLayout" xml:space="preserve"><value>Reset layout</value></data>
   <data name="zh-CN.Workbench.ResetLayout" xml:space="preserve"><value>重置布局</value></data>
+  <data name="en-US.Workbench.Layout" xml:space="preserve"><value>Workspace layout</value></data>
+  <data name="zh-CN.Workbench.Layout" xml:space="preserve"><value>工作台布局</value></data>
+  <data name="en-US.Workbench.LayoutDefault" xml:space="preserve"><value>Default layout</value></data>
+  <data name="zh-CN.Workbench.LayoutDefault" xml:space="preserve"><value>默认布局</value></data>
+  <data name="en-US.Workbench.LayoutPreview" xml:space="preserve"><value>Preview focus</value></data>
+  <data name="zh-CN.Workbench.LayoutPreview" xml:space="preserve"><value>预览优先</value></data>
+  <data name="en-US.Workbench.LayoutProperties" xml:space="preserve"><value>Inspector focus</value></data>
+  <data name="zh-CN.Workbench.LayoutProperties" xml:space="preserve"><value>属性优先</value></data>
+  <data name="en-US.Workbench.LayoutCustom" xml:space="preserve"><value>Custom</value></data>
+  <data name="zh-CN.Workbench.LayoutCustom" xml:space="preserve"><value>自定义</value></data>
   <data name="en-US.Workbench.ShowTree" xml:space="preserve"><value>Element tree</value></data>
   <data name="zh-CN.Workbench.ShowTree" xml:space="preserve"><value>元素树</value></data>
   <data name="en-US.Workbench.ShowProperties" xml:space="preserve"><value>Properties</value></data>
