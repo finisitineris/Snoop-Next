@@ -60,6 +60,7 @@
                                     <Setter TargetName="FocusOutline"
                                             Property="Stroke"
                                             Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
+                                    <Setter TargetName="FocusOutline" Property="StrokeThickness" Value="1" />
                                 </DataTrigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>

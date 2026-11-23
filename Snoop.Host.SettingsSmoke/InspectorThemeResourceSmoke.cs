@@ -47,6 +47,7 @@ internal static class InspectorThemeResourceSmoke
             chrome.Children.Add(focusProbeHost);
             focusProbe.ApplyTemplate();
             var outline = (Rectangle)focusProbe.Template.FindName("FocusOutline", focusProbe);
+            var underlay = (Rectangle)focusProbe.Template.FindName("HighContrastUnderlay", focusProbe);
 
             VerifyAppearance(ThemeMode.Light);
             VerifyAppearance(ThemeMode.Dark);
@@ -60,8 +61,14 @@ internal static class InspectorThemeResourceSmoke
                 RequireBrush(status.Background, BrushFor("Panel").Color, "status panel");
                 RequireBrush(status.Foreground, BrushFor("Text").Color, "status text");
                 RequireBrush(status.BorderBrush, BrushFor("Border").Color, "status separator");
-                var focusColor = SystemParameters.HighContrast ? SystemColors.WindowTextColor : BrushFor("Accent").Color;
+                var highContrast = SystemParameters.HighContrast;
+                var focusColor = highContrast ? SystemColors.WindowTextColor : BrushFor("Accent").Color;
                 RequireBrush(outline.Stroke, focusColor, "keyboard focus outline");
+                if (outline.StrokeThickness != (highContrast ? 1 : 2)
+                    || underlay.Visibility != (highContrast ? Visibility.Visible : Visibility.Collapsed))
+                {
+                    throw new InvalidOperationException("Keyboard focus outline does not match the system contrast mode.");
+                }
             }
 
             void VerifyPalette(ThemeMode theme)
