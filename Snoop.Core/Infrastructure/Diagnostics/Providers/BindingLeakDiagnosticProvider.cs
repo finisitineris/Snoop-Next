@@ -34,12 +34,21 @@ public class BindingLeakDiagnosticProvider : DiagnosticProvider
 
         foreach (var descriptorInfo in reflectPropertyDescriptorInfos)
         {
+            var propertyName = descriptorInfo.PropertyName;
+            var typeName = descriptorInfo.TypeName;
+            var handlerCount = descriptorInfo.ValueChangedHandlers.Count;
+
             yield return
                 new DiagnosticItem(this,
                     "Binding leak",
-                    $"Property '{descriptorInfo.PropertyName}' from type '{descriptorInfo.TypeName}' is bound {descriptorInfo.ValueChangedHandlers.Count} times causing binding leaks.",
+                    $"Property '{propertyName}' from type '{typeName}' is bound {handlerCount} times causing binding leaks.",
                     DiagnosticArea.Binding,
-                    DiagnosticLevel.Warning);
+                    DiagnosticLevel.Warning)
+                {
+                    DisplayNameResourceKey = "Diagnostics.Provider.BindingLeak",
+                    DisplayDescriptionResourceKey = "Diagnostics.Result.BindingLeakDescription",
+                    DisplayDescriptionArguments = new object[] { propertyName, typeName, handlerCount }
+                };
         }
     }
 

@@ -184,8 +184,8 @@
   <data name="zh-CN.Diagnostics.ChooseProviders" xml:space="preserve"><value>更改启用的诊断提供程序</value></data>
   <data name="en-US.Diagnostics.ChooseProvidersTip" xml:space="preserve"><value>Select which diagnostic providers should be active.</value></data>
   <data name="zh-CN.Diagnostics.ChooseProvidersTip" xml:space="preserve"><value>选择要启用的诊断提供程序。</value></data>
-  <data name="en-US.Diagnostics.ResetProvidersTip" xml:space="preserve"><value>Reset to default settings</value></data>
-  <data name="zh-CN.Diagnostics.ResetProvidersTip" xml:space="preserve"><value>恢复默认设置</value></data>
+  <data name="en-US.Common.ResetDefaults" xml:space="preserve"><value>Reset to default settings</value></data>
+  <data name="zh-CN.Common.ResetDefaults" xml:space="preserve"><value>恢复默认设置</value></data>
   <data name="en-US.Diagnostics.Export" xml:space="preserve"><value>Export</value></data>
   <data name="zh-CN.Diagnostics.Export" xml:space="preserve"><value>导出</value></data>
   <data name="en-US.Diagnostics.ColumnLevel" xml:space="preserve"><value>Level</value></data>
@@ -364,4 +364,236 @@
   <data name="zh-CN.DebugFilter.SaveChangesMessage" xml:space="preserve"><value>是否保存更改？</value></data>
   <data name="en-US.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>Changes</value></data>
   <data name="zh-CN.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>更改</value></data>
+  <data name="en-US.Diagnostics.Provider.Binding" xml:space="preserve"><value>Binding errors</value></data>
+  <data name="zh-CN.Diagnostics.Provider.Binding" xml:space="preserve"><value>绑定错误</value></data>
+  <data name="en-US.Diagnostics.Provider.BindingLeak" xml:space="preserve"><value>Binding leak</value></data>
+  <data name="zh-CN.Diagnostics.Provider.BindingLeak" xml:space="preserve"><value>绑定泄漏</value></data>
+  <data name="en-US.Diagnostics.Provider.FreezeFreezables" xml:space="preserve"><value>Freeze freezables</value></data>
+  <data name="zh-CN.Diagnostics.Provider.FreezeFreezables" xml:space="preserve"><value>冻结 Freezable</value></data>
+  <data name="en-US.Diagnostics.Provider.LocalResources" xml:space="preserve"><value>Local definition of resources</value></data>
+  <data name="zh-CN.Diagnostics.Provider.LocalResources" xml:space="preserve"><value>本地资源定义</value></data>
+  <data name="en-US.Diagnostics.Provider.MissingAdorner" xml:space="preserve"><value>Missing adorner layer</value></data>
+  <data name="zh-CN.Diagnostics.Provider.MissingAdorner" xml:space="preserve"><value>缺少 AdornerLayer</value></data>
+  <data name="en-US.Diagnostics.Provider.NonVirtualizedLists" xml:space="preserve"><value>Non virtualized long lists</value></data>
+  <data name="zh-CN.Diagnostics.Provider.NonVirtualizedLists" xml:space="preserve"><value>未虚拟化的长列表</value></data>
+  <data name="en-US.Diagnostics.Provider.UnresolvedDynamicResource" xml:space="preserve"><value>Unresolved {DynamicResource} usages</value></data>
+  <data name="zh-CN.Diagnostics.Provider.UnresolvedDynamicResource" xml:space="preserve"><value>未解析的 {DynamicResource} 用法</value></data>
+  <data name="en-US.Diagnostics.Level.Info" xml:space="preserve"><value>Info</value></data>
+  <data name="zh-CN.Diagnostics.Level.Info" xml:space="preserve"><value>信息</value></data>
+  <data name="en-US.Diagnostics.Level.Warning" xml:space="preserve"><value>Warning</value></data>
+  <data name="zh-CN.Diagnostics.Level.Warning" xml:space="preserve"><value>警告</value></data>
+  <data name="en-US.Diagnostics.Level.Error" xml:space="preserve"><value>Error</value></data>
+  <data name="zh-CN.Diagnostics.Level.Error" xml:space="preserve"><value>错误</value></data>
+  <data name="en-US.Diagnostics.Level.Critical" xml:space="preserve"><value>Critical</value></data>
+  <data name="zh-CN.Diagnostics.Level.Critical" xml:space="preserve"><value>严重</value></data>
+  <data name="en-US.Diagnostics.Area.Binding" xml:space="preserve"><value>Binding</value></data>
+  <data name="zh-CN.Diagnostics.Area.Binding" xml:space="preserve"><value>绑定</value></data>
+  <data name="en-US.Diagnostics.Area.Resource" xml:space="preserve"><value>Resource</value></data>
+  <data name="zh-CN.Diagnostics.Area.Resource" xml:space="preserve"><value>资源</value></data>
+  <data name="en-US.Diagnostics.Area.Performance" xml:space="preserve"><value>Performance</value></data>
+  <data name="zh-CN.Diagnostics.Area.Performance" xml:space="preserve"><value>性能</value></data>
+  <data name="en-US.Diagnostics.Area.Maintainability" xml:space="preserve"><value>Maintainability</value></data>
+  <data name="zh-CN.Diagnostics.Area.Maintainability" xml:space="preserve"><value>可维护性</value></data>
+  <data name="en-US.Diagnostics.Area.Misc" xml:space="preserve"><value>Misc</value></data>
+  <data name="zh-CN.Diagnostics.Area.Misc" xml:space="preserve"><value>其他</value></data>
+  <data name="en-US.Diagnostics.Area.Highlight" xml:space="preserve"><value>Highlight</value></data>
+  <data name="zh-CN.Diagnostics.Area.Highlight" xml:space="preserve"><value>高亮</value></data>
+  <data name="en-US.Methods.CreateOrModifyParameter" xml:space="preserve"><value>Create/Modify Parameter</value></data>
+  <data name="zh-CN.Methods.CreateOrModifyParameter" xml:space="preserve"><value>创建或修改参数</value></data>
+  <data name="en-US.Methods.ClearParameter" xml:space="preserve"><value>Clear Parameter</value></data>
+  <data name="zh-CN.Methods.ClearParameter" xml:space="preserve"><value>清除参数</value></data>
+  <data name="en-US.Methods.ChangeTarget" xml:space="preserve"><value>Change Target</value></data>
+  <data name="zh-CN.Methods.ChangeTarget" xml:space="preserve"><value>更改目标</value></data>
+  <data name="en-US.Methods.CurrentTarget" xml:space="preserve"><value>Current Target:</value></data>
+  <data name="zh-CN.Methods.CurrentTarget" xml:space="preserve"><value>当前目标：</value></data>
+  <data name="en-US.Methods.UseDataContext" xml:space="preserve"><value>Use DataContext Property</value></data>
+  <data name="zh-CN.Methods.UseDataContext" xml:space="preserve"><value>使用 DataContext 属性</value></data>
+  <data name="en-US.Methods.Method" xml:space="preserve"><value>Method:</value></data>
+  <data name="zh-CN.Methods.Method" xml:space="preserve"><value>方法：</value></data>
+  <data name="en-US.Methods.Parameters" xml:space="preserve"><value>Parameters:</value></data>
+  <data name="zh-CN.Methods.Parameters" xml:space="preserve"><value>参数：</value></data>
+  <data name="en-US.Methods.Invoke" xml:space="preserve"><value>Invoke</value></data>
+  <data name="zh-CN.Methods.Invoke" xml:space="preserve"><value>调用</value></data>
+  <data name="en-US.Methods.ResultAsString" xml:space="preserve"><value>Result as string:</value></data>
+  <data name="zh-CN.Methods.ResultAsString" xml:space="preserve"><value>结果字符串：</value></data>
+  <data name="en-US.Methods.ResultProperties" xml:space="preserve"><value>Result Properties:</value></data>
+  <data name="zh-CN.Methods.ResultProperties" xml:space="preserve"><value>结果属性：</value></data>
+  <data name="en-US.Methods.ParameterCreatorTitle" xml:space="preserve"><value>ParameterCreator</value></data>
+  <data name="zh-CN.Methods.ParameterCreatorTitle" xml:space="preserve"><value>参数创建器</value></data>
+  <data name="en-US.Methods.ChooseAssembly" xml:space="preserve"><value>Choose assembly</value></data>
+  <data name="zh-CN.Methods.ChooseAssembly" xml:space="preserve"><value>选择程序集</value></data>
+  <data name="en-US.Methods.ChooseType" xml:space="preserve"><value>Choose type</value></data>
+  <data name="zh-CN.Methods.ChooseType" xml:space="preserve"><value>选择类型</value></data>
+  <data name="en-US.Methods.CreateInstance" xml:space="preserve"><value>Create instance</value></data>
+  <data name="zh-CN.Methods.CreateInstance" xml:space="preserve"><value>创建实例</value></data>
+  <data name="en-US.Methods.ConvertFromStringHint" xml:space="preserve"><value>Type in a value to convert from a string. Otherwise, leave blank to create default new instance.</value></data>
+  <data name="zh-CN.Methods.ConvertFromStringHint" xml:space="preserve"><value>输入要从字符串转换的值，或留空以创建默认实例。</value></data>
+  <data name="en-US.Methods.ParameterCreationError" xml:space="preserve"><value>Error creating parameter</value></data>
+  <data name="zh-CN.Methods.ParameterCreationError" xml:space="preserve"><value>创建参数时出错</value></data>
+  <data name="en-US.Methods.MethodInvocationError" xml:space="preserve"><value>Error invoking method '{0}'</value></data>
+  <data name="zh-CN.Methods.MethodInvocationError" xml:space="preserve"><value>调用方法“{0}”时出错</value></data>
+  <data name="en-US.Methods.NullResult" xml:space="preserve"><value>Method evaluated to null</value></data>
+  <data name="zh-CN.Methods.NullResult" xml:space="preserve"><value>方法返回了 null</value></data>
+  <data name="en-US.Methods.ChangeTargetHint" xml:space="preserve"><value>Delve into the new desired target by double-clicking on the property. Clicking OK will select the currently delved property to be the new target.</value></data>
+  <data name="zh-CN.Methods.ChangeTargetHint" xml:space="preserve"><value>双击属性可深入查看。单击“确定”将当前查看的属性选为新目标。</value></data>
+  <data name="en-US.Methods.ChooseTypeToInstantiate" xml:space="preserve"><value>Choose the type to instantiate</value></data>
+  <data name="zh-CN.Methods.ChooseTypeToInstantiate" xml:space="preserve"><value>选择要实例化的类型</value></data>
+  <data name="en-US.Methods.CreateParameter" xml:space="preserve"><value>Create parameter</value></data>
+  <data name="zh-CN.Methods.CreateParameter" xml:space="preserve"><value>创建参数</value></data>
+  <data name="en-US.Methods.EditParameterHint" xml:space="preserve"><value>Modify the properties of the parameter. Press OK to finalize the parameter</value></data>
+  <data name="zh-CN.Methods.EditParameterHint" xml:space="preserve"><value>修改参数的属性，然后单击“确定”以完成设置。</value></data>
+  <data name="en-US.Triggers.Conditions" xml:space="preserve"><value>Conditions</value></data>
+  <data name="zh-CN.Triggers.Conditions" xml:space="preserve"><value>条件</value></data>
+  <data name="en-US.Triggers.Setters" xml:space="preserve"><value>Setters</value></data>
+  <data name="zh-CN.Triggers.Setters" xml:space="preserve"><value>设置器</value></data>
+  <data name="en-US.Triggers.NoSetters" xml:space="preserve"><value>The trigger has no setters</value></data>
+  <data name="zh-CN.Triggers.NoSetters" xml:space="preserve"><value>此触发器没有设置器</value></data>
+  <data name="en-US.Triggers.EnterActions" xml:space="preserve"><value>EnterActions</value></data>
+  <data name="zh-CN.Triggers.EnterActions" xml:space="preserve"><value>进入操作</value></data>
+  <data name="en-US.Triggers.ExitActions" xml:space="preserve"><value>ExitActions</value></data>
+  <data name="zh-CN.Triggers.ExitActions" xml:space="preserve"><value>退出操作</value></data>
+  <data name="en-US.Triggers.NoTriggers" xml:space="preserve"><value>The element has no triggers</value></data>
+  <data name="zh-CN.Triggers.NoTriggers" xml:space="preserve"><value>元素没有触发器</value></data>
+  <data name="en-US.Triggers.ConditionValue" xml:space="preserve"><value>{0} == {1} [Current value: {2}]</value></data>
+  <data name="zh-CN.Triggers.ConditionValue" xml:space="preserve"><value>{0} == {1} [当前值：{2}]</value></data>
+  <data name="en-US.Triggers.MissingPropertyDescriptor" xml:space="preserve"><value>DependencyPropertyDescriptor for '{0}' could not be found.{1}In case of an attached property this might be caused by a missing "get"-method for that property.</value></data>
+  <data name="zh-CN.Triggers.MissingPropertyDescriptor" xml:space="preserve"><value>找不到“{0}”的 DependencyPropertyDescriptor。{1}如果这是附加属性，可能是因为缺少该属性的 get 方法。</value></data>
+  <data name="en-US.Triggers.EventCondition" xml:space="preserve"><value>SourceName: {0}, Event: {1}</value></data>
+  <data name="zh-CN.Triggers.EventCondition" xml:space="preserve"><value>源名称：{0}，事件：{1}</value></data>
+  <data name="en-US.Triggers.SourceStyle" xml:space="preserve"><value>Style</value></data>
+  <data name="zh-CN.Triggers.SourceStyle" xml:space="preserve"><value>样式</value></data>
+  <data name="en-US.Triggers.SourceControlTemplate" xml:space="preserve"><value>ControlTemplate</value></data>
+  <data name="zh-CN.Triggers.SourceControlTemplate" xml:space="preserve"><value>控件模板</value></data>
+  <data name="en-US.Triggers.SourceElement" xml:space="preserve"><value>Element</value></data>
+  <data name="zh-CN.Triggers.SourceElement" xml:space="preserve"><value>元素</value></data>
+  <data name="en-US.Triggers.SourceDataTemplate" xml:space="preserve"><value>DataTemplate</value></data>
+  <data name="zh-CN.Triggers.SourceDataTemplate" xml:space="preserve"><value>数据模板</value></data>
+  <data name="en-US.Behaviors.NoBehaviors" xml:space="preserve"><value>The element has no behaviors</value></data>
+  <data name="zh-CN.Behaviors.NoBehaviors" xml:space="preserve"><value>元素没有行为</value></data>
+  <data name="en-US.Highlight.Close" xml:space="preserve"><value>Close</value></data>
+  <data name="zh-CN.Highlight.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="en-US.Highlight.Background" xml:space="preserve"><value>Background</value></data>
+  <data name="zh-CN.Highlight.Background" xml:space="preserve"><value>背景</value></data>
+  <data name="en-US.Highlight.BorderBrush" xml:space="preserve"><value>BorderBrush</value></data>
+  <data name="zh-CN.Highlight.BorderBrush" xml:space="preserve"><value>边框画刷</value></data>
+  <data name="en-US.Highlight.BorderThickness" xml:space="preserve"><value>BorderThickness</value></data>
+  <data name="zh-CN.Highlight.BorderThickness" xml:space="preserve"><value>边框粗细</value></data>
+  <data name="en-US.Previewer.MagnifyTip" xml:space="preserve"><value>Bring up the Magnify window on the currently selected object.</value></data>
+  <data name="zh-CN.Previewer.MagnifyTip" xml:space="preserve"><value>在放大窗口中查看当前所选对象。</value></data>
+  <data name="en-US.Previewer.ToggleTip" xml:space="preserve"><value>Enable/disable preview area (i.e. the display of the currently selected object).</value></data>
+  <data name="zh-CN.Previewer.ToggleTip" xml:space="preserve"><value>启用或停用预览区域，以显示当前所选对象。</value></data>
+  <data name="en-US.Previewer.ScreenshotTip" xml:space="preserve"><value>Save the current preview to a file.</value></data>
+  <data name="zh-CN.Previewer.ScreenshotTip" xml:space="preserve"><value>将当前预览保存到文件。</value></data>
+  <data name="en-US.ValueEditor.ScrollToEditTip" xml:space="preserve"><value>Scroll mouse wheel here to edit value</value></data>
+  <data name="zh-CN.ValueEditor.ScrollToEditTip" xml:space="preserve"><value>在此滚动鼠标滚轮以编辑值</value></data>
+  <data name="en-US.ValueEditor.OpenDetailsTip" xml:space="preserve"><value>Opens an editor window where you can see and edit the full value.&#10;Editing is only possible if the property is not read only.</value></data>
+  <data name="zh-CN.ValueEditor.OpenDetailsTip" xml:space="preserve"><value>打开编辑器窗口以查看或编辑完整值。&#10;只有非只读属性才能编辑。</value></data>
+  <data name="en-US.ValueEditor.Title" xml:space="preserve"><value>Value editor</value></data>
+  <data name="zh-CN.ValueEditor.Title" xml:space="preserve"><value>值编辑器</value></data>
+  <data name="en-US.ValueEditor.ChangeValue" xml:space="preserve"><value>Change value</value></data>
+  <data name="zh-CN.ValueEditor.ChangeValue" xml:space="preserve"><value>更改值</value></data>
+  <data name="en-US.PowerShell.AutoExpand" xml:space="preserve"><value>Auto-expand</value></data>
+  <data name="zh-CN.PowerShell.AutoExpand" xml:space="preserve"><value>自动展开</value></data>
+  <data name="en-US.PowerShell.AutoExpandTip" xml:space="preserve"><value>Automatically expands the selected tree item when changed from the PowerShell provider.</value></data>
+  <data name="zh-CN.PowerShell.AutoExpandTip" xml:space="preserve"><value>通过 PowerShell 提供程序切换选中项时，自动展开树中的该项。</value></data>
+  <data name="en-US.PowerShell.ReloadProfileShortcut" xml:space="preserve"><value>F5 - Reload Profile</value></data>
+  <data name="zh-CN.PowerShell.ReloadProfileShortcut" xml:space="preserve"><value>F5 - 重新加载配置脚本</value></data>
+  <data name="en-US.PowerShell.ClearOutputShortcut" xml:space="preserve"><value>F12 - Clear Output</value></data>
+  <data name="zh-CN.PowerShell.ClearOutputShortcut" xml:space="preserve"><value>F12 - 清空输出</value></data>
+  <data name="en-US.PowerShell.Welcome" xml:space="preserve"><value>Welcome to the Snoop PowerShell console!</value></data>
+  <data name="zh-CN.PowerShell.Welcome" xml:space="preserve"><value>欢迎使用 Snoop PowerShell 控制台！</value></data>
+  <data name="en-US.PowerShell.GetStarted" xml:space="preserve"><value>To get started, try using the {0} and {1} variables.</value></data>
+  <data name="zh-CN.PowerShell.GetStarted" xml:space="preserve"><value>可以先尝试使用 {0} 和 {1} 变量。</value></data>
+  <data name="en-US.PowerShell.ProfileLoaded" xml:space="preserve"><value>Loaded {0}: {1}</value></data>
+  <data name="zh-CN.PowerShell.ProfileLoaded" xml:space="preserve"><value>已加载 {0}：{1}</value></data>
+  <data name="en-US.PowerShell.RunspaceError" xml:space="preserve"><value>Oops! Uncaught exception invoking on the PowerShell runspace: {0}</value></data>
+  <data name="zh-CN.PowerShell.RunspaceError" xml:space="preserve"><value>在 PowerShell 运行空间中执行时发生未捕获的异常：{0}</value></data>
+  <data name="en-US.ErrorDialog.DefaultTitle" xml:space="preserve"><value>Error occurred</value></data>
+  <data name="zh-CN.ErrorDialog.DefaultTitle" xml:space="preserve"><value>错误</value></data>
+  <data name="en-US.ErrorDialog.DefaultCaption" xml:space="preserve"><value>An error has occurred</value></data>
+  <data name="zh-CN.ErrorDialog.DefaultCaption" xml:space="preserve"><value>发生错误</value></data>
+  <data name="en-US.ErrorDialog.Details" xml:space="preserve"><value>Error details:</value></data>
+  <data name="zh-CN.ErrorDialog.Details" xml:space="preserve"><value>错误详情：</value></data>
+  <data name="en-US.ErrorDialog.ReviewDetails" xml:space="preserve"><value>Take a look at the above error details (you can resize this dialog). If you think the exception is related to an issue in Snoop (versus the application you are snooping), we would be very grateful if you could create an issue on GitHub.</value></data>
+  <data name="zh-CN.ErrorDialog.ReviewDetails" xml:space="preserve"><value>请查看上方的错误详情。你可以调整此对话框的大小。如果你认为异常来自 Snoop 而非正在检查的应用，欢迎在 GitHub 上提交问题。</value></data>
+  <data name="en-US.ErrorDialog.CopyDetails" xml:space="preserve"><value>Copy details to clipboard</value></data>
+  <data name="zh-CN.ErrorDialog.CopyDetails" xml:space="preserve"><value>复制详情到剪贴板</value></data>
+  <data name="en-US.ErrorDialog.CreateIssue" xml:space="preserve"><value>Click here to create an issue on GitHub.</value></data>
+  <data name="zh-CN.ErrorDialog.CreateIssue" xml:space="preserve"><value>单击此处在 GitHub 上提交问题。</value></data>
+  <data name="en-US.ErrorDialog.Close" xml:space="preserve"><value>Close dialog</value></data>
+  <data name="zh-CN.ErrorDialog.Close" xml:space="preserve"><value>关闭对话框</value></data>
+  <data name="en-US.ErrorDialog.MarkHandledTip" xml:space="preserve"><value>Choosing this button closes the dialog and marks the exception as handled, which should not end up crashing the application.</value></data>
+  <data name="zh-CN.ErrorDialog.MarkHandledTip" xml:space="preserve"><value>单击此按钮会关闭对话框并将异常标记为已处理，通常可避免应用因此崩溃。</value></data>
+  <data name="en-US.ErrorDialog.Remember" xml:space="preserve"><value>Remember option</value></data>
+  <data name="zh-CN.ErrorDialog.Remember" xml:space="preserve"><value>记住选项</value></data>
+  <data name="en-US.ErrorDialog.RememberTip" xml:space="preserve"><value>This checkbox will remember whether you want to mark the exception handled or not, in the case that there are many unhandled exceptions, so that the dialog does not keep coming up.</value></data>
+  <data name="zh-CN.ErrorDialog.RememberTip" xml:space="preserve"><value>如果连续发生多个未处理的异常，选中此项后，Snoop 会记住你是否将异常标记为已处理，并停止反复显示此对话框。</value></data>
+  <data name="en-US.ErrorDialog.RememberUntilReattachTip" xml:space="preserve"><value>Note that clicking this checkbox and choosing one of the close buttons, also, in essence, stops this dialog from ever coming up again ... even in the case of a different unhandled exception ... until you Snoop the application all over again.</value></data>
+  <data name="zh-CN.ErrorDialog.RememberUntilReattachTip" xml:space="preserve"><value>选中此项并单击任一关闭按钮后，即使发生其他未处理的异常，此对话框也不会再次显示，直到你重新检查此应用。</value></data>
+  <data name="en-US.ErrorDialog.CloseWithoutHandling" xml:space="preserve"><value>Close dialog and do not handle exception</value></data>
+  <data name="zh-CN.ErrorDialog.CloseWithoutHandling" xml:space="preserve"><value>关闭且不处理异常</value></data>
+  <data name="en-US.ErrorDialog.CloseWithoutHandlingTip" xml:space="preserve"><value>Choosing this button closes the dialog and lets the exception through, which often will end up crashing the application.</value></data>
+  <data name="zh-CN.ErrorDialog.CloseWithoutHandlingTip" xml:space="preserve"><value>单击此按钮会关闭对话框并让异常继续传播，这通常会导致应用崩溃。</value></data>
+  <data name="en-US.ErrorDialog.CloseAndMarkHandled" xml:space="preserve"><value>Close dialog and mark exception handled</value></data>
+  <data name="zh-CN.ErrorDialog.CloseAndMarkHandled" xml:space="preserve"><value>关闭并将异常标记为已处理</value></data>
+  <data name="en-US.ErrorDialog.ExceptionTitle" xml:space="preserve"><value>Exception</value></data>
+  <data name="zh-CN.ErrorDialog.ExceptionTitle" xml:space="preserve"><value>异常</value></data>
+  <data name="en-US.ErrorDialog.ExceptionHeading" xml:space="preserve"><value>Exception:</value></data>
+  <data name="zh-CN.ErrorDialog.ExceptionHeading" xml:space="preserve"><value>异常：</value></data>
+  <data name="en-US.ErrorDialog.BrowserFailedTitle" xml:space="preserve"><value>Error starting browser</value></data>
+  <data name="zh-CN.ErrorDialog.BrowserFailedTitle" xml:space="preserve"><value>启动浏览器失败</value></data>
+  <data name="en-US.ErrorDialog.BrowserFailedMessage" xml:space="preserve"><value>There was an error starting the browser. Please visit "{0}" manually to create an issue.</value></data>
+  <data name="zh-CN.ErrorDialog.BrowserFailedMessage" xml:space="preserve"><value>启动浏览器时出错。请手动访问“{0}”以提交问题。</value></data>
+  <data name="en-US.Clipboard.CopyFailedTitle" xml:space="preserve"><value>Error copying to clipboard</value></data>
+  <data name="zh-CN.Clipboard.CopyFailedTitle" xml:space="preserve"><value>复制到剪贴板失败</value></data>
+  <data name="en-US.Clipboard.CopyFailedMessage" xml:space="preserve"><value>There was an error copying to the clipboard.&#10;Please copy the error details from the above textbox manually.</value></data>
+  <data name="zh-CN.Clipboard.CopyFailedMessage" xml:space="preserve"><value>复制到剪贴板时出错。&#10;请从上方文本框手动复制错误详情。</value></data>
+  <data name="en-US.Workbench.ExportMissingTreeTitle" xml:space="preserve"><value>Tree not exported</value></data>
+  <data name="zh-CN.Workbench.ExportMissingTreeTitle" xml:space="preserve"><value>未导出树</value></data>
+  <data name="en-US.Workbench.ExportMissingTreeMessage" xml:space="preserve"><value>No tree item found for export.</value></data>
+  <data name="zh-CN.Workbench.ExportMissingTreeMessage" xml:space="preserve"><value>找不到可导出的树节点。</value></data>
+  <data name="en-US.Workbench.ResetSettingsMessage" xml:space="preserve"><value>Are you sure that you want to reset all settings?</value></data>
+  <data name="zh-CN.Workbench.ResetSettingsMessage" xml:space="preserve"><value>确定要重置所有设置吗？</value></data>
+  <data name="en-US.HighlightSettings.Title" xml:space="preserve"><value>Highlight options</value></data>
+  <data name="zh-CN.HighlightSettings.Title" xml:space="preserve"><value>高亮选项</value></data>
+  <data name="en-US.PropertyInspector.ShowDefaultsBadge" xml:space="preserve"><value>D</value></data>
+  <data name="zh-CN.PropertyInspector.ShowDefaultsBadge" xml:space="preserve"><value>默认</value></data>
+  <data name="en-US.PropertyInspector.ShowUncommonBadge" xml:space="preserve"><value>U</value></data>
+  <data name="zh-CN.PropertyInspector.ShowUncommonBadge" xml:space="preserve"><value>少用</value></data>
+  <data name="en-US.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>You should fix binding errors.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>应修复绑定错误。</value></data>
+  <data name="en-US.Diagnostics.Provider.BindingLeak.Description" xml:space="preserve"><value>Detects binding leaks.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.BindingLeak.Description" xml:space="preserve"><value>检测绑定泄漏。</value></data>
+  <data name="en-US.Diagnostics.Provider.FreezeFreezables.Description" xml:space="preserve"><value>You should freeze freezable to save memory and increase performance.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.FreezeFreezables.Description" xml:space="preserve"><value>应冻结 Freezable 以节省内存并提升性能。</value></data>
+  <data name="en-US.Diagnostics.Provider.LocalResources.Description" xml:space="preserve"><value>Searches for locally defined resources.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.LocalResources.Description" xml:space="preserve"><value>查找本地定义的资源。</value></data>
+  <data name="en-US.Diagnostics.Provider.MissingAdorner.Description" xml:space="preserve"><value>No adorner layer for the selected element could be found</value></data>
+  <data name="zh-CN.Diagnostics.Provider.MissingAdorner.Description" xml:space="preserve"><value>找不到所选元素的装饰层</value></data>
+  <data name="en-US.Diagnostics.Provider.NonVirtualizedLists.Description" xml:space="preserve"><value>Warns if an ItemsControl with more than {0} items is not virtualized.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.NonVirtualizedLists.Description" xml:space="preserve"><value>包含超过 {0} 项的 ItemsControl 未启用虚拟化时发出警告。</value></data>
+  <data name="en-US.Diagnostics.Provider.UnresolvedDynamicResource.Description" xml:space="preserve"><value>Searches for {DynamicResource} usages that could not be resolved.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.UnresolvedDynamicResource.Description" xml:space="preserve"><value>查找无法解析的 {DynamicResource} 用法。</value></data>
+  <data name="en-US.Diagnostics.Result.BindingError" xml:space="preserve"><value>Binding error</value></data>
+  <data name="zh-CN.Diagnostics.Result.BindingError" xml:space="preserve"><value>绑定错误</value></data>
+  <data name="en-US.Diagnostics.Result.BindingLeakDescription" xml:space="preserve"><value>Property '{0}' from type '{1}' is bound {2} times causing binding leaks.</value></data>
+  <data name="zh-CN.Diagnostics.Result.BindingLeakDescription" xml:space="preserve"><value>{1} 类型的属性“{0}”已绑定 {2} 次，导致绑定泄漏。</value></data>
+  <data name="en-US.Diagnostics.Result.FreezeResourceDescription" xml:space="preserve"><value>Freezing the resource '{0}' can save memory and increase performance.</value></data>
+  <data name="zh-CN.Diagnostics.Result.FreezeResourceDescription" xml:space="preserve"><value>冻结资源“{0}”可以减少内存占用并提升性能。</value></data>
+  <data name="en-US.Diagnostics.Result.LocalBrush" xml:space="preserve"><value>Local brush</value></data>
+  <data name="zh-CN.Diagnostics.Result.LocalBrush" xml:space="preserve"><value>本地画刷</value></data>
+  <data name="en-US.Diagnostics.Result.LocalBrushDescription" xml:space="preserve"><value>Property '{0}' contains the local brush '{1}'. Prevent local brushes to keep the design maintainable.</value></data>
+  <data name="zh-CN.Diagnostics.Result.LocalBrushDescription" xml:space="preserve"><value>属性“{0}”包含本地画刷“{1}”。避免使用本地画刷可使设计更易维护。</value></data>
+  <data name="en-US.Diagnostics.Result.LocalColor" xml:space="preserve"><value>Local color</value></data>
+  <data name="zh-CN.Diagnostics.Result.LocalColor" xml:space="preserve"><value>本地颜色</value></data>
+  <data name="en-US.Diagnostics.Result.LocalColorDescription" xml:space="preserve"><value>Property '{0}' contains the local color '{1}'. Prevent local colors to keep the design maintainable.</value></data>
+  <data name="zh-CN.Diagnostics.Result.LocalColorDescription" xml:space="preserve"><value>属性“{0}”包含本地颜色“{1}”。避免使用本地颜色可使设计更易维护。</value></data>
+  <data name="en-US.Diagnostics.Result.VirtualizeItemsControl" xml:space="preserve"><value>Virtualize ItemsControl</value></data>
+  <data name="zh-CN.Diagnostics.Result.VirtualizeItemsControl" xml:space="preserve"><value>虚拟化 ItemsControl</value></data>
+  <data name="en-US.Diagnostics.Result.VirtualizeItemsControlDescription" xml:space="preserve"><value>ItemsControl with {0} items should be virtualized.</value></data>
+  <data name="zh-CN.Diagnostics.Result.VirtualizeItemsControlDescription" xml:space="preserve"><value>包含 {0} 项的 ItemsControl 应启用虚拟化。</value></data>
+  <data name="en-US.Diagnostics.Result.ResourceNotResolved" xml:space="preserve"><value>Resource not resolved</value></data>
+  <data name="zh-CN.Diagnostics.Result.ResourceNotResolved" xml:space="preserve"><value>资源未解析</value></data>
+  <data name="en-US.Diagnostics.Result.ResourceNotResolvedDescription" xml:space="preserve"><value>The resource '{0}' on property '{1}' could not be resolved.</value></data>
+  <data name="zh-CN.Diagnostics.Result.ResourceNotResolvedDescription" xml:space="preserve"><value>无法解析属性“{1}”上的资源“{0}”。</value></data>
 </root>

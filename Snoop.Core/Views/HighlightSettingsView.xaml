@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+             xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              x:Name="Control"
              d:DesignHeight="450"
@@ -65,18 +66,31 @@
                 <GridView>
                     <GridViewColumn Width="200">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Name">
+                            <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnName}">
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="The name of the property" />
+                                    <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnNameTip}" />
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </GridViewColumn.Header>
                         <GridViewColumn.CellTemplate>
                             <DataTemplate DataType="infrastructure:PropertyInformation">
-                                <TextBlock Text="{Binding DisplayName}">
-                                    <TextBlock.ToolTip>
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </TextBlock.ToolTip>
+                                <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Text" Value="{Binding DisplayName}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Name}" Value="Background">
+                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.Background}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Name}" Value="BorderBrush">
+                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.BorderBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Name}" Value="BorderThickness">
+                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.BorderThickness}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
                                 </TextBlock>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
@@ -85,9 +99,9 @@
                     <GridViewColumn Width="200"
                                     CellTemplateSelector="{DynamicResource EditorSelector}">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Value">
+                            <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValue}">
                                 <TextBlock.ToolTip>
-                                    <TextBlock Text="The value of the property" />
+                                    <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueTip}" />
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </GridViewColumn.Header>
@@ -100,14 +114,12 @@
                     Orientation="Horizontal">
             <Button x:Name="Close"
                     Style="{StaticResource Snoop.Styles.Button.Large}"
-                    Click="Close_OnClick">
-                Close
-            </Button>
+                    Click="Close_OnClick"
+                    Content="{localization:InspectorLoc Highlight.Close}" />
             <Button x:Name="ResetSettings"
                     Style="{StaticResource Snoop.Styles.Button.Large}"
-                    Click="ResetSettings_OnClick">
-                Reset settings
-            </Button>
+                    Click="ResetSettings_OnClick"
+                    Content="{localization:InspectorLoc Menu.ResetSettings}" />
         </StackPanel>
     </Grid>
 </UserControl>

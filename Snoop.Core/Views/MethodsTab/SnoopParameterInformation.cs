@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Input;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 
 public class SnoopParameterInformation : DependencyObject
 {
@@ -54,19 +55,20 @@ public class SnoopParameterInformation : DependencyObject
             //typeSelector.BaseType = parameterType;
         }
 
-        typeSelector.Title = "Choose the type to instantiate";
+        typeSelector.Title = InspectorLocalization.Default["Methods.ChooseTypeToInstantiate"];
         typeSelector.WindowStartupLocation = WindowStartupLocation.CenterScreen;
         return typeSelector;
     }
 
     public void CreateCustomParameter()
     {
+        var localization = InspectorLocalization.Default;
         var paramCreator = new ParameterCreator
         {
-            Title = "Create parameter",
+            Title = localization["Methods.CreateParameter"],
             TextBlockDescription =
             {
-                Text = "Modify the properties of the parameter. Press OK to finalize the parameter"
+                Text = localization["Methods.EditParameterHint"]
             }
         };
 

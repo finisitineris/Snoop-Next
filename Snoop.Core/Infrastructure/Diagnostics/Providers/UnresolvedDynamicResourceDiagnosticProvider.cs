@@ -66,13 +66,19 @@ public class UnresolvedDynamicResourceDiagnosticProvider : DiagnosticProvider
                 var resource = frameworkElement.TryFindResource(resourceKey);
                 if (resource is null)
                 {
+                    var resourceKeyText = $"{resourceKey}";
+                    var propertyName = dpd.DisplayName;
+
                     yield return
                         new(this,
                             "Resource not resolved",
-                            $"The resource '{resourceKey}' on property '{dpd.DisplayName}' could not be resolved.",
+                            $"The resource '{resourceKeyText}' on property '{propertyName}' could not be resolved.",
                             DiagnosticArea.Resource,
                             DiagnosticLevel.Error)
                         {
+                            DisplayNameResourceKey = "Diagnostics.Result.ResourceNotResolved",
+                            DisplayDescriptionResourceKey = "Diagnostics.Result.ResourceNotResolvedDescription",
+                            DisplayDescriptionArguments = new object[] { resourceKeyText, propertyName },
                             TreeItem = treeItem,
                             Dispatcher = frameworkElement.Dispatcher,
                             SourceObject = frameworkElement

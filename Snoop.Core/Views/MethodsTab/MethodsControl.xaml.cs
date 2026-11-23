@@ -9,11 +9,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using Snoop.Converters;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public partial class MethodsControl
@@ -229,7 +231,7 @@ public partial class MethodsControl
         }
         catch (Exception exception)
         {
-            ErrorDialog.ShowDialog(exception, "Error creating parameter", exceptionAlreadyHandled: true);
+            ErrorDialog.ShowDialog(exception, InspectorLocalization.Default["Methods.ParameterCreationError"], exceptionAlreadyHandled: true);
             return false;
         }
     }
@@ -250,7 +252,7 @@ public partial class MethodsControl
                 this.resultStringContainer.Visibility = this.textBlockResult.Visibility = this.textBlockResultLabel.Visibility = Visibility.Visible;
             }
 
-            this.textBlockResultLabel.Text = "Result as string: ";
+            this.textBlockResultLabel.SetBinding(TextBlock.TextProperty, new InspectorLocExtension("Methods.ResultAsString").CreateBinding());
             this.textBlockResult.Text = returnValue.ToString();
 
             var properties = returnValue.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public);
@@ -268,7 +270,9 @@ public partial class MethodsControl
         }
         catch (Exception exception)
         {
-            ErrorDialog.ShowDialog(exception, $"Error invoking method '{selectedMethod.MethodName}'", exceptionAlreadyHandled: true);
+            var title = string.Format(CultureInfo.CurrentCulture,
+                InspectorLocalization.Default["Methods.MethodInvocationError"], selectedMethod.MethodName);
+            ErrorDialog.ShowDialog(exception, title, exceptionAlreadyHandled: true);
         }
     }
 
@@ -283,7 +287,7 @@ public partial class MethodsControl
             this.resultProperties.Visibility = Visibility.Collapsed;
             this.resultStringContainer.Visibility = Visibility.Visible;
             this.textBlockResult.Text = string.Empty;
-            this.textBlockResultLabel.Text = "Method evaluated to null";
+            this.textBlockResultLabel.SetBinding(TextBlock.TextProperty, new InspectorLocExtension("Methods.NullResult").CreateBinding());
             this.textBlockResult.Visibility = Visibility.Collapsed;
         }
     }
@@ -324,13 +328,14 @@ public partial class MethodsControl
             return;
         }
 
+        var localization = InspectorLocalization.Default;
         var paramCreator = new ParameterCreator
         {
             TextBlockDescription =
             {
-                Text = "Delve into the new desired target by double-clicking on the property. Clicking OK will select the currently delved property to be the new target."
+                Text = localization["Methods.ChangeTargetHint"]
             },
-            Title = "Change Target",
+            Title = localization["Methods.ChangeTarget"],
             RootTarget = this.RootTarget
         };
 

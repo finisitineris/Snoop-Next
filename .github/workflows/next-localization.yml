@@ -20,11 +20,15 @@ on:
       - 'Snoop/ProcessInfo.cs'
       - 'Snoop.Core/Data/TransientSettingsData.cs'
       - 'Snoop.Core/Infrastructure/SnoopManager.cs'
+      - 'Snoop.Core/Infrastructure/Helpers/ClipboardHelper.cs'
+      - 'Snoop.Core/Infrastructure/Diagnostics/**'
       - 'Snoop.Core/Localization/**'
       - 'Snoop.Core/Snoop.Core.csproj'
       - 'Snoop.Core/Windows/**'
       - 'Snoop.Core/Views/**'
       - 'Snoop.Core/Controls/**'
+      - 'Snoop.Core/PowerShell/**'
+      - 'Snoop.Core/Styles.xaml'
   workflow_dispatch:
 
 permissions:
@@ -41,6 +45,27 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
+      - name: Verify inspector XAML resource references
+        shell: pwsh
+        run: |
+          $resources = [xml](Get-Content -LiteralPath 'Snoop.Core/Localization/InspectorStrings.resx' -Raw)
+          $keys = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::Ordinal)
+          foreach ($entry in $resources.root.data) {
+            [void]$keys.Add([string]$entry.name)
+          }
+          $files = git ls-files -- 'Snoop.Core/*.xaml'
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to list inspector XAML files.' }
+          if (!$files) { throw 'Inspector XAML files were not found.' }
+          foreach ($file in $files) {
+            $xaml = Get-Content -LiteralPath $file -Raw
+            foreach ($reference in [regex]::Matches($xaml, '\{\w+:InspectorLoc\s+([\w.]+)\s*\}')) {
+              $key = $reference.Groups[1].Value
+              if (!$keys.Contains("en-US.$key") -or !$keys.Contains("zh-CN.$key")) {
+                throw "Missing inspector resource pair for $key in $file"
+              }
+            }
+          }
+          Write-Host "Checked both languages for inspector resource references in $(@($files).Count) XAML files."
       - name: Compile the localization library against net462 and net10
         shell: pwsh
         run: |

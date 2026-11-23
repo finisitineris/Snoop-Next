@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:converters="clr-namespace:Snoop.Converters"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:localization="clr-namespace:Snoop.Localization"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:snoop="clr-namespace:Snoop"
       xmlns:triggers="clr-namespace:Snoop.Views.TriggersTab.Triggers"
@@ -136,7 +137,7 @@
                                         Style="{StaticResource Snoop.TriggerControlStyle}">
                     <StackPanel>
                         <TextBlock Margin="4 4 4 0"
-                                   Text="Conditions" />
+                                   Text="{localization:InspectorLoc Triggers.Conditions}" />
                         <ItemsControl Margin="8 4"
                                       ItemsSource="{Binding Conditions}">
                             <ItemsControl.ItemTemplate>
@@ -188,7 +189,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Margin="4 4 4 0"
-                                   Text="Setters" />
+                                   Text="{localization:InspectorLoc Triggers.Setters}" />
                         <ListBox Margin="8 4"
                                  Grid.IsSharedSizeScope="True"
                                  ItemsSource="{Binding Setters}"
@@ -197,12 +198,12 @@
                                  Template="{StaticResource Snoop.TriggersView.ListBoxControlTemplate}"
                                  Visibility="{Binding Setters.IsEmpty, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}" />
                         <TextBlock Margin="8 4"
-                                   Text="The trigger has no setters"
+                                   Text="{localization:InspectorLoc Triggers.NoSetters}"
                                    Visibility="{Binding Setters.IsEmpty, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}"
                                    Opacity="0.6" />
 
                         <TextBlock Margin="4 4 4 0"
-                                   Text="EnterActions"
+                                   Text="{localization:InspectorLoc Triggers.EnterActions}"
                                    Visibility="{Binding EnterActions.IsEmpty, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}" />
                         <ListBox Margin="8 4"
                                  Grid.IsSharedSizeScope="True"
@@ -212,7 +213,7 @@
                                  Visibility="{Binding EnterActions.IsEmpty, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}" />
 
                         <TextBlock Margin="4 4 4 0"
-                                   Text="ExitActions"
+                                   Text="{localization:InspectorLoc Triggers.ExitActions}"
                                    Visibility="{Binding ExitActions.IsEmpty, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}" />
                         <ListBox Margin="8 4"
                                  Grid.IsSharedSizeScope="True"
@@ -257,8 +258,27 @@
                                             <StackPanel Margin="8">
                                                 <TextBlock VerticalAlignment="Center"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource Snoop.Brushes.Default.Foreground}"
-                                                           Text="{Binding Path=Name}" />
+                                                           Foreground="{DynamicResource Snoop.Brushes.Default.Foreground}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="{x:Type TextBlock}">
+                                                            <Setter Property="Text" Value="{Binding Name}" />
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Name}" Value="{x:Static triggers:TriggerSource.Style}">
+                                                                    <Setter Property="Text" Value="{localization:InspectorLoc Triggers.SourceStyle}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Name}" Value="{x:Static triggers:TriggerSource.ControlTemplate}">
+                                                                    <Setter Property="Text" Value="{localization:InspectorLoc Triggers.SourceControlTemplate}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Name}" Value="{x:Static triggers:TriggerSource.Element}">
+                                                                    <Setter Property="Text" Value="{localization:InspectorLoc Triggers.SourceElement}" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding Name}" Value="{x:Static triggers:TriggerSource.DataTemplate}">
+                                                                    <Setter Property="Text" Value="{localization:InspectorLoc Triggers.SourceDataTemplate}" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
                                                 <ItemsPresenter Margin="0 4 0 0" />
                                             </StackPanel>
                                         </ControlTemplate>
@@ -285,7 +305,7 @@
 
     <TextBlock HorizontalAlignment="Center"
                VerticalAlignment="Center"
-               Text="The element has no triggers"
+               Text="{localization:InspectorLoc Triggers.NoTriggers}"
                Visibility="{Binding HasTriggerItems, ElementName=triggerView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}"
                Opacity="0.6" />
 </Grid>

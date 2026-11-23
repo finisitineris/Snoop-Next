@@ -7,13 +7,19 @@ namespace Snoop.Windows;
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.Threading;
 using System.Windows;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 
 public partial class ErrorDialog
 {
+    private const string DefaultTitle = "Error occurred";
+    private const string DefaultCaption = "An error has occurred";
+    private const string DefaultMessageBoxTitle = "Exception";
+
     private bool exceptionAlreadyHandled;
 
     public ErrorDialog()
@@ -45,7 +51,7 @@ public partial class ErrorDialog
     /// Shows a dialog containing the details for <paramref name="exception"/>.
     /// </summary>
     /// <returns><c>true</c> if the exception should be marked handled and <c>false</c> if the exception should NOT be marked as handled.</returns>
-    public static bool ShowDialog(Exception? exception, string title = "Error occurred", string caption = "An error has occurred", bool exceptionAlreadyHandled = false)
+    public static bool ShowDialog(Exception? exception, string title = DefaultTitle, string caption = DefaultCaption, bool exceptionAlreadyHandled = false)
     {
         LogHelper.WriteLine($"Showing error dialog.");
         LogHelper.WriteLine($"Title:     {title}");
@@ -54,8 +60,10 @@ public partial class ErrorDialog
 
         if (Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
         {
-            var finalMessage = caption + $"\nException:\n{exception}";
-            MessageBox.Show(finalMessage, title, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.Yes);
+            var localization = InspectorLocalization.Default;
+            var displayTitle = title == DefaultTitle ? localization["ErrorDialog.DefaultTitle"] : title;
+            var displayCaption = caption == DefaultCaption ? localization["ErrorDialog.DefaultCaption"] : caption;
+            MessageBox.Show(FormatExceptionMessage(displayCaption, exception), displayTitle, MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.Yes);
 
             return true;
         }
@@ -63,24 +71,35 @@ public partial class ErrorDialog
         // should we check if the exception came from Snoop? perhaps seeing if any Snoop call is in the stack trace?
         var dialog = new ErrorDialog
         {
-            Title = title + " - Snoop",
-            captionTextBlock =
-            {
-                Text = caption
-            },
             Exception = exception,
             ExceptionAlreadyHandled = exceptionAlreadyHandled
         };
+
+        if (title != DefaultTitle)
+        {
+            dialog.Title = title + " - Snoop";
+        }
+
+        if (caption != DefaultCaption)
+        {
+            dialog.captionTextBlock.Text = caption;
+        }
 
         var result = dialog.ShowDialog();
 
         return (result ?? false) == false;
     }
 
-    public static void ShowExceptionMessageBox(Exception exception, string title = "Exception", string message = "")
+    public static void ShowExceptionMessageBox(Exception exception, string title = DefaultMessageBoxTitle, string message = "")
     {
-        var finalMessage = message + $"\nException:\n{exception}";
-        MessageBox.Show(finalMessage.TrimStart(), title, MessageBoxButton.OK, MessageBoxImage.Error);
+        var displayTitle = title == DefaultMessageBoxTitle ? InspectorLocalization.Default["ErrorDialog.ExceptionTitle"] : title;
+        MessageBox.Show(FormatExceptionMessage(message, exception).TrimStart(), displayTitle, MessageBoxButton.OK, MessageBoxImage.Error);
+    }
+
+    private static string FormatExceptionMessage(string message, Exception? exception)
+    {
+        var heading = InspectorLocalization.Default["ErrorDialog.ExceptionHeading"];
+        return $"{message}\n{heading}\n{exception}";
     }
 
     private void ErrorDialog_Loaded(object sender, RoutedEventArgs e)
@@ -117,8 +136,9 @@ public partial class ErrorDialog
         }
         catch (Exception exception)
         {
-            var message = $"There was an error starting the browser. Please visit \"{e.Uri.AbsoluteUri}\" manually to create an issue.";
-            ShowExceptionMessageBox(exception, "Error starting browser", message);
+            var localization = InspectorLocalization.Default;
+            var message = string.Format(CultureInfo.InvariantCulture, localization["ErrorDialog.BrowserFailedMessage"], e.Uri.AbsoluteUri);
+            ShowExceptionMessageBox(exception, localization["ErrorDialog.BrowserFailedTitle"], message);
         }
     }
 

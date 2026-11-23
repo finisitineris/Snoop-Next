@@ -9,7 +9,7 @@ public class NonVirtualizedListsDiagnosticProvider : DiagnosticProvider
 {
     private static readonly PropertyInfo? itemsHostPropertyInfo = typeof(ItemsControl).GetProperty("ItemsHost", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-    private const int Threshold = 50;
+    internal const int Threshold = 50;
 
     public override string Name => "Non virtualized long lists";
 
@@ -33,13 +33,18 @@ public class NonVirtualizedListsDiagnosticProvider : DiagnosticProvider
         if (panel is not null
             && panel is not VirtualizingPanel)
         {
+            var itemCount = itemsControl.Items.Count;
+
             yield return
                 new(this,
                     "Virtualize ItemsControl",
-                    $"ItemsControl with {itemsControl.Items.Count} items should be virtualized.",
+                    $"ItemsControl with {itemCount} items should be virtualized.",
                     DiagnosticArea.Performance,
                     DiagnosticLevel.Warning)
                 {
+                    DisplayNameResourceKey = "Diagnostics.Result.VirtualizeItemsControl",
+                    DisplayDescriptionResourceKey = "Diagnostics.Result.VirtualizeItemsControlDescription",
+                    DisplayDescriptionArguments = new object[] { itemCount },
                     TreeItem = treeItem,
                     Dispatcher = itemsControl.Dispatcher,
                     SourceObject = itemsControl

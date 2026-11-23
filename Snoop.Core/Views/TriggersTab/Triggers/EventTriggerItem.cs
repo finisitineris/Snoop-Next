@@ -1,8 +1,10 @@
 ﻿namespace Snoop.Views.TriggersTab.Triggers;
 
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
+using Snoop.Localization;
 
 public class EventTriggerItem : TriggerItemBase
 {
@@ -16,7 +18,8 @@ public class EventTriggerItem : TriggerItemBase
 
     private string GetDisplayName()
     {
-        return string.Format("SourceName: {0}, Event: {1}", this.eventTrigger.SourceName, this.eventTrigger.RoutedEvent.Name);
+        return string.Format(CultureInfo.CurrentCulture, InspectorLocalization.Default["Triggers.EventCondition"],
+            this.eventTrigger.SourceName, this.eventTrigger.RoutedEvent.Name);
     }
 
     /// <inheritdoc />
