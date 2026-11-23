@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Snoop.Controls;
 using Snoop.Core;
 using Snoop.Localization;
 using Snoop.Windows;
@@ -67,6 +68,7 @@ internal static class InspectorDispatcherSmoke
             localization.SetLanguage("en-US");
             VerifyState("File");
             VerifyThemes(app, inspector, secondary);
+            VerifyDensity(secondary);
 
             void VerifyState(string expectedHeader)
             {
@@ -202,6 +204,40 @@ internal static class InspectorDispatcherSmoke
         }
 
         Console.WriteLine("PASS: inspector themes refresh on two STA Dispatchers without changing target resources");
+    }
+
+    private static void VerifyDensity(Dispatcher secondary)
+    {
+        var settings = Snoop.Core.Settings.Default;
+        var original = settings.WorkbenchDensity;
+        var row = secondary.Invoke(() =>
+        {
+            var grid = new PropertyGrid2();
+            var properties = (ListView)grid.FindName("ListView");
+            return new ListViewItem { Style = properties.ItemContainerStyle };
+        }, DispatcherPriority.Normal, CancellationToken.None, Timeout);
+
+        try
+        {
+            VerifyHeight(Snoop.Core.Settings.ComfortableDensity, 30);
+            VerifyHeight(Snoop.Core.Settings.CompactDensity, 24);
+            VerifyHeight(Snoop.Core.Settings.ComfortableDensity, 30);
+        }
+        finally
+        {
+            settings.WorkbenchDensity = original;
+        }
+
+        Console.WriteLine("PASS: workbench density refreshes the property row on the second STA Dispatcher");
+
+        void VerifyHeight(string density, double expected)
+        {
+            settings.WorkbenchDensity = density;
+            secondary.Invoke(() =>
+            {
+                Require(row.MinHeight == expected, "Workbench density did not update the second Dispatcher's property row.");
+            }, DispatcherPriority.ApplicationIdle, CancellationToken.None, Timeout);
+        }
     }
 
     private static void Require(bool condition, string message)

@@ -148,6 +148,38 @@
                     <MenuItem Header="{localization:InspectorLoc Menu.OpenSettingsFolder}"
                               Click="HandleOpenSettingsFolder_OnClick" />
                     <Separator />
+                    <MenuItem x:Name="WorkbenchDensityMenu" Header="{localization:InspectorLoc Density.Label}">
+                        <MenuItem x:Name="ComfortableDensityItem"
+                                  Header="{localization:InspectorLoc Density.Comfortable}"
+                                  Tag="{x:Static core:Settings.ComfortableDensity}"
+                                  Click="HandleSetWorkbenchDensity_OnClick">
+                            <MenuItem.Style>
+                                <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
+                                                     Value="{x:Static core:Settings.ComfortableDensity}">
+                                            <Setter Property="IsChecked" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </MenuItem.Style>
+                        </MenuItem>
+                        <MenuItem x:Name="CompactDensityItem"
+                                  Header="{localization:InspectorLoc Density.Compact}"
+                                  Tag="{x:Static core:Settings.CompactDensity}"
+                                  Click="HandleSetWorkbenchDensity_OnClick">
+                            <MenuItem.Style>
+                                <Style TargetType="{x:Type MenuItem}" BasedOn="{StaticResource {x:Type MenuItem}}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
+                                                     Value="{x:Static core:Settings.CompactDensity}">
+                                            <Setter Property="IsChecked" Value="True" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </MenuItem.Style>
+                        </MenuItem>
+                    </MenuItem>
                     <MenuItem Header="{localization:InspectorLoc Menu.ResetSettings}"
                               Click="HandleResetSettings_OnClick" />
                 </MenuItem>
@@ -288,7 +320,15 @@
                         </Setter>
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                         <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        <Setter Property="Padding" Value="1 2 0 2" />
                         <Setter Property="ToolTip" Value="{Binding VisualBrush}" />
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
+                                         Value="{x:Static core:Settings.CompactDensity}">
+                                <Setter Property="Padding" Value="1 0 0 0" />
+                            </DataTrigger>
+                        </Style.Triggers>
 
                         <Style.Resources>
                             <Style TargetType="{x:Type ToolTip}"

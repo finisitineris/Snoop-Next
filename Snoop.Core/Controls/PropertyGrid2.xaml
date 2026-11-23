@@ -9,6 +9,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="clr-namespace:Snoop.Controls"
                     xmlns:converters="clr-namespace:Snoop.Converters"
+                    xmlns:core="clr-namespace:Snoop.Core"
                     xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
                     xmlns:localization="clr-namespace:Snoop.Localization"
                     x:Name="PropertyGrid"
@@ -144,8 +145,12 @@
                    BasedOn="{StaticResource GridView.GridViewItemContainerStyle}">
                 <Setter Property="ContextMenu" Value="{StaticResource PropertyMenu}" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                <Setter Property="MinHeight" Value="24" />
+                <Setter Property="MinHeight" Value="30" />
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
+                                 Value="{x:Static core:Settings.CompactDensity}">
+                        <Setter Property="MinHeight" Value="24" />
+                    </DataTrigger>
                     <Trigger Property="ItemsControl.AlternationIndex" Value="0">
                         <Setter Property="Background" Value="Transparent" />
                     </Trigger>

@@ -14,6 +14,9 @@ using Snoop.Views.DebugListenerTab;
 [Serializable]
 public sealed class Settings : SettingsBase<Settings>
 {
+    public const string ComfortableDensity = "Comfortable";
+    public const string CompactDensity = "Compact";
+
     private static readonly XmlSerializer serializer = new(typeof(Settings));
 
     private bool clearAfterDelve = true;
@@ -23,6 +26,7 @@ public sealed class Settings : SettingsBase<Settings>
     private bool showPreviewer;
     private bool isDefaultSettingsFile;
     private ThemeMode themeMode;
+    private string workbenchDensity = ComfortableDensity;
 
     public Settings()
     {
@@ -145,9 +149,28 @@ public sealed class Settings : SettingsBase<Settings>
         }
     }
 
+    public string WorkbenchDensity
+    {
+        get => this.workbenchDensity;
+        set
+        {
+            var density = string.Equals(value, CompactDensity, StringComparison.OrdinalIgnoreCase)
+                ? CompactDensity
+                : ComfortableDensity;
+            if (this.workbenchDensity == density)
+            {
+                return;
+            }
+
+            this.workbenchDensity = density;
+            this.OnPropertyChanged();
+        }
+    }
+
     protected override void UpdateWith(Settings settings)
     {
         this.ThemeMode = settings.ThemeMode;
+        this.WorkbenchDensity = settings.WorkbenchDensity;
         this.ShowDefaults = settings.ShowDefaults;
         this.ShowPreviewer = settings.ShowPreviewer;
         this.ClearAfterDelve = settings.ClearAfterDelve;
