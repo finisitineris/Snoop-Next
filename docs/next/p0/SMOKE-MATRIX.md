@@ -44,3 +44,9 @@ Record the MSI and fixture artifact links, Windows and CLR versions, same PID an
 On a Windows x64 machine with the .NET 10 Desktop Runtime (x64), extract all files from the framework-dependent `sn009-net10-x64-multi-dispatcher-harness` artifact. Run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that both windows report `Runtime: 10.0.x (64-bit)`, share a PID and AppDomain ID, and have distinct STA thread IDs.
 
 Use the same attach and reattach sequence and target-state comparison as the CLR4 multi-Dispatcher case above. In each workbench, select the target root window and confirm that its `Title` property matches the corresponding fixture window. Record the actual runtime version, both workbench languages, and the before and after target state. Keep the .NET 10 attach and reattach results pending until those steps are run against this target.
+
+## net462 x86 target load and language reattach
+
+Extract the `sn009-clr4-x86-multi-dispatcher-harness` artifact on the Windows test machine and run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that both windows report CLR 4 and `32-bit`, with one PID and AppDomain ID and distinct STA thread IDs. Record the installed .NET Framework version separately from the net462 build target.
+
+Repeat the CLR4 multi-Dispatcher attach and same-PID reattach sequence above with the x86 target. Check that each workbench reads the `Title` of its corresponding window, that both menus switch from **File** to **文件**, and that the target cultures and application resources stay unchanged. Keep the x86 attach and reattach results pending until those steps are run.

@@ -33,6 +33,7 @@ $matrix = @(
     @{ Project = 'BasicTestHarness'; Framework = 'net10.0-windows'; Architecture = 'x64' },
     @{ Project = 'HelloWorld'; Framework = 'net462'; Architecture = 'x64' },
     @{ Project = 'HelloWorld'; Framework = 'net10.0-windows'; Architecture = 'x64' },
+    @{ Project = 'MultipleDispatchers'; Framework = 'net462'; Architecture = 'x86' },
     @{ Project = 'MultipleDispatchers'; Framework = 'net462'; Architecture = 'x64' },
     @{ Project = 'MultipleDispatchers'; Framework = 'net10.0-windows'; Architecture = 'x64' }
 )
@@ -52,7 +53,10 @@ try {
             throw "Missing upstream harness project: $projectFile"
         }
 
-        $out = Join-Path $OutputRoot ('{0}\{1}\{2}' -f $name, $framework, $arch)
+        $casePath = '{0}\{1}\{2}' -f $name, $framework, $arch
+        $out = Join-Path $OutputRoot $casePath
+        # A shared intermediate directory can reuse the first architecture's binary.
+        $intermediate = Join-Path $OutputRoot "obj\$casePath"
         New-Item -ItemType Directory -Path $out -Force | Out-Null
         Write-Host "BUILD-ONLY: $name / $framework / $arch"
         $dotnetArgs = @(
@@ -62,6 +66,7 @@ try {
             '--nologo',
             "-p:SnoopTestHarnessTargetFrameworks=$framework",
             "-p:PlatformTarget=$arch",
+            "-p:IntermediateOutputPath=$intermediate/",
             '-p:AppendTargetFrameworkToOutputPath=false',
             "-p:OutputPath=$out"
         )
