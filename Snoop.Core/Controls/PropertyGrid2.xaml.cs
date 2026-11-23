@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using JetBrains.Annotations;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public partial class PropertyGrid2 : INotifyPropertyChanged
@@ -217,7 +219,10 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
             Content = textBox,
             Width = 400,
             Height = 300,
-            Title = "Binding Errors for " + propertyInformation.DisplayName
+            Title = string.Format(
+                CultureInfo.CurrentCulture,
+                InspectorLocalization.Default["PropertyGrid.BindingErrorsFor"],
+                propertyInformation.DisplayName)
         };
 
         window.Show();

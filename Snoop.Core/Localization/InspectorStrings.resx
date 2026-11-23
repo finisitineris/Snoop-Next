@@ -226,4 +226,142 @@
   <data name="zh-CN.Events.ClearTip" xml:space="preserve"><value>清除当前事件列表。</value></data>
   <data name="en-US.Events.MaximumDisplayed" xml:space="preserve"><value>Maximum events displayed: </value></data>
   <data name="zh-CN.Events.MaximumDisplayed" xml:space="preserve"><value>最多显示的事件数：</value></data>
+  <data name="en-US.PropertyInspector.DelvePathTip" xml:space="preserve"><value>This is the delve path of the currently selected object</value></data>
+  <data name="zh-CN.PropertyInspector.DelvePathTip" xml:space="preserve"><value>当前所选对象的深入查看路径</value></data>
+  <data name="en-US.PropertyInspector.DelveTypeTip" xml:space="preserve"><value>This is the type of the currently selected object</value></data>
+  <data name="zh-CN.PropertyInspector.DelveTypeTip" xml:space="preserve"><value>当前所选对象的类型</value></data>
+  <data name="en-US.PropertyInspector.OpenInExplorer" xml:space="preserve"><value>Open in Explorer</value></data>
+  <data name="zh-CN.PropertyInspector.OpenInExplorer" xml:space="preserve"><value>在文件资源管理器中打开</value></data>
+  <data name="en-US.PropertyInspector.OpenInILSpy" xml:space="preserve"><value>Open in ILSpy</value></data>
+  <data name="zh-CN.PropertyInspector.OpenInILSpy" xml:space="preserve"><value>在 ILSpy 中打开</value></data>
+  <data name="en-US.PropertyInspector.CopyFullName" xml:space="preserve"><value>Copy FQ Name</value></data>
+  <data name="zh-CN.PropertyInspector.CopyFullName" xml:space="preserve"><value>复制完全限定名</value></data>
+  <data name="en-US.PropertyInspector.UseRegexTip" xml:space="preserve"><value>Use Regex for the filter.</value></data>
+  <data name="zh-CN.PropertyInspector.UseRegexTip" xml:space="preserve"><value>使用正则表达式筛选。</value></data>
+  <data name="en-US.PropertyInspector.ClearAfterDelve" xml:space="preserve"><value>Clear after delve</value></data>
+  <data name="zh-CN.PropertyInspector.ClearAfterDelve" xml:space="preserve"><value>深入查看后清空筛选</value></data>
+  <data name="en-US.PropertyInspector.PopTargetTip" xml:space="preserve"><value>Click to move up one level after delving into an object.</value></data>
+  <data name="zh-CN.PropertyInspector.PopTargetTip" xml:space="preserve"><value>深入查看对象后，单击此按钮返回上一级。</value></data>
+  <data name="en-US.PropertyInspector.FilterSetTip" xml:space="preserve"><value>Select a set of properties to view.</value></data>
+  <data name="zh-CN.PropertyInspector.FilterSetTip" xml:space="preserve"><value>选择要查看的属性集。</value></data>
+  <data name="en-US.PropertyInspector.ShowDefaultsTip" xml:space="preserve"><value>Show properties that still have their default values.</value></data>
+  <data name="zh-CN.PropertyInspector.ShowDefaultsTip" xml:space="preserve"><value>显示仍为默认值的属性。</value></data>
+  <data name="en-US.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>Show properties that are not commonly used in WPF applications.</value></data>
+  <data name="zh-CN.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>显示 WPF 应用程序中不常用的属性。</value></data>
+  <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name or type name. Press Esc to clear.</value></data>
+  <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称或属性类型名称筛选。按 Esc 清空。</value></data>
+  <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>
+  <data name="zh-CN.PropertyInspector.NullTarget" xml:space="preserve"><value>目标对象为 NULL</value></data>
+  <data name="en-US.PropertyInspector.FilterDefault" xml:space="preserve"><value>(Default)</value></data>
+  <data name="zh-CN.PropertyInspector.FilterDefault" xml:space="preserve"><value>（默认）</value></data>
+  <data name="en-US.PropertyInspector.FilterEdit" xml:space="preserve"><value>Edit Filters...</value></data>
+  <data name="zh-CN.PropertyInspector.FilterEdit" xml:space="preserve"><value>编辑筛选集…</value></data>
+  <data name="en-US.PropertyInspector.FilterLayout" xml:space="preserve"><value>Layout</value></data>
+  <data name="zh-CN.PropertyInspector.FilterLayout" xml:space="preserve"><value>布局</value></data>
+  <data name="en-US.PropertyInspector.FilterGridDock" xml:space="preserve"><value>Grid/Dock</value></data>
+  <data name="zh-CN.PropertyInspector.FilterGridDock" xml:space="preserve"><value>网格/停靠</value></data>
+  <data name="en-US.PropertyInspector.FilterColor" xml:space="preserve"><value>Color</value></data>
+  <data name="zh-CN.PropertyInspector.FilterColor" xml:space="preserve"><value>颜色</value></data>
+  <data name="en-US.PropertyInspector.FilterItemsControl" xml:space="preserve"><value>ItemsControl</value></data>
+  <data name="zh-CN.PropertyInspector.FilterItemsControl" xml:space="preserve"><value>项控件</value></data>
+  <data name="en-US.PropertyGrid.Delve" xml:space="preserve"><value>Delve</value></data>
+  <data name="zh-CN.PropertyGrid.Delve" xml:space="preserve"><value>深入查看</value></data>
+  <data name="en-US.PropertyGrid.DelveBinding" xml:space="preserve"><value>Delve Binding</value></data>
+  <data name="zh-CN.PropertyGrid.DelveBinding" xml:space="preserve"><value>深入查看 Binding</value></data>
+  <data name="en-US.PropertyGrid.DelveBindingExpression" xml:space="preserve"><value>Delve BindingExpression</value></data>
+  <data name="zh-CN.PropertyGrid.DelveBindingExpression" xml:space="preserve"><value>深入查看 BindingExpression</value></data>
+  <data name="en-US.PropertyGrid.ShowBindingErrors" xml:space="preserve"><value>Display Binding Errors</value></data>
+  <data name="zh-CN.PropertyGrid.ShowBindingErrors" xml:space="preserve"><value>显示绑定错误</value></data>
+  <data name="en-US.PropertyGrid.ClearOrReset" xml:space="preserve"><value>Clear/Reset</value></data>
+  <data name="zh-CN.PropertyGrid.ClearOrReset" xml:space="preserve"><value>清除/重置</value></data>
+  <data name="en-US.PropertyGrid.CopyResourceName" xml:space="preserve"><value>Copy Resource Name</value></data>
+  <data name="zh-CN.PropertyGrid.CopyResourceName" xml:space="preserve"><value>复制资源名称</value></data>
+  <data name="en-US.PropertyGrid.CopyXaml" xml:space="preserve"><value>Copy XAML</value></data>
+  <data name="zh-CN.PropertyGrid.CopyXaml" xml:space="preserve"><value>复制 XAML</value></data>
+  <data name="en-US.PropertyGrid.BreakpointTip" xml:space="preserve"><value>Click here to toggle a debug breakpoint on and off.</value></data>
+  <data name="zh-CN.PropertyGrid.BreakpointTip" xml:space="preserve"><value>单击此处切换调试断点。</value></data>
+  <data name="en-US.PropertyGrid.ColumnName" xml:space="preserve"><value>Name</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnName" xml:space="preserve"><value>名称</value></data>
+  <data name="en-US.PropertyGrid.ColumnNameTip" xml:space="preserve"><value>The name of the property</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnNameTip" xml:space="preserve"><value>属性的名称</value></data>
+  <data name="en-US.PropertyGrid.ColumnValue" xml:space="preserve"><value>Value</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnValue" xml:space="preserve"><value>值</value></data>
+  <data name="en-US.PropertyGrid.ColumnValueTip" xml:space="preserve"><value>The value of the property</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnValueTip" xml:space="preserve"><value>属性的值</value></data>
+  <data name="en-US.PropertyGrid.ColumnValueSource" xml:space="preserve"><value>Value Source</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnValueSource" xml:space="preserve"><value>值来源</value></data>
+  <data name="en-US.PropertyGrid.ColumnValueSourceTip" xml:space="preserve"><value>Shows where the property gets its value.</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnValueSourceTip" xml:space="preserve"><value>显示属性值的来源。</value></data>
+  <data name="en-US.PropertyGrid.ColumnBindingErrors" xml:space="preserve"><value>Binding Errors</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnBindingErrors" xml:space="preserve"><value>绑定错误</value></data>
+  <data name="en-US.PropertyGrid.ColumnBindingErrorsTip" xml:space="preserve"><value>Shows binding error details. Properties with binding errors have a red background.</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnBindingErrorsTip" xml:space="preserve"><value>显示绑定错误详情。有绑定错误的属性行使用红色背景。</value></data>
+  <data name="en-US.PropertyGrid.GetErrorMessage" xml:space="preserve"><value>Get error message</value></data>
+  <data name="zh-CN.PropertyGrid.GetErrorMessage" xml:space="preserve"><value>获取错误消息</value></data>
+  <data name="en-US.PropertyGrid.ColumnType" xml:space="preserve"><value>Type</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnType" xml:space="preserve"><value>类型</value></data>
+  <data name="en-US.PropertyGrid.ColumnTypeTip" xml:space="preserve"><value>The target type of the property</value></data>
+  <data name="zh-CN.PropertyGrid.ColumnTypeTip" xml:space="preserve"><value>属性的目标类型</value></data>
+  <data name="en-US.PropertyGrid.BindingErrorsFor" xml:space="preserve"><value>Binding Errors for {0}</value></data>
+  <data name="zh-CN.PropertyGrid.BindingErrorsFor" xml:space="preserve"><value>{0} 的绑定错误</value></data>
+  <data name="en-US.DebugListener.StartListening" xml:space="preserve"><value>Start Listening</value></data>
+  <data name="zh-CN.DebugListener.StartListening" xml:space="preserve"><value>开始监听</value></data>
+  <data name="en-US.DebugListener.TraceLevel" xml:space="preserve"><value>WPF Trace Level: </value></data>
+  <data name="zh-CN.DebugListener.TraceLevel" xml:space="preserve"><value>WPF 跟踪级别：</value></data>
+  <data name="en-US.DebugListener.TraceOff" xml:space="preserve"><value>Off</value></data>
+  <data name="zh-CN.DebugListener.TraceOff" xml:space="preserve"><value>关闭</value></data>
+  <data name="en-US.DebugListener.TraceCritical" xml:space="preserve"><value>Critical</value></data>
+  <data name="zh-CN.DebugListener.TraceCritical" xml:space="preserve"><value>严重</value></data>
+  <data name="en-US.DebugListener.TraceError" xml:space="preserve"><value>Error</value></data>
+  <data name="zh-CN.DebugListener.TraceError" xml:space="preserve"><value>错误</value></data>
+  <data name="en-US.DebugListener.TraceWarning" xml:space="preserve"><value>Warning</value></data>
+  <data name="zh-CN.DebugListener.TraceWarning" xml:space="preserve"><value>警告</value></data>
+  <data name="en-US.DebugListener.TraceInformation" xml:space="preserve"><value>Information</value></data>
+  <data name="zh-CN.DebugListener.TraceInformation" xml:space="preserve"><value>信息</value></data>
+  <data name="en-US.DebugListener.TraceVerbose" xml:space="preserve"><value>Verbose</value></data>
+  <data name="zh-CN.DebugListener.TraceVerbose" xml:space="preserve"><value>详细</value></data>
+  <data name="en-US.DebugListener.TraceActivityTracing" xml:space="preserve"><value>Activity Tracing</value></data>
+  <data name="zh-CN.DebugListener.TraceActivityTracing" xml:space="preserve"><value>活动跟踪</value></data>
+  <data name="en-US.DebugListener.TraceAll" xml:space="preserve"><value>All</value></data>
+  <data name="zh-CN.DebugListener.TraceAll" xml:space="preserve"><value>全部</value></data>
+  <data name="en-US.DebugListener.ClearText" xml:space="preserve"><value>Clear Text</value></data>
+  <data name="zh-CN.DebugListener.ClearText" xml:space="preserve"><value>清除文本</value></data>
+  <data name="en-US.DebugListener.ClearFilters" xml:space="preserve"><value>Clear Filters</value></data>
+  <data name="zh-CN.DebugListener.ClearFilters" xml:space="preserve"><value>清除筛选器</value></data>
+  <data name="en-US.DebugListener.EditFilter" xml:space="preserve"><value>Edit Filter</value></data>
+  <data name="zh-CN.DebugListener.EditFilter" xml:space="preserve"><value>编辑筛选器</value></data>
+  <data name="en-US.DebugListener.FilterOff" xml:space="preserve"><value>Filter is OFF</value></data>
+  <data name="zh-CN.DebugListener.FilterOff" xml:space="preserve"><value>筛选已关闭</value></data>
+  <data name="en-US.DebugListener.FilterOn" xml:space="preserve"><value>Filter is ON</value></data>
+  <data name="zh-CN.DebugListener.FilterOn" xml:space="preserve"><value>筛选已启用</value></data>
+  <data name="en-US.DebugListener.ClearFiltersMessage" xml:space="preserve"><value>Are you sure you want to clear your filters?</value></data>
+  <data name="zh-CN.DebugListener.ClearFiltersMessage" xml:space="preserve"><value>确定要清除筛选器吗？</value></data>
+  <data name="en-US.DebugListener.ClearFiltersTitle" xml:space="preserve"><value>Clear Filters Confirmation</value></data>
+  <data name="zh-CN.DebugListener.ClearFiltersTitle" xml:space="preserve"><value>确认清除筛选器</value></data>
+  <data name="en-US.DebugFilter.Title" xml:space="preserve"><value>Set Filters</value></data>
+  <data name="zh-CN.DebugFilter.Title" xml:space="preserve"><value>设置筛选器</value></data>
+  <data name="en-US.DebugFilter.GroupFilters" xml:space="preserve"><value>Group Filters</value></data>
+  <data name="zh-CN.DebugFilter.GroupFilters" xml:space="preserve"><value>筛选器分组</value></data>
+  <data name="en-US.DebugFilter.ClearFilterGroups" xml:space="preserve"><value>Clear Filter Groups</value></data>
+  <data name="zh-CN.DebugFilter.ClearFilterGroups" xml:space="preserve"><value>清除筛选器分组</value></data>
+  <data name="en-US.DebugFilter.ToggleInverse" xml:space="preserve"><value>Set Inverse</value></data>
+  <data name="zh-CN.DebugFilter.ToggleInverse" xml:space="preserve"><value>反转匹配</value></data>
+  <data name="en-US.DebugFilter.Inverse" xml:space="preserve"><value>NOT</value></data>
+  <data name="zh-CN.DebugFilter.Inverse" xml:space="preserve"><value>非</value></data>
+  <data name="en-US.DebugFilter.StartsWith" xml:space="preserve"><value>Starts With</value></data>
+  <data name="zh-CN.DebugFilter.StartsWith" xml:space="preserve"><value>以此开头</value></data>
+  <data name="en-US.DebugFilter.EndsWith" xml:space="preserve"><value>Ends With</value></data>
+  <data name="zh-CN.DebugFilter.EndsWith" xml:space="preserve"><value>以此结尾</value></data>
+  <data name="en-US.DebugFilter.Contains" xml:space="preserve"><value>Contains</value></data>
+  <data name="zh-CN.DebugFilter.Contains" xml:space="preserve"><value>包含</value></data>
+  <data name="en-US.DebugFilter.RegularExpression" xml:space="preserve"><value>Regular Expression</value></data>
+  <data name="zh-CN.DebugFilter.RegularExpression" xml:space="preserve"><value>正则表达式</value></data>
+  <data name="en-US.DebugFilter.AddFilter" xml:space="preserve"><value>Add Another Filter</value></data>
+  <data name="zh-CN.DebugFilter.AddFilter" xml:space="preserve"><value>添加筛选器</value></data>
+  <data name="en-US.DebugFilter.Apply" xml:space="preserve"><value>Set Filter</value></data>
+  <data name="zh-CN.DebugFilter.Apply" xml:space="preserve"><value>应用筛选器</value></data>
+  <data name="en-US.DebugFilter.SaveChangesMessage" xml:space="preserve"><value>Save changes?</value></data>
+  <data name="zh-CN.DebugFilter.SaveChangesMessage" xml:space="preserve"><value>是否保存更改？</value></data>
+  <data name="en-US.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>Changes</value></data>
+  <data name="zh-CN.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>更改</value></data>
 </root>

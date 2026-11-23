@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Snoop.Core;
+using Snoop.Localization;
 
 public partial class SetFiltersWindow
 {
@@ -29,7 +30,11 @@ public partial class SetFiltersWindow
             return;
         }
 
-        var saveChanges = MessageBox.Show("Save changes?", "Changes", MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+        var localization = InspectorLocalization.Default;
+        var saveChanges = MessageBox.Show(
+            localization["DebugFilter.SaveChangesMessage"],
+            localization["DebugFilter.SaveChangesTitle"],
+            MessageBoxButton.YesNo) == MessageBoxResult.Yes;
         if (saveChanges)
         {
             this.ViewModel.SetIsSet();

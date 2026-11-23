@@ -2,8 +2,9 @@
                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:converters="clr-namespace:Snoop.Converters"
+                         xmlns:localization="clr-namespace:Snoop.Localization"
                          xmlns:windows="clr-namespace:Snoop.Windows"
-                         Title="SetFiltersWindow"
+                         Title="{localization:InspectorLoc DebugFilter.Title}"
                          Width="450"
                          Height="300">
     <Grid>
@@ -26,19 +27,19 @@
                         <MenuItem Name="menuItemGroupFilters"
                                   Click="MenuItemGroupFilters_Click">
                             <MenuItem.Header>
-                                <TextBlock Text="Group Filters" />
+                                <TextBlock Text="{localization:InspectorLoc DebugFilter.GroupFilters}" />
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem Name="menuItemClearFilterGroups"
                                   Click="MenuItemClearFilterGroups_Click">
                             <MenuItem.Header>
-                                <TextBlock Text="Clear Filter Groups" />
+                                <TextBlock Text="{localization:InspectorLoc DebugFilter.ClearFilterGroups}" />
                             </MenuItem.Header>
                         </MenuItem>
                         <MenuItem Name="menuItemSetInverse"
                                   Click="MenuItemSetInverse_Click">
                             <MenuItem.Header>
-                                <TextBlock Text="Set Inverse" />
+                                <TextBlock Text="{localization:InspectorLoc DebugFilter.ToggleInverse}" />
                             </MenuItem.Header>
                         </MenuItem>
                     </ContextMenu>
@@ -60,36 +61,32 @@
                                     Orientation="Horizontal">
                             <TextBlock Margin="0 5 10 5"
                                        VerticalAlignment="Center"
-                                       FontSize="9"
-                                       Text="{Binding Path=IsInverseText}"
-                                       Visibility="Visible">
-                                <!--
-								<TextBlock.Style>
-									<Style TargetType="TextBlock">
-										<Style.Triggers>
-											<DataTrigger Binding="{Binding Path=IsInverse}" Value="true">
-												<Setter Property="Visibility" Value="Visible"/>
-											</DataTrigger>
-										</Style.Triggers>
-									</Style>
-								</TextBlock.Style>
-								-->
+                                       FontSize="9">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsInverse}" Value="True">
+                                                <Setter Property="Text" Value="{localization:InspectorLoc DebugFilter.Inverse}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
                             </TextBlock>
                             <ComboBox Name="comboBoxFilterTypes"
                                       Width="140"
                                       Height="23"
                                       SelectedIndex="{Binding Path=FilterType, Mode=TwoWay, Converter={x:Static converters:FilterTypeToIntConverter.Default}}">
                                 <ComboBoxItem>
-                                    <TextBlock Text="Starts With" />
+                                    <TextBlock Text="{localization:InspectorLoc DebugFilter.StartsWith}" />
                                 </ComboBoxItem>
                                 <ComboBoxItem>
-                                    <TextBlock Text="Ends With" />
+                                    <TextBlock Text="{localization:InspectorLoc DebugFilter.EndsWith}" />
                                 </ComboBoxItem>
                                 <ComboBoxItem>
-                                    <TextBlock Text="Contains" />
+                                    <TextBlock Text="{localization:InspectorLoc DebugFilter.Contains}" />
                                 </ComboBoxItem>
                                 <ComboBoxItem>
-                                    <TextBlock Text="Regular Expression" />
+                                    <TextBlock Text="{localization:InspectorLoc DebugFilter.RegularExpression}" />
                                 </ComboBoxItem>
                             </ComboBox>
                             <TextBox Name="textBlockFilter"
@@ -129,7 +126,7 @@
                     HorizontalAlignment="Left"
                     VerticalAlignment="Bottom"
                     Click="ButtonAddFilter_Click">
-                <TextBlock Text="Add Another Filter" />
+                <TextBlock Text="{localization:InspectorLoc DebugFilter.AddFilter}" />
             </Button>
         </Grid>
         <Button Name="buttonSetFilter"
@@ -139,7 +136,7 @@
                 Margin="10 0 0 0"
                 HorizontalAlignment="Left"
                 Click="ButtonSetFilter_Click">
-            <TextBlock Text="Set Filter" />
+            <TextBlock Text="{localization:InspectorLoc DebugFilter.Apply}" />
         </Button>
     </Grid>
 </windows:SnoopBaseWindow>

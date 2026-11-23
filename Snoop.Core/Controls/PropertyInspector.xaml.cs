@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using JetBrains.Annotations;
 using Snoop.Converters;
@@ -22,6 +23,7 @@ using Snoop.Core;
 using Snoop.Data;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public partial class PropertyInspector : INotifyPropertyChanged
@@ -40,10 +42,25 @@ public partial class PropertyInspector : INotifyPropertyChanged
 
     public static readonly RoutedCommand UpdateBindingErrorCommand = new(nameof(UpdateBindingErrorCommand), typeof(PropertyInspector));
 
+    private static readonly DependencyProperty LocalizedLanguageProperty = DependencyProperty.Register(
+        "LocalizedLanguage",
+        typeof(string),
+        typeof(PropertyInspector),
+        new PropertyMetadata(null, OnLocalizedLanguageChanged));
+
     private object? target;
 
     public PropertyInspector()
     {
+        // Use a WPF binding to apply language changes on this inspector's Dispatcher.
+        this.SetBinding(
+            LocalizedLanguageProperty,
+            new Binding(nameof(InspectorLocalization.EffectiveLanguageTag))
+            {
+                Source = InspectorLocalization.Default,
+                Mode = BindingMode.OneWay,
+            });
+
         this.InitializeComponent();
 
         this.delveTypeContextMenu.DataContext = this;
@@ -73,6 +90,24 @@ public partial class PropertyInspector : INotifyPropertyChanged
 
         this.checkBoxClearAfterDelve.IsChecked = Settings.Default.ClearAfterDelve;
         this.UseRegex = Settings.Default.UseRegex;
+    }
+
+    private static void OnLocalizedLanguageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        var inspector = (PropertyInspector)d;
+        var localization = InspectorLocalization.Default;
+        inspector.defaultFilterSet.DisplayName = localization["PropertyInspector.FilterDefault"];
+        inspector.editFilterSet.DisplayName = localization["PropertyInspector.FilterEdit"];
+
+        foreach (var entry in inspector.builtInFilterSets)
+        {
+            entry.Value.DisplayName = localization[entry.Key];
+        }
+
+        if (inspector.RootTarget is null)
+        {
+            inspector.OnPropertyChanged(nameof(DelvePath));
+        }
     }
 
     public bool NameValueOnly
@@ -285,7 +320,7 @@ public partial class PropertyInspector : INotifyPropertyChanged
         {
             if (this.RootTarget is null)
             {
-                return "Target object is NULL";
+                return InspectorLocalization.Default["PropertyInspector.NullTarget"];
             }
 
             var rootTargetType = this.RootTarget.GetType();
@@ -639,7 +674,7 @@ public partial class PropertyInspector : INotifyPropertyChanged
 
             if (value.IsEditCommand)
             {
-                var dlg = new EditUserFilters { UserFilters = this.CopyFilterSets(this.defaultFilterSets.ToList().Concat(this.UserFilterSets)) };
+                var dlg = new EditUserFilters { UserFilters = this.CopyFilterSets(this.builtInFilterSets.Select(x => x.Value).Concat(this.UserFilterSets)) };
 
                 var res = dlg.ShowDialogEx(this);
 
@@ -688,25 +723,12 @@ public partial class PropertyInspector : INotifyPropertyChanged
                 return this.allFilterSets;
             }
 
-            var ret = new List<PropertyFilterSet>(this.defaultFilterSets);
+            var ret = new List<PropertyFilterSet>(this.builtInFilterSets.Select(x => x.Value));
             ret.AddRange(this.UserFilterSets);
 
             // now add the "(Default)" and "Edit Filters..." filters for the ComboBox
-            ret.Insert(
-                0,
-                new PropertyFilterSet
-                {
-                    DisplayName = "(Default)",
-                    IsDefault = true,
-                    IsEditCommand = false,
-                });
-            ret.Add(
-                new PropertyFilterSet
-                {
-                    DisplayName = "Edit Filters...",
-                    IsDefault = false,
-                    IsEditCommand = true,
-                });
+            ret.Insert(0, this.defaultFilterSet);
+            ret.Add(this.editFilterSet);
 
             this.allFilterSets = ret.ToArray();
 
@@ -752,11 +774,13 @@ public partial class PropertyInspector : INotifyPropertyChanged
 
     private PropertyFilterSet[]? allFilterSets;
 
-    private readonly PropertyFilterSet[] defaultFilterSets =
+    private readonly PropertyFilterSet defaultFilterSet = new() { IsDefault = true };
+    private readonly PropertyFilterSet editFilterSet = new() { IsEditCommand = true };
+
+    private readonly KeyValuePair<string, PropertyFilterSet>[] builtInFilterSets =
     {
-        new()
+        new("PropertyInspector.FilterLayout", new PropertyFilterSet
         {
-            DisplayName = "Layout",
             IsReadOnly = true,
             Properties = new[]
             {
@@ -769,34 +793,31 @@ public partial class PropertyInspector : INotifyPropertyChanged
                 "horizontalcontentalignment", "verticalcontentalignment",
                 "visibility"
             }
-        },
-        new()
+        }),
+        new("PropertyInspector.FilterGridDock", new PropertyFilterSet
         {
-            DisplayName = "Grid/Dock",
             IsReadOnly = true,
             Properties = new[]
             {
                 "grid", "dock"
             }
-        },
-        new()
+        }),
+        new("PropertyInspector.FilterColor", new PropertyFilterSet
         {
-            DisplayName = "Color",
             IsReadOnly = true,
             Properties = new[]
             {
                 "color", "background", "foreground", "borderbrush", "fill", "stroke"
             }
-        },
-        new()
+        }),
+        new("PropertyInspector.FilterItemsControl", new PropertyFilterSet
         {
-            DisplayName = "ItemsControl",
             IsReadOnly = true,
             Properties = new[]
             {
                 "items", "itemssource", "selected"
             }
-        }
+        })
     };
 
     #region INotifyPropertyChanged Members

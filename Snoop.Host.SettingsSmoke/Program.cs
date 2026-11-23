@@ -332,6 +332,7 @@ internal static class Program
                         InspectorFilterSmoke.Verify(inspector);
                         InspectorDispatcherSmoke.Verify(app, fileMenu);
                         InspectorAuxiliaryViewSmoke.Verify();
+                        InspectorPropertyAndDebugSmoke.Verify();
                     }
                     finally
                     {

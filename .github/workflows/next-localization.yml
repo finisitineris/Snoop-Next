@@ -24,7 +24,7 @@ on:
       - 'Snoop.Core/Snoop.Core.csproj'
       - 'Snoop.Core/Windows/**'
       - 'Snoop.Core/Views/**'
-      - 'Snoop.Core/Controls/ZoomerControl.xaml'
+      - 'Snoop.Core/Controls/**'
   workflow_dispatch:
 
 permissions:
