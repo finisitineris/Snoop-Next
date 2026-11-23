@@ -70,6 +70,14 @@
   <data name="zh-CN.Workbench.RefreshTree" xml:space="preserve"><value>刷新元素树</value></data>
   <data name="en-US.Tooltip.RefreshTree" xml:space="preserve"><value>Refresh the tree view (F5)</value></data>
   <data name="zh-CN.Tooltip.RefreshTree" xml:space="preserve"><value>刷新元素树 (F5)</value></data>
+  <data name="en-US.CommandPalette.Title" xml:space="preserve"><value>Command palette</value></data>
+  <data name="zh-CN.CommandPalette.Title" xml:space="preserve"><value>快速命令</value></data>
+  <data name="en-US.CommandPalette.Tooltip" xml:space="preserve"><value>Find a workbench command (Ctrl+K)</value></data>
+  <data name="zh-CN.CommandPalette.Tooltip" xml:space="preserve"><value>搜索工作台命令 (Ctrl+K)</value></data>
+  <data name="en-US.CommandPalette.Search" xml:space="preserve"><value>Find a command</value></data>
+  <data name="zh-CN.CommandPalette.Search" xml:space="preserve"><value>搜索命令</value></data>
+  <data name="en-US.CommandPalette.Empty" xml:space="preserve"><value>No matching commands</value></data>
+  <data name="zh-CN.CommandPalette.Empty" xml:space="preserve"><value>没有匹配的命令</value></data>
   <data name="en-US.Tooltip.TreeSelect" xml:space="preserve"><value>Hold down Ctrl + Shift and mouse over elements in the target app to select them.</value></data>
   <data name="zh-CN.Tooltip.TreeSelect" xml:space="preserve"><value>在目标应用中按住 Ctrl + Shift 并将鼠标悬停在元素上以选择它们。</value></data>
   <data name="en-US.Tab.Properties" xml:space="preserve"><value>Properties</value></data>

@@ -22,6 +22,7 @@ internal static class WorkbenchCommandBarSmoke
         var treeType = Find<ComboBox>(inspector, "TreeTypeComboBox");
         var theme = Find<ComboBox>(inspector, "ThemeComboBox");
         var refresh = Find<Button>(inspector, "RefreshTreeButton");
+        var palette = Find<Button>(inspector, "CommandPaletteButton");
         var status = Find<StatusBar>(inspector, "WorkbenchStatusBar");
 
         Require(chrome.Children.Contains(header) && DockPanel.GetDock(header) == Dock.Top
@@ -30,7 +31,7 @@ internal static class WorkbenchCommandBarSmoke
             "The workbench must dock its menu and command bar in separate rows above the navigation panes.");
 
         var focusVisual = inspector.FindResource("SnoopNext.WorkbenchFocusVisual");
-        foreach (var control in new Control[] { treeType, theme, refresh })
+        foreach (var control in new Control[] { treeType, theme, refresh, palette })
         {
             Require(control.Focusable && control.IsTabStop && ReferenceEquals(control.FocusVisualStyle, focusVisual),
                 control.Name + " must be keyboard reachable and use the workbench focus style.");
@@ -71,7 +72,8 @@ internal static class WorkbenchCommandBarSmoke
                 "Incorrect command bar caption or tool tip in " + language + ".");
             Require(FitsWithin(chrome, menu) && FitsWithin(chrome, commands)
                     && menu.Items.OfType<MenuItem>().All(item => FitsWithin(menu, item))
-                    && FitsWithin(commands, treeType) && FitsWithin(commands, theme) && FitsWithin(commands, refresh),
+                    && FitsWithin(commands, treeType) && FitsWithin(commands, theme)
+                    && FitsWithin(commands, refresh) && FitsWithin(commands, palette),
                 "The menu and command bar controls must fit at the minimum window width in " + language + ".");
             var statusBottom = status.TranslatePoint(new Point(0, status.ActualHeight), chrome).Y;
             Require(status.ActualHeight > 0 && statusBottom <= bounds.Height + 1,
