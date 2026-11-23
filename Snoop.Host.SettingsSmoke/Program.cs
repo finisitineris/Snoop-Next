@@ -334,6 +334,7 @@ internal static class Program
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
+                        WorkbenchPaneSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         InspectorAuxiliaryViewSmoke.Verify();
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();
