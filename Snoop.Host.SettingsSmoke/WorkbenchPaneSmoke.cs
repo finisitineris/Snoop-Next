@@ -88,9 +88,11 @@ internal static class WorkbenchPaneSmoke
                 Arrange(grid);
 
                 Require(HasVisibility(tree, treeShown) && HasVisibility(treeFilter, treeShown)
-                        && HasVisibility(refresh, treeShown) && HasVisibility(treeLabel, treeShown)
+                        && HasVisibility(treeLabel, treeShown)
                         && HasVisibility(treeType, treeShown),
                     "The tree, its header and filter controls should collapse together.");
+                Require(refresh.Visibility == Visibility.Visible && refresh.IsEnabled,
+                    "The workbench refresh command must stay visible with any pane combination.");
                 Require(HasVisibility(properties, propertiesShown) && HasVisibility(diagnostics, diagnosticsShown),
                     "The Properties and Diagnostics panes should collapse independently.");
                 Require(HasVisibility(verticalSplitter, treeShown && (propertiesShown || diagnosticsShown))
