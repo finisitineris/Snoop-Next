@@ -180,6 +180,9 @@
                             </MenuItem.Style>
                         </MenuItem>
                     </MenuItem>
+                    <MenuItem x:Name="ResetWorkbenchLayoutItem"
+                              Header="{localization:InspectorLoc Workbench.ResetLayout}"
+                              Click="HandleResetWorkbenchLayout_OnClick" />
                     <MenuItem Header="{localization:InspectorLoc Menu.ResetSettings}"
                               Click="HandleResetSettings_OnClick" />
                 </MenuItem>
@@ -244,17 +247,17 @@
             </StackPanel>
         </StackPanel>
 
-        <Grid>
+        <Grid x:Name="WorkbenchGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="5*" />
-                <RowDefinition Height="1.5*"
+                <RowDefinition x:Name="PropertiesPaneRow" Height="5*" MinHeight="80" />
+                <RowDefinition x:Name="DiagnosticsPaneRow" Height="1.5*"
                                MinHeight="100" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="2*" />
+                <ColumnDefinition x:Name="TreePaneColumn" Width="1*" MinWidth="120" />
+                <ColumnDefinition x:Name="InspectorPaneColumn" Width="2*" MinWidth="220" />
             </Grid.ColumnDefinitions>
 
             <!-- Filter Combo Box -->
@@ -366,6 +369,8 @@
                           Grid.RowSpan="3"
                           Grid.Column="1"
                           Grid.ColumnSpan="1"
+                          ResizeBehavior="PreviousAndCurrent"
+                          ResizeDirection="Columns"
                           FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                           Width="4"
                           MinHeight="0"
@@ -514,6 +519,8 @@
             <GridSplitter x:Name="DiagnosticsSplitter"
                           Grid.Row="2"
                           Grid.Column="1"
+                          ResizeBehavior="PreviousAndCurrent"
+                          ResizeDirection="Rows"
                           FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                           Height="4"
                           Margin="2 0 2 0"

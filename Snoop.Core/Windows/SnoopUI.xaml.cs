@@ -62,6 +62,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.filterCall = new DelayedCall(this.ProcessFilter, DispatcherPriority.Background);
 
         this.InitializeComponent();
+        this.RestoreWorkbenchLayout();
 
         this.CommandBindings.Add(new(ApplicationCommands.Close, (_, _) => this.Close()));
 
@@ -416,6 +417,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         SnoopWindowUtils.SaveWindowPlacement(this, wp => Settings.Default.SnoopUIWindowPlacement = wp);
 
         base.OnClosing(e);
+
+        if (!e.Cancel)
+        {
+            this.CaptureWorkbenchLayout();
+        }
     }
 
     protected override void OnClosed(EventArgs e)
@@ -924,6 +930,9 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private bool isShuttingDown;
 
+    private double savedTreeFraction;
+    private double savedDiagnosticsFraction;
+
     #endregion
 
     #region INotifyPropertyChanged Members
@@ -940,6 +949,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleMakeSettingsApplicationsSpecific_OnClick(object sender, RoutedEventArgs e)
     {
+        this.CaptureWorkbenchLayout();
         Settings.Default.SettingsFile = SettingsHelper.GetApplicationSpecificSettingsFile();
         Settings.Default.Save();
     }
@@ -955,6 +965,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         Settings.Default.SettingsFile = SettingsHelper.GetDefaultApplicationSettingsFile();
 
         Settings.Default.Reload();
+        this.RestoreWorkbenchLayout();
     }
 
     private void HandleOpenSettingsFolder_OnClick(object sender, RoutedEventArgs e)
@@ -982,6 +993,55 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
     }
 
+    private void RestoreWorkbenchLayout()
+    {
+        var settings = Settings.Default;
+        this.savedTreeFraction = ReadPaneFraction(settings.WorkbenchTreeFraction, 1d / 3);
+        this.savedDiagnosticsFraction = ReadPaneFraction(settings.WorkbenchDiagnosticsFraction, 3d / 13);
+
+        this.TreePaneColumn.Width = new GridLength(this.savedTreeFraction, GridUnitType.Star);
+        this.InspectorPaneColumn.Width = new GridLength(1 - this.savedTreeFraction, GridUnitType.Star);
+        this.DiagnosticsPaneRow.Height = new GridLength(this.savedDiagnosticsFraction, GridUnitType.Star);
+        this.PropertiesPaneRow.Height = new GridLength(1 - this.savedDiagnosticsFraction, GridUnitType.Star);
+    }
+
+    private void CaptureWorkbenchLayout()
+    {
+        var settings = Settings.Default;
+        // Save only changed axes so closing an untouched inspector cannot overwrite another window's layout.
+        if (TryGetChangedFraction(this.TreePaneColumn.Width, this.InspectorPaneColumn.Width, this.savedTreeFraction, out var treeFraction))
+        {
+            settings.WorkbenchTreeFraction = treeFraction.ToString("R", CultureInfo.InvariantCulture);
+            this.savedTreeFraction = treeFraction;
+        }
+
+        if (TryGetChangedFraction(this.DiagnosticsPaneRow.Height, this.PropertiesPaneRow.Height, this.savedDiagnosticsFraction, out var diagnosticsFraction))
+        {
+            settings.WorkbenchDiagnosticsFraction = diagnosticsFraction.ToString("R", CultureInfo.InvariantCulture);
+            this.savedDiagnosticsFraction = diagnosticsFraction;
+        }
+    }
+
+    private static double ReadPaneFraction(string? value, double fallback)
+    {
+        return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction)
+            && fraction is > 0 and < 1 ? fraction : fallback;
+    }
+
+    private static bool TryGetChangedFraction(GridLength pane, GridLength otherPane, double previousFraction, out double fraction)
+    {
+        fraction = pane.Value / (pane.Value + otherPane.Value);
+        return pane.IsStar && otherPane.IsStar && fraction is > 0 and < 1
+            && Math.Abs(fraction - previousFraction) > 0.000001;
+    }
+
+    private void HandleResetWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
+    {
+        Settings.Default.WorkbenchTreeFraction = null;
+        Settings.Default.WorkbenchDiagnosticsFraction = null;
+        this.RestoreWorkbenchLayout();
+    }
+
     private void HandleResetSettings_OnClick(object sender, RoutedEventArgs e)
     {
         if (MessageBox.Show(this, InspectorLocalization.Default["Workbench.ResetSettingsMessage"], string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
@@ -990,6 +1050,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         Settings.Default.Reset();
+        this.RestoreWorkbenchLayout();
 
         // load whether all properties are shown by default
         this.PropertyInspector.ShowDefaults = Settings.Default.ShowDefaults;
