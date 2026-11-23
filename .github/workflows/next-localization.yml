@@ -22,8 +22,9 @@ on:
       - 'Snoop.Core/Infrastructure/SnoopManager.cs'
       - 'Snoop.Core/Localization/**'
       - 'Snoop.Core/Snoop.Core.csproj'
-      - 'Snoop.Core/Windows/SnoopUI.xaml'
-      - 'Snoop.Core/Windows/SnoopUI.xaml.cs'
+      - 'Snoop.Core/Windows/**'
+      - 'Snoop.Core/Views/**'
+      - 'Snoop.Core/Controls/ZoomerControl.xaml'
   workflow_dispatch:
 
 permissions:

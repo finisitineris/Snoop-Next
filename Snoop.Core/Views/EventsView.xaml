@@ -11,6 +11,7 @@
       xmlns:converters="clr-namespace:Snoop.Converters"
       xmlns:d="http://schemas.microsoft.com/expression/interactivedesigner/2006"
       xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+      xmlns:localization="clr-namespace:Snoop.Localization"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:snoop="clr-namespace:Snoop"
       xmlns:views="clr-namespace:Snoop.Views"
@@ -61,7 +62,7 @@
                     <StackPanel Orientation="Horizontal">
                         <ContentControl Content="{Binding EventArgsText}"
                                         Focusable="False" />
-                        <TextBlock Text=" on " />
+                        <TextBlock Text="{localization:InspectorLoc Events.On}" />
                         <TextBlock Text="{Binding Originator.Handler, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
                     </StackPanel>
                     <ContentControl x:Name="Handler"
@@ -70,7 +71,7 @@
                                     Focusable="False"
                                     Visibility="Collapsed">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="Handled by: " />
+                            <TextBlock Text="{localization:InspectorLoc Events.HandledBy}" />
                             <TextBlock Text="{Binding HandledBy, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
                         </StackPanel>
                     </ContentControl>
@@ -86,11 +87,11 @@
                 <Grid Name="Grid"
                       Background="Transparent">
                     <Grid.ToolTip>
-                        <TextBlock Text="Click to select the element that handled this" />
+                        <TextBlock Text="{localization:InspectorLoc Events.SelectHandlerTip}" />
                     </Grid.ToolTip>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding Handler, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
-                        <TextBlock Text=" handled: " />
+                        <TextBlock Text="{localization:InspectorLoc Events.Handled}" />
                         <TextBlock Grid.Column="1"
                                    Text="{Binding Handled}" />
                     </StackPanel>
@@ -106,7 +107,7 @@
     </Grid.RowDefinitions>
 
     <controls:NoSelectionComboBox x:Name="EventChooser"
-                                  Header="Change tracked events"
+                                  Header="{localization:InspectorLoc Events.ChooseTracked}"
                                   Margin="0 0 20 0"
                                   HorizontalAlignment="Stretch"
                                   VerticalAlignment="Stretch"
@@ -115,9 +116,9 @@
                                   IsSynchronizedWithCurrentItem="True"
                                   ItemsSource="{Binding ElementName=Events, Path=AvailableEvents}"
                                   ResetSettingsCommand="{x:Static views:EventsView.ResetEventTrackersToDefaultCommand}"
-                                  ResetSettingsToolTip="Reset the enabled event trackers.">
+                                  ResetSettingsToolTip="{localization:InspectorLoc Events.ResetTrackedTip}">
         <ComboBox.ToolTip>
-            <TextBlock Text="Select which events you want to track." />
+            <TextBlock Text="{localization:InspectorLoc Events.ChooseTrackedTip}" />
         </ComboBox.ToolTip>
     </controls:NoSelectionComboBox>
 
@@ -138,7 +139,7 @@
                   StrokeThickness="2" />
         </Grid>
         <Button.ToolTip>
-            <TextBlock Text="Clear the current list of events." />
+            <TextBlock Text="{localization:InspectorLoc Events.ClearTip}" />
         </Button.ToolTip>
     </Button>
 
@@ -164,7 +165,7 @@
 
     <StackPanel Grid.Row="2"
                 Orientation="Horizontal">
-        <TextBlock Text="Maximum events displayed: " />
+        <TextBlock Text="{localization:InspectorLoc Events.MaximumDisplayed}" />
         <TextBox MinWidth="64"
                  VerticalAlignment="Stretch"
                  Text="{Binding ElementName=Events, Path=MaxEventsDisplayed}" />
