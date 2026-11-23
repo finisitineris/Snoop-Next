@@ -52,6 +52,12 @@
   <data name="zh-CN.Tree.Label" xml:space="preserve"><value>可视化树：</value></data>
   <data name="en-US.Theme.Label" xml:space="preserve"><value>Theme:</value></data>
   <data name="zh-CN.Theme.Label" xml:space="preserve"><value>主题：</value></data>
+  <data name="en-US.Density.Label" xml:space="preserve"><value>Density</value></data>
+  <data name="zh-CN.Density.Label" xml:space="preserve"><value>界面密度</value></data>
+  <data name="en-US.Density.Comfortable" xml:space="preserve"><value>Comfortable</value></data>
+  <data name="zh-CN.Density.Comfortable" xml:space="preserve"><value>舒适</value></data>
+  <data name="en-US.Density.Compact" xml:space="preserve"><value>Compact</value></data>
+  <data name="zh-CN.Density.Compact" xml:space="preserve"><value>紧凑</value></data>
   <data name="en-US.Tooltip.ClearFilter" xml:space="preserve"><value>Clear any filter applied to the tree view</value></data>
   <data name="zh-CN.Tooltip.ClearFilter" xml:space="preserve"><value>清除应用于可视化树的筛选条件</value></data>
   <data name="en-US.Tooltip.ShowBindingErrors" xml:space="preserve"><value>Show only elements with binding errors</value></data>

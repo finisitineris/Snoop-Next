@@ -974,6 +974,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
     }
 
+    private void HandleSetWorkbenchDensity_OnClick(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem { Tag: string density })
+        {
+            Settings.Default.WorkbenchDensity = density;
+        }
+    }
+
     private void HandleResetSettings_OnClick(object sender, RoutedEventArgs e)
     {
         if (MessageBox.Show(this, InspectorLocalization.Default["Workbench.ResetSettingsMessage"], string.Empty, MessageBoxButton.YesNo) == MessageBoxResult.No)
