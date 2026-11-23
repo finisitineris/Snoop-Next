@@ -11,13 +11,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 using Snoop.AttachedProperties;
-using Snoop.Core;
 
 /// <summary>
 ///     This service allows Snoop to mark certain visuals as visual tree roots of its own UI.
 /// </summary>
 public static class SnoopPartsRegistry
 {
+    private static readonly object registryLock = new();
     private static readonly List<WeakReference<Visual>> registeredSnoopVisualTreeRoots = new();
 
     public static bool IsSnoopingSnoop { get; set; }
@@ -40,19 +40,8 @@ public static class SnoopPartsRegistry
             return true;
         }
 
-        foreach (var registeredSnoopVisual in registeredSnoopVisualTreeRoots.ToList())
+        foreach (var snoopVisual in GetSnoopVisualTreeRoots())
         {
-            if (registeredSnoopVisual.TryGetTarget(out var snoopVisual) == false)
-            {
-                registeredSnoopVisualTreeRoots.Remove(registeredSnoopVisual);
-                continue;
-            }
-
-            if (snoopVisual is null)
-            {
-                continue;
-            }
-
             if (ReferenceEquals(dependencyObject, snoopVisual)
                 || (dependencyObject.Dispatcher == snoopVisual.Dispatcher && (dependencyObject as Visual)?.IsDescendantOf(snoopVisual) == true))
             {
@@ -68,11 +57,12 @@ public static class SnoopPartsRegistry
     /// </summary>
     internal static void AddSnoopVisualTreeRoot(Visual root)
     {
-        if (registeredSnoopVisualTreeRoots.Any(x => x.TryGetTarget(out var target) && ReferenceEquals(target, root)) == false)
+        lock (registryLock)
         {
-            registeredSnoopVisualTreeRoots.Add(new(root));
-
-            //ThemeManager.Current.ApplyTheme(Settings.Default.ThemeMode, root);
+            if (!registeredSnoopVisualTreeRoots.Any(x => x.TryGetTarget(out var target) && ReferenceEquals(target, root)))
+            {
+                registeredSnoopVisualTreeRoots.Add(new(root));
+            }
         }
     }
 
@@ -81,22 +71,31 @@ public static class SnoopPartsRegistry
     /// </summary>
     internal static void RemoveSnoopVisualTreeRoot(Visual root)
     {
-        var toRemove = registeredSnoopVisualTreeRoots.FirstOrDefault(x => x.TryGetTarget(out var target) && ReferenceEquals(target, root));
-
-        if (toRemove is not null)
+        lock (registryLock)
         {
-            registeredSnoopVisualTreeRoots.Remove(toRemove);
+            registeredSnoopVisualTreeRoots.RemoveAll(x => !x.TryGetTarget(out var target) || ReferenceEquals(target, root));
         }
     }
 
     internal static IEnumerable<Visual> GetSnoopVisualTreeRoots()
     {
-        foreach (var weakReference in registeredSnoopVisualTreeRoots)
+        lock (registryLock)
         {
-            if (weakReference.TryGetTarget(out var target))
+            var roots = new List<Visual>(registeredSnoopVisualTreeRoots.Count);
+            for (var i = registeredSnoopVisualTreeRoots.Count - 1; i >= 0; i--)
             {
-                yield return target;
+                if (registeredSnoopVisualTreeRoots[i].TryGetTarget(out var target))
+                {
+                    roots.Add(target);
+                }
+                else
+                {
+                    registeredSnoopVisualTreeRoots.RemoveAt(i);
+                }
             }
+
+            roots.Reverse();
+            return roots;
         }
     }
 }

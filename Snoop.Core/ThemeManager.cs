@@ -3,8 +3,11 @@ namespace Snoop.Core;
 using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Snoop.Infrastructure;
@@ -13,46 +16,90 @@ public class ThemeManager
 {
     public static readonly ThemeManager Current = new();
 
-    private readonly ResourceDictionary darkResourceDictionary;
-    private readonly ResourceDictionary lightResourceDictionary;
-
-    public ThemeManager()
-    {
-        this.lightResourceDictionary = (ResourceDictionary)Application.LoadComponent(new Uri("/Snoop.Core;component/Themes/Colors.Light.xaml", UriKind.Relative));
-        this.darkResourceDictionary = Invert(this.lightResourceDictionary, (ResourceDictionary)Application.LoadComponent(new Uri("/Snoop.Core;component/Themes/Colors.Dark.xaml", UriKind.Relative)));
-    }
+    private readonly ConditionalWeakTable<Dispatcher, ThemeResources> resourcesByDispatcher = new();
+    private long themeChange;
 
     public void ApplyTheme(ThemeMode themeMode)
     {
+        var change = Interlocked.Increment(ref this.themeChange);
+        var finalThemeMode = ResolveThemeMode(themeMode);
         foreach (var visual in SnoopPartsRegistry.GetSnoopVisualTreeRoots())
         {
-            this.ApplyTheme(themeMode, visual);
+            if (visual is not Window window)
+            {
+                continue;
+            }
+
+            var dispatcher = window.Dispatcher;
+            if (dispatcher.CheckAccess())
+            {
+                ApplyCurrentTheme();
+            }
+            else if (!dispatcher.HasShutdownStarted)
+            {
+                dispatcher.InvokeAsync(ApplyCurrentTheme);
+            }
+
+            void ApplyCurrentTheme()
+            {
+                // A newer choice on this Dispatcher can overtake an older queued choice.
+                if (Volatile.Read(ref this.themeChange) == change)
+                {
+                    this.ApplyResolvedTheme(finalThemeMode, window);
+                }
+            }
         }
     }
 
     public void ApplyTheme(ThemeMode themeMode, Visual visual)
     {
-        if (visual is not Window window
-            || window.IsInitialized == false)
+        if (visual is Window window)
+        {
+            this.ApplyResolvedTheme(ResolveThemeMode(themeMode), window);
+        }
+    }
+
+    private void ApplyResolvedTheme(ThemeMode themeMode, Window window)
+    {
+        if (!window.IsInitialized || window.Dispatcher.HasShutdownStarted)
         {
             return;
         }
 
-        var finalThemeMode = themeMode is ThemeMode.Auto
+        var resources = this.resourcesByDispatcher.GetValue(window.Dispatcher, _ => new ThemeResources());
+        var resourceDictionary = themeMode is ThemeMode.Dark ? resources.Dark : resources.Light;
+        var resourceDictionaryToRemove = themeMode is ThemeMode.Dark ? resources.Light : resources.Dark;
+        var dictionaries = window.Resources.MergedDictionaries;
+
+        dictionaries.Remove(resourceDictionary);
+        dictionaries.Add(resourceDictionary);
+        dictionaries.Remove(resourceDictionaryToRemove);
+    }
+
+    private static ThemeMode ResolveThemeMode(ThemeMode themeMode)
+    {
+        return themeMode is ThemeMode.Auto
             ? AppsUseLightTheme() ? ThemeMode.Light : ThemeMode.Dark
             : themeMode;
+    }
 
-        var resourceDictionary = finalThemeMode is ThemeMode.Dark
-            ? this.darkResourceDictionary
-            : this.lightResourceDictionary;
+    private sealed class ThemeResources
+    {
+        public ThemeResources()
+        {
+            this.Light = new ResourceDictionary
+            {
+                Source = new Uri("/Snoop.Core;component/Themes/Colors.Light.xaml", UriKind.Relative)
+            };
+            this.Dark = Invert(this.Light, new ResourceDictionary
+            {
+                Source = new Uri("/Snoop.Core;component/Themes/Colors.Dark.xaml", UriKind.Relative)
+            });
+        }
 
-        var resourceDictionaryToRemove = finalThemeMode is ThemeMode.Dark
-            ? this.lightResourceDictionary
-            : this.darkResourceDictionary;
+        public ResourceDictionary Light { get; }
 
-        window.Resources.MergedDictionaries.Remove(resourceDictionary);
-        window.Resources.MergedDictionaries.Add(resourceDictionary);
-        window.Resources.MergedDictionaries.Remove(resourceDictionaryToRemove);
+        public ResourceDictionary Dark { get; }
     }
 
     [MustUseReturnValue]

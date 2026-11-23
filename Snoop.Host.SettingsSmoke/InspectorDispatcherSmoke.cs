@@ -6,14 +6,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Threading;
+using Snoop.Core;
 using Snoop.Localization;
+using Snoop.Windows;
 
 internal static class InspectorDispatcherSmoke
 {
     private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+    private const string BackgroundKey = "Snoop.Brushes.Default.Background";
 
-    public static void Verify(Application app, MenuItem primaryMenu)
+    public static void Verify(Application app, SnoopUI inspector, MenuItem primaryMenu)
     {
         var localization = InspectorLocalization.Default;
         var originalLanguage = localization.LanguageTag;
@@ -62,6 +66,7 @@ internal static class InspectorDispatcherSmoke
             VerifyState("文件");
             localization.SetLanguage("en-US");
             VerifyState("File");
+            VerifyThemes(app, inspector, secondary);
 
             void VerifyState(string expectedHeader)
             {
@@ -107,6 +112,96 @@ internal static class InspectorDispatcherSmoke
         }
 
         Console.WriteLine("PASS: inspector File bindings refreshed on two STA Dispatchers with cultures and application resources intact");
+    }
+
+    private static void VerifyThemes(Application app, SnoopUI inspector, Dispatcher secondaryDispatcher)
+    {
+        var manager = ThemeManager.Current;
+        var originalTheme = Snoop.Core.Settings.Default.ThemeMode;
+        var resources = app.Resources;
+        var resourceCount = resources.Count;
+        var dictionaryCount = resources.MergedDictionaries.Count;
+        var targetBrush = Brushes.Magenta;
+        var target = new Window();
+        target.Resources[BackgroundKey] = targetBrush;
+        var secondaryWindow = secondaryDispatcher.Invoke(() =>
+        {
+            var window = new SnoopBaseWindow();
+            window.BeginInit();
+            var border = new Border();
+            border.SetResourceReference(Border.BackgroundProperty, BackgroundKey);
+            window.Content = border;
+            window.EndInit();
+            return window;
+        }, DispatcherPriority.Normal, CancellationToken.None, Timeout);
+
+        try
+        {
+            var dark = Color.FromRgb(46, 46, 46);
+            manager.ApplyTheme(ThemeMode.Dark);
+            var primaryDark = VerifyTheme(dark);
+            var secondaryDark = secondaryDispatcher.Invoke(() => ((Border)secondaryWindow.Content).Background,
+                DispatcherPriority.ApplicationIdle, CancellationToken.None, Timeout);
+            Require(!ReferenceEquals(primaryDark, secondaryDark), "Inspectors on different Dispatchers shared a theme brush.");
+
+            manager.ApplyTheme(ThemeMode.Light);
+            VerifyTheme(Colors.White);
+
+            // Queue a theme change for the second Dispatcher while it is busy.
+            // Its newer selection must still win when the older queued operation runs.
+            using var secondaryEntered = new ManualResetEventSlim();
+            using var primaryUpdated = new ManualResetEventSlim();
+            var update = secondaryDispatcher.InvokeAsync(() =>
+            {
+                secondaryEntered.Set();
+                Require(primaryUpdated.Wait(Timeout), "The primary theme update did not finish.");
+                manager.ApplyTheme(ThemeMode.Light);
+            }, DispatcherPriority.Send);
+
+            try
+            {
+                Require(secondaryEntered.Wait(Timeout), "The second theme update did not start.");
+                manager.ApplyTheme(ThemeMode.Dark);
+            }
+            finally
+            {
+                primaryUpdated.Set();
+            }
+
+            Require(update.Task.Wait(Timeout), "The second theme update did not finish.");
+            inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+            VerifyTheme(Colors.White);
+
+            manager.ApplyTheme(ThemeMode.Auto);
+            var systemColor = ((SolidColorBrush)inspector.FindResource(BackgroundKey)).Color;
+            Require(systemColor == Colors.White || systemColor == dark, "System theme did not resolve to a known palette.");
+            VerifyTheme(systemColor);
+
+            Require(ReferenceEquals(app.Resources, resources) && resources.Count == resourceCount
+                    && resources.MergedDictionaries.Count == dictionaryCount
+                    && ReferenceEquals(target.FindResource(BackgroundKey), targetBrush),
+                "Applying an inspector theme changed the target's resources.");
+
+            SolidColorBrush VerifyTheme(Color color)
+            {
+                var brush = (SolidColorBrush)inspector.FindResource(BackgroundKey);
+                Require(brush.Color == color, "The primary inspector did not apply the selected theme.");
+                secondaryDispatcher.Invoke(() =>
+                {
+                    Require(((SolidColorBrush)((Border)secondaryWindow.Content).Background).Color == color,
+                        "The second inspector did not refresh its dynamic theme resource.");
+                }, DispatcherPriority.ApplicationIdle, CancellationToken.None, Timeout);
+                return brush;
+            }
+        }
+        finally
+        {
+            secondaryDispatcher.Invoke(secondaryWindow.Close, DispatcherPriority.Normal, CancellationToken.None, Timeout);
+            target.Close();
+            manager.ApplyTheme(originalTheme);
+        }
+
+        Console.WriteLine("PASS: inspector themes refresh on two STA Dispatchers without changing target resources");
     }
 
     private static void Require(bool condition, string message)
