@@ -33,7 +33,8 @@ $matrix = @(
     @{ Project = 'BasicTestHarness'; Framework = 'net10.0-windows'; Architecture = 'x64' },
     @{ Project = 'HelloWorld'; Framework = 'net462'; Architecture = 'x64' },
     @{ Project = 'HelloWorld'; Framework = 'net10.0-windows'; Architecture = 'x64' },
-    @{ Project = 'MultipleDispatchers'; Framework = 'net462'; Architecture = 'x64' }
+    @{ Project = 'MultipleDispatchers'; Framework = 'net462'; Architecture = 'x64' },
+    @{ Project = 'MultipleDispatchers'; Framework = 'net10.0-windows'; Architecture = 'x64' }
 )
 $results = @()
 $commit = (& git -C $repoRoot rev-parse HEAD)

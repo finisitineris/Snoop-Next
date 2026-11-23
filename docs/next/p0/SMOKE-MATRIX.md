@@ -38,3 +38,9 @@ Use the repository-owned CLR4 x64 `sn009-clr4-multi-dispatcher-harness` artifact
 4. Select **Refresh target state** on both fixture windows. Compare cultures and Primary's shared application resource marker and counts with step 1. Confirm both targets remain responsive, then close the workbenches and fixture windows.
 
 Record the MSI and fixture artifact links, Windows and CLR versions, same PID and AppDomain, distinct thread IDs, both workbench languages, and the culture and resource comparison. Keep the manual result pending until the real attach and reattach sequence is complete.
+
+## .NET 10 x64 target load and language reattach
+
+On a Windows x64 machine with the .NET 10 Desktop Runtime (x64), extract all files from the framework-dependent `sn009-net10-x64-multi-dispatcher-harness` artifact. Run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that both windows report `Runtime: 10.0.x (64-bit)`, share a PID and AppDomain ID, and have distinct STA thread IDs.
+
+Use the same attach and reattach sequence and target-state comparison as the CLR4 multi-Dispatcher case above. In each workbench, select the target root window and confirm that its `Title` property matches the corresponding fixture window. Record the actual runtime version, both workbench languages, and the before and after target state. Keep the .NET 10 attach and reattach results pending until those steps are run against this target.
