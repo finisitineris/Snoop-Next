@@ -705,42 +705,92 @@
                        BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                        BorderThickness="0 1 0 0"
                        Foreground="{DynamicResource SnoopNext.Brush.Text}">
-                <StackPanel Orientation="Horizontal">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{localization:InspectorLoc Status.KeyboardFocusedElement}" />
-                        <TextBlock Margin="3 0 0 0">
-                            <controls:NoFocusHyperlink Command="{x:Static windows:SnoopUI.SelectFocusCommand}"
+                <StatusBarItem HorizontalContentAlignment="Stretch" Padding="4 2">
+                    <Grid x:Name="WorkbenchStatusContent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <DockPanel Margin="0 0 8 0">
+                            <TextBlock x:Name="WorkbenchTargetLabel"
+                                       DockPanel.Dock="Left"
+                                       Margin="0 0 4 0"
+                                       Text="{localization:InspectorLoc Status.TargetProcess}" />
+                            <TextBlock x:Name="WorkbenchTargetValue"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Text" Value="{Binding InspectedProcess, Mode=OneWay}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RootTreeItem}" Value="{x:Null}">
+                                                <Setter Property="Text" Value="{localization:InspectorLoc Status.NoTarget}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+
+                        <DockPanel Grid.Column="1">
+                            <TextBlock x:Name="WorkbenchSelectionLabel"
+                                       DockPanel.Dock="Left"
+                                       Margin="0 0 4 0"
+                                       Text="{localization:InspectorLoc Status.SelectedElement}" />
+                            <TextBlock x:Name="WorkbenchSelectionValue"
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
+                                <TextBlock.Style>
+                                    <Style TargetType="{x:Type TextBlock}">
+                                        <Setter Property="Text" Value="{Binding CurrentSelection.DisplayName, Mode=OneWay}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding CurrentSelection}" Value="{x:Null}">
+                                                <Setter Property="Text" Value="{localization:InspectorLoc Status.NoSelection}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DockPanel>
+
+                        <TextBlock Grid.Row="1" Margin="0 1 8 0" TextTrimming="CharacterEllipsis">
+                            <Run Text="{localization:InspectorLoc Status.KeyboardFocusedElement}" /><Run Text=" " />
+                            <controls:NoFocusHyperlink x:Name="WorkbenchSelectFocusLink"
+                                                       Command="{x:Static windows:SnoopUI.SelectFocusCommand}"
                                                        CommandParameter="{Binding CurrentFocus}"
                                                        Focusable="False">
-                                <TextBlock Text="{Binding CurrentFocus, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
+                                <Run Text="{Binding CurrentFocus, Converter={x:Static converters:ObjectToStringConverter.Instance}, Mode=OneWay}" />
                             </controls:NoFocusHyperlink>
+                            <TextBlock.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.KeyboardFocusDescription}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
+                                </StackPanel>
+                            </TextBlock.ToolTip>
                         </TextBlock>
-                        <TextBlock Text="; " />
-                        <StackPanel.ToolTip>
-                            <StackPanel>
-                                <TextBlock Text="{localization:InspectorLoc Tooltip.KeyboardFocusDescription}" />
-                                <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
-                            </StackPanel>
-                        </StackPanel.ToolTip>
-                    </StackPanel>
 
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{localization:InspectorLoc Status.CurrentFocusScope}" />
-                        <TextBlock Margin="3 0 0 0">
-                            <controls:NoFocusHyperlink Command="{x:Static windows:SnoopUI.SelectFocusScopeCommand}"
+                        <TextBlock Grid.Row="1" Grid.Column="1" Margin="0 1 0 0" TextTrimming="CharacterEllipsis">
+                            <Run Text="{localization:InspectorLoc Status.CurrentFocusScope}" /><Run Text=" " />
+                            <controls:NoFocusHyperlink x:Name="WorkbenchSelectFocusScopeLink"
+                                                       Command="{x:Static windows:SnoopUI.SelectFocusScopeCommand}"
                                                        CommandParameter="{Binding CurrentFocusScope}"
                                                        Focusable="False">
-                                <TextBlock Text="{Binding CurrentFocusScope, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
+                                <Run Text="{Binding CurrentFocusScope, Converter={x:Static converters:ObjectToStringConverter.Instance}, Mode=OneWay}" />
                             </controls:NoFocusHyperlink>
+                            <TextBlock.ToolTip>
+                                <StackPanel>
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.FocusScopeDescription}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
+                                </StackPanel>
+                            </TextBlock.ToolTip>
                         </TextBlock>
-                        <StackPanel.ToolTip>
-                            <StackPanel>
-                                <TextBlock Text="{localization:InspectorLoc Tooltip.FocusScopeDescription}" />
-                                <TextBlock Text="{localization:InspectorLoc Tooltip.ClickLinkToSelect}" />
-                            </StackPanel>
-                        </StackPanel.ToolTip>
-                    </StackPanel>
-                </StackPanel>
+                    </Grid>
+                </StatusBarItem>
             </StatusBar>
         </Grid>
     </DockPanel>

@@ -138,8 +138,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         {
             this.rootTreeItem = value;
             this.OnPropertyChanged();
+            this.OnPropertyChanged(nameof(this.InspectedProcess));
         }
     }
+
+    /// <summary>
+    /// Identifies the process that owns the inspected tree.
+    /// </summary>
+    public string? InspectedProcess => this.RootTreeItem is null ? null : inspectedProcessIdentity.Value;
 
     /// <summary>
     /// Root element of the tree.
@@ -917,6 +923,12 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private const double PropertiesTreeFraction = 3d / 10;
     private const double PropertiesDiagnosticsFraction = 1d / 6;
     private const double LayoutFractionTolerance = 0.000001;
+
+    private static readonly Lazy<string> inspectedProcessIdentity = new(() =>
+    {
+        using var process = Process.GetCurrentProcess();
+        return FormattableString.Invariant($"{process.ProcessName} · PID {process.Id}");
+    });
 
     private bool fromTextBox = true;
     private readonly DispatcherTimer filterTimer;

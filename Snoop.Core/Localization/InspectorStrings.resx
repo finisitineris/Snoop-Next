@@ -130,6 +130,14 @@
   <data name="zh-CN.Tooltip.PreviewTitle" xml:space="preserve"><value>预览</value></data>
   <data name="en-US.Tooltip.PreviewDescription" xml:space="preserve"><value>Previews the currently selected element.</value></data>
   <data name="zh-CN.Tooltip.PreviewDescription" xml:space="preserve"><value>预览当前选中的元素。</value></data>
+  <data name="en-US.Status.TargetProcess" xml:space="preserve"><value>Target:</value></data>
+  <data name="zh-CN.Status.TargetProcess" xml:space="preserve"><value>目标：</value></data>
+  <data name="en-US.Status.NoTarget" xml:space="preserve"><value>No target</value></data>
+  <data name="zh-CN.Status.NoTarget" xml:space="preserve"><value>无目标</value></data>
+  <data name="en-US.Status.SelectedElement" xml:space="preserve"><value>Selected:</value></data>
+  <data name="zh-CN.Status.SelectedElement" xml:space="preserve"><value>选中：</value></data>
+  <data name="en-US.Status.NoSelection" xml:space="preserve"><value>No selection</value></data>
+  <data name="zh-CN.Status.NoSelection" xml:space="preserve"><value>未选择元素</value></data>
   <data name="en-US.Status.KeyboardFocusedElement" xml:space="preserve"><value>Keyboard.FocusedElement:</value></data>
   <data name="zh-CN.Status.KeyboardFocusedElement" xml:space="preserve"><value>键盘焦点元素：</value></data>
   <data name="en-US.Tooltip.KeyboardFocusDescription" xml:space="preserve"><value>This is the object that has keyboard focus.</value></data>
