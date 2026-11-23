@@ -1020,6 +1020,51 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.ApplyWorkbenchPaneLayout();
     }
 
+    private void HandleNavigateToTree_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.ShowWorkbenchPane(this.ShowTreePaneItem);
+        this.filterComboBox.Focus();
+    }
+
+    private void HandleNavigateToProperties_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchPropertiesTab);
+    }
+
+    private void HandleNavigateToDiagnostics_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchDiagnosticsTab);
+    }
+
+    private void HandleNavigateToEvents_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchEventsTab);
+    }
+
+    private void HandleNavigateToPreview_OnClick(object sender, RoutedEventArgs e)
+    {
+        this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);
+    }
+
+    private void NavigateToWorkbenchTab(MenuItem paneMenuItem, TabControl pane, TabItem tab)
+    {
+        this.ShowWorkbenchPane(paneMenuItem);
+        pane.SelectedItem = tab;
+        tab.Focus();
+    }
+
+    private void ShowWorkbenchPane(MenuItem paneMenuItem)
+    {
+        if (paneMenuItem.IsChecked)
+        {
+            return;
+        }
+
+        this.ReadExpandedWorkbenchFractions();
+        paneMenuItem.IsChecked = true;
+        this.ApplyWorkbenchPaneLayout();
+    }
+
     private void ApplyWorkbenchPaneLayout()
     {
         var showTree = this.ShowTreePaneItem.IsChecked;
