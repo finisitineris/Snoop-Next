@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 
 /// <summary>
 /// Interaction logic for ScreenShotDialog.xaml
@@ -62,7 +63,7 @@ public partial class ScreenshotDialog
             DefaultExt = "png",
             InitialDirectory = Path.GetDirectoryName(filePath),
             FileName = Path.GetFileNameWithoutExtension(filePath),
-            Filter = "Image File (*.png)|*.png",
+            Filter = InspectorLocalization.Default["Screenshot.PngFilterLabel"] + "|*.png",
             FilterIndex = 0
         };
 

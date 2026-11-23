@@ -132,4 +132,98 @@
   <data name="zh-CN.Status.CurrentFocusScope" xml:space="preserve"><value>当前焦点范围：</value></data>
   <data name="en-US.Tooltip.FocusScopeDescription" xml:space="preserve"><value>This is the object that is the root of the current focus scope.</value></data>
   <data name="zh-CN.Tooltip.FocusScopeDescription" xml:space="preserve"><value>这是当前焦点范围的根对象。</value></data>
+  <data name="en-US.FilterEditor.Title" xml:space="preserve"><value>Edit Filter Sets</value></data>
+  <data name="zh-CN.FilterEditor.Title" xml:space="preserve"><value>编辑筛选集</value></data>
+  <data name="en-US.FilterEditor.Name" xml:space="preserve"><value>Name:</value></data>
+  <data name="zh-CN.FilterEditor.Name" xml:space="preserve"><value>名称：</value></data>
+  <data name="en-US.FilterEditor.Properties" xml:space="preserve"><value>Properties:</value></data>
+  <data name="zh-CN.FilterEditor.Properties" xml:space="preserve"><value>属性：</value></data>
+  <data name="en-US.FilterEditor.AddNew" xml:space="preserve"><value>Add new</value></data>
+  <data name="zh-CN.FilterEditor.AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="en-US.FilterEditor.NewFilter" xml:space="preserve"><value>New Filter</value></data>
+  <data name="zh-CN.FilterEditor.NewFilter" xml:space="preserve"><value>新建筛选集</value></data>
+  <data name="en-US.Common.Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="zh-CN.Common.Delete" xml:space="preserve"><value>删除</value></data>
+  <data name="en-US.Common.OK" xml:space="preserve"><value>OK</value></data>
+  <data name="zh-CN.Common.OK" xml:space="preserve"><value>确定</value></data>
+  <data name="en-US.Common.Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="zh-CN.Common.Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="en-US.Common.Save" xml:space="preserve"><value>Save</value></data>
+  <data name="zh-CN.Common.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="en-US.Common.Reset" xml:space="preserve"><value>Reset</value></data>
+  <data name="zh-CN.Common.Reset" xml:space="preserve"><value>重置</value></data>
+  <data name="en-US.Screenshot.Title" xml:space="preserve"><value>Save Screenshot</value></data>
+  <data name="zh-CN.Screenshot.Title" xml:space="preserve"><value>保存截图</value></data>
+  <data name="en-US.Screenshot.PngFilterLabel" xml:space="preserve"><value>Image File (*.png)</value></data>
+  <data name="zh-CN.Screenshot.PngFilterLabel" xml:space="preserve"><value>PNG 图像文件 (*.png)</value></data>
+  <data name="en-US.Zoomer.Title" xml:space="preserve"><value>Zoomer</value></data>
+  <data name="zh-CN.Zoomer.Title" xml:space="preserve"><value>缩放查看器</value></data>
+  <data name="en-US.Zoomer.Fix" xml:space="preserve"><value>Fix</value></data>
+  <data name="zh-CN.Zoomer.Fix" xml:space="preserve"><value>修复</value></data>
+  <data name="en-US.Zoomer.View2D" xml:space="preserve"><value>2D view</value></data>
+  <data name="zh-CN.Zoomer.View2D" xml:space="preserve"><value>二维视图</value></data>
+  <data name="en-US.Zoomer.View3D" xml:space="preserve"><value>3D view</value></data>
+  <data name="zh-CN.Zoomer.View3D" xml:space="preserve"><value>三维视图</value></data>
+  <data name="en-US.Zoomer.View2DShortcut" xml:space="preserve"><value>2D view (F2)</value></data>
+  <data name="zh-CN.Zoomer.View2DShortcut" xml:space="preserve"><value>二维视图 (F2)</value></data>
+  <data name="en-US.Zoomer.View3DShortcut" xml:space="preserve"><value>3D view (F3)</value></data>
+  <data name="zh-CN.Zoomer.View3DShortcut" xml:space="preserve"><value>三维视图 (F3)</value></data>
+  <data name="en-US.Zoomer.TextFormattingWarning" xml:space="preserve"><value>"TextOptions.TextFormattingMode" is set to "Display" which causes fonts to render blurry.</value></data>
+  <data name="zh-CN.Zoomer.TextFormattingWarning" xml:space="preserve"><value>“TextOptions.TextFormattingMode”设为“Display”会使字体显示模糊。</value></data>
+  <data name="en-US.Zoomer.BackgroundTooltip" xml:space="preserve"><value>Use this slider to adjust the Background from white to black.</value></data>
+  <data name="zh-CN.Zoomer.BackgroundTooltip" xml:space="preserve"><value>使用此滑块将背景从白色调至黑色。</value></data>
+  <data name="en-US.Zoomer.SeparationTooltip" xml:space="preserve"><value>3D separation</value></data>
+  <data name="zh-CN.Zoomer.SeparationTooltip" xml:space="preserve"><value>三维层间距</value></data>
+  <data name="en-US.Diagnostics.Errors" xml:space="preserve"><value>Errors</value></data>
+  <data name="zh-CN.Diagnostics.Errors" xml:space="preserve"><value>错误</value></data>
+  <data name="en-US.Diagnostics.Warnings" xml:space="preserve"><value>Warnings</value></data>
+  <data name="zh-CN.Diagnostics.Warnings" xml:space="preserve"><value>警告</value></data>
+  <data name="en-US.Diagnostics.Information" xml:space="preserve"><value>Informations</value></data>
+  <data name="zh-CN.Diagnostics.Information" xml:space="preserve"><value>信息</value></data>
+  <data name="en-US.Diagnostics.ChooseProviders" xml:space="preserve"><value>Change active diagnostic providers</value></data>
+  <data name="zh-CN.Diagnostics.ChooseProviders" xml:space="preserve"><value>更改启用的诊断提供程序</value></data>
+  <data name="en-US.Diagnostics.ChooseProvidersTip" xml:space="preserve"><value>Select which diagnostic providers should be active.</value></data>
+  <data name="zh-CN.Diagnostics.ChooseProvidersTip" xml:space="preserve"><value>选择要启用的诊断提供程序。</value></data>
+  <data name="en-US.Diagnostics.ResetProvidersTip" xml:space="preserve"><value>Reset to default settings</value></data>
+  <data name="zh-CN.Diagnostics.ResetProvidersTip" xml:space="preserve"><value>恢复默认设置</value></data>
+  <data name="en-US.Diagnostics.Export" xml:space="preserve"><value>Export</value></data>
+  <data name="zh-CN.Diagnostics.Export" xml:space="preserve"><value>导出</value></data>
+  <data name="en-US.Diagnostics.ColumnLevel" xml:space="preserve"><value>Level</value></data>
+  <data name="zh-CN.Diagnostics.ColumnLevel" xml:space="preserve"><value>级别</value></data>
+  <data name="en-US.Diagnostics.ColumnLevelTip" xml:space="preserve"><value>This column shows the level of the diagnostic.</value></data>
+  <data name="zh-CN.Diagnostics.ColumnLevelTip" xml:space="preserve"><value>此列显示诊断的级别。</value></data>
+  <data name="en-US.Diagnostics.ColumnName" xml:space="preserve"><value>Name</value></data>
+  <data name="zh-CN.Diagnostics.ColumnName" xml:space="preserve"><value>名称</value></data>
+  <data name="en-US.Diagnostics.ColumnNameTip" xml:space="preserve"><value>This column shows the name of the diagnostic.</value></data>
+  <data name="zh-CN.Diagnostics.ColumnNameTip" xml:space="preserve"><value>此列显示诊断的名称。</value></data>
+  <data name="en-US.Diagnostics.ColumnDescription" xml:space="preserve"><value>Description</value></data>
+  <data name="zh-CN.Diagnostics.ColumnDescription" xml:space="preserve"><value>描述</value></data>
+  <data name="en-US.Diagnostics.ColumnDescriptionTip" xml:space="preserve"><value>This column gives additional info on any diagnostic.</value></data>
+  <data name="zh-CN.Diagnostics.ColumnDescriptionTip" xml:space="preserve"><value>此列显示诊断的详细信息。</value></data>
+  <data name="en-US.Diagnostics.ColumnArea" xml:space="preserve"><value>Area</value></data>
+  <data name="zh-CN.Diagnostics.ColumnArea" xml:space="preserve"><value>类别</value></data>
+  <data name="en-US.Diagnostics.ColumnAreaTip" xml:space="preserve"><value>This column shows the area of the diagnostic.</value></data>
+  <data name="zh-CN.Diagnostics.ColumnAreaTip" xml:space="preserve"><value>此列显示诊断所属的类别。</value></data>
+  <data name="en-US.Diagnostics.ExportCompletedTitle" xml:space="preserve"><value>Data exported</value></data>
+  <data name="zh-CN.Diagnostics.ExportCompletedTitle" xml:space="preserve"><value>数据已导出</value></data>
+  <data name="en-US.Diagnostics.ExportCompletedMessage" xml:space="preserve"><value>The data has been exported to "{0}".</value></data>
+  <data name="zh-CN.Diagnostics.ExportCompletedMessage" xml:space="preserve"><value>数据已导出到“{0}”。</value></data>
+  <data name="en-US.Events.On" xml:space="preserve"><value> on </value></data>
+  <data name="zh-CN.Events.On" xml:space="preserve"><value> 发生于 </value></data>
+  <data name="en-US.Events.HandledBy" xml:space="preserve"><value>Handled by: </value></data>
+  <data name="zh-CN.Events.HandledBy" xml:space="preserve"><value>处理方：</value></data>
+  <data name="en-US.Events.SelectHandlerTip" xml:space="preserve"><value>Click to select the element that handled this</value></data>
+  <data name="zh-CN.Events.SelectHandlerTip" xml:space="preserve"><value>单击以选择处理此事件的元素</value></data>
+  <data name="en-US.Events.Handled" xml:space="preserve"><value> handled: </value></data>
+  <data name="zh-CN.Events.Handled" xml:space="preserve"><value> 已处理：</value></data>
+  <data name="en-US.Events.ChooseTracked" xml:space="preserve"><value>Change tracked events</value></data>
+  <data name="zh-CN.Events.ChooseTracked" xml:space="preserve"><value>更改跟踪的事件</value></data>
+  <data name="en-US.Events.ResetTrackedTip" xml:space="preserve"><value>Reset the enabled event trackers.</value></data>
+  <data name="zh-CN.Events.ResetTrackedTip" xml:space="preserve"><value>重置已启用的事件跟踪器。</value></data>
+  <data name="en-US.Events.ChooseTrackedTip" xml:space="preserve"><value>Select which events you want to track.</value></data>
+  <data name="zh-CN.Events.ChooseTrackedTip" xml:space="preserve"><value>选择要跟踪的事件。</value></data>
+  <data name="en-US.Events.ClearTip" xml:space="preserve"><value>Clear the current list of events.</value></data>
+  <data name="zh-CN.Events.ClearTip" xml:space="preserve"><value>清除当前事件列表。</value></data>
+  <data name="en-US.Events.MaximumDisplayed" xml:space="preserve"><value>Maximum events displayed: </value></data>
+  <data name="zh-CN.Events.MaximumDisplayed" xml:space="preserve"><value>最多显示的事件数：</value></data>
 </root>

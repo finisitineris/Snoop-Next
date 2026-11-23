@@ -4,6 +4,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Windows.Input;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Diagnostics;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 
 public partial class DiagnosticsView
 {
@@ -263,7 +265,12 @@ public partial class DiagnosticsView
                 DiagnosticsExporter.Export(this.DiagnosticsItemsView.Cast<DiagnosticItem>(), streamWriter);
             }
 
-            MessageBox.Show($"The data has been exported to \"{filePath}\".", "Data exported", MessageBoxButton.OK, MessageBoxImage.Information);
+            var localization = InspectorLocalization.Default;
+            MessageBox.Show(
+                string.Format(CultureInfo.InvariantCulture, localization["Diagnostics.ExportCompletedMessage"], filePath),
+                localization["Diagnostics.ExportCompletedTitle"],
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
         }
         finally
         {

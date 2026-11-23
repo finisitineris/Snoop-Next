@@ -8,10 +8,11 @@
                          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                         xmlns:localization="clr-namespace:Snoop.Localization"
                          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                          xmlns:snoop="clr-namespace:Snoop"
                          xmlns:windows="clr-namespace:Snoop.Windows"
-                         Title="Save Screenshot"
+                         Title="{localization:InspectorLoc Screenshot.Title}"
                          Width="400"
                          Height="400"
                          Padding="10"
@@ -110,13 +111,13 @@
                         Margin="0 0 5 5"
                         Command="{x:Static windows:ScreenshotDialog.SaveCommand}"
                         IsDefault="True">
-                    <TextBlock Text="Save" />
+                    <TextBlock Text="{localization:InspectorLoc Common.Save}" />
                 </Button>
                 <Button Width="75"
                         Margin="0 0 5 5"
                         Command="{x:Static windows:ScreenshotDialog.CancelCommand}"
                         IsCancel="True">
-                    <TextBlock Text="Cancel" />
+                    <TextBlock Text="{localization:InspectorLoc Common.Cancel}" />
                 </Button>
             </StackPanel>
         </Grid>

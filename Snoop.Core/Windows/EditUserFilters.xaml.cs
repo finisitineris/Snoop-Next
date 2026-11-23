@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using JetBrains.Annotations;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 
 public partial class EditUserFilters : INotifyPropertyChanged
 {
@@ -78,7 +79,7 @@ public partial class EditUserFilters : INotifyPropertyChanged
         var newSet =
             new PropertyFilterSet
             {
-                DisplayName = "New Filter",
+                DisplayName = InspectorLocalization.Default["FilterEditor.NewFilter"],
                 Properties = new[] { "prop1,prop2" }
             };
         this.ItemsSource.Add(newSet);

@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:diagnostics="clr-namespace:Snoop.Infrastructure.Diagnostics"
              xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+             xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:Snoop.Views"
              x:Name="self"
@@ -50,7 +51,7 @@
                     <TextBlock Margin="4 0 0 0"
                                Text="{Binding ElementName=self, Path=ErrorCount}" />
                     <TextBlock Margin="4 0 0 0"
-                               Text="Errors" />
+                               Text="{localization:InspectorLoc Diagnostics.Errors}" />
                 </StackPanel>
             </ToggleButton>
             <ToggleButton Margin="0 0 4 0"
@@ -63,7 +64,7 @@
                     <TextBlock Margin="4 0 0 0"
                                Text="{Binding ElementName=self, Path=WarningCount}" />
                     <TextBlock Margin="4 0 0 0"
-                               Text="Warnings" />
+                               Text="{localization:InspectorLoc Diagnostics.Warnings}" />
                 </StackPanel>
             </ToggleButton>
             <ToggleButton Margin="0 0 4 0"
@@ -76,11 +77,11 @@
                     <TextBlock Margin="4 0 0 0"
                                Text="{Binding ElementName=self, Path=InformationCount}" />
                     <TextBlock Margin="4 0 0 0"
-                               Text="Informations" />
+                               Text="{localization:InspectorLoc Diagnostics.Information}" />
                 </StackPanel>
             </ToggleButton>
 
-            <controls:NoSelectionComboBox Header="Change active diagnostic providers"
+            <controls:NoSelectionComboBox Header="{localization:InspectorLoc Diagnostics.ChooseProviders}"
                                           Margin="10 0 20 0"
                                           HorizontalAlignment="Stretch"
                                           VerticalAlignment="Stretch"
@@ -88,14 +89,15 @@
                                           GroupHeaderTemplate="{StaticResource CategoryTemplate}"
                                           IsSynchronizedWithCurrentItem="True"
                                           ItemsSource="{Binding ElementName=self, Path=DiagnosticProvidersView}"
-                                          ResetSettingsCommand="{x:Static views:DiagnosticsView.ResetEnabledDiagnosticsToDefaultCommand}">
+                                          ResetSettingsCommand="{x:Static views:DiagnosticsView.ResetEnabledDiagnosticsToDefaultCommand}"
+                                          ResetSettingsToolTip="{localization:InspectorLoc Diagnostics.ResetProvidersTip}">
                 <controls:NoSelectionComboBox.ToolTip>
-                    <TextBlock Text="Select which diagnostic providers should be active." />
+                    <TextBlock Text="{localization:InspectorLoc Diagnostics.ChooseProvidersTip}" />
                 </controls:NoSelectionComboBox.ToolTip>
             </controls:NoSelectionComboBox>
 
             <Button Click="ExportDiagnostics_OnClick"
-                    Content="Export" />
+                    Content="{localization:InspectorLoc Diagnostics.Export}" />
         </StackPanel>
 
         <ListView x:Name="diagnostics"
@@ -122,10 +124,10 @@
                 <GridView>
                     <GridViewColumn Width="50">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Level">
+                            <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnLevel}">
                                 <TextBlock.ToolTip>
                                     <StackPanel>
-                                        <TextBlock Text="This column shows the level of the diagnostic." />
+                                        <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnLevelTip}" />
                                     </StackPanel>
                                 </TextBlock.ToolTip>
                             </TextBlock>
@@ -145,10 +147,10 @@
 
                     <GridViewColumn Width="120">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Name">
+                            <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnName}">
                                 <TextBlock.ToolTip>
                                     <StackPanel>
-                                        <TextBlock Text="This column shows the name of the diagnostic." />
+                                        <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnNameTip}" />
                                     </StackPanel>
                                 </TextBlock.ToolTip>
                             </TextBlock>
@@ -168,10 +170,10 @@
 
                     <GridViewColumn Width="300">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Description">
+                            <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnDescription}">
                                 <TextBlock.ToolTip>
                                     <StackPanel>
-                                        <TextBlock Text="This column gives additional info on any diagnostic." />
+                                        <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnDescriptionTip}" />
                                     </StackPanel>
                                 </TextBlock.ToolTip>
                             </TextBlock>
@@ -191,10 +193,10 @@
 
                     <GridViewColumn Width="70">
                         <GridViewColumn.Header>
-                            <TextBlock Text="Area">
+                            <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnArea}">
                                 <TextBlock.ToolTip>
                                     <StackPanel>
-                                        <TextBlock Text="This column shows the area of the diagnostic." />
+                                        <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnAreaTip}" />
                                     </StackPanel>
                                 </TextBlock.ToolTip>
                             </TextBlock>

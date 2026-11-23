@@ -273,7 +273,10 @@ internal static class Program
                     var resourceEnumerator = resourceSet.GetEnumerator();
                     while (resourceEnumerator.MoveNext())
                     {
-                        resourceKeys.Add((string)resourceEnumerator.Key);
+                        var key = (string)resourceEnumerator.Key;
+                        Require(resourceEnumerator.Value is string value && !string.IsNullOrWhiteSpace(value),
+                            "empty or invalid inspector resource " + key);
+                        resourceKeys.Add(key);
                     }
 
                     var englishKeyCount = 0;
@@ -287,7 +290,9 @@ internal static class Program
                         }
                     }
 
-                    Require(englishKeyCount == 64, "unexpected number of paired inspector resource keys");
+                    Require(englishKeyCount > 0 && resourceKeys.Count == englishKeyCount * 2,
+                        "inspector resources must contain matching en-US and zh-CN key sets");
+                    Console.WriteLine($"PASS: {englishKeyCount} non-empty inspector resource pairs");
 
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
@@ -326,6 +331,7 @@ internal static class Program
 
                         InspectorFilterSmoke.Verify(inspector);
                         InspectorDispatcherSmoke.Verify(app, fileMenu);
+                        InspectorAuxiliaryViewSmoke.Verify();
                     }
                     finally
                     {
