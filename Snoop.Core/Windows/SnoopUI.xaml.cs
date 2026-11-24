@@ -195,6 +195,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
             if (this.currentSelection is not null)
             {
+                this.ObservePreviewPathNames(false);
                 this.SaveEditedProperties(this.currentSelection);
                 this.currentSelection.IsSelected = false;
             }
@@ -204,6 +205,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             if (this.CurrentSelection is not null)
             {
                 this.CurrentSelection.IsSelected = true;
+                this.ObservePreviewPathNames(true);
             }
 
             if (this.isShuttingDown)
@@ -212,6 +214,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             }
 
             this.OnPropertyChanged();
+            this.OnPropertyChanged(nameof(this.PreviewSelectionPath));
 
             if (this.currentSelection is null)
             {
@@ -241,6 +244,43 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     }
 
     private TreeItem? currentSelection;
+
+    public string? PreviewSelectionPath
+    {
+        get
+        {
+            if (this.currentSelection is null)
+            {
+                return null;
+            }
+
+            var segments = new Stack<string>();
+            for (var item = this.currentSelection; item is not null; item = item.Parent)
+            {
+                segments.Push(string.IsNullOrWhiteSpace(item.Name) ? item.TargetType.Name : item.Name);
+            }
+
+            return string.Join(" › ", segments);
+        }
+    }
+
+    private void ObservePreviewPathNames(bool observe)
+    {
+        for (var item = this.currentSelection; item is not null; item = item.Parent)
+        {
+            if (observe)
+            {
+                PropertyChangedEventManager.AddHandler(item, this.HandlePreviewPathNameChanged, nameof(TreeItem.Name));
+            }
+            else
+            {
+                PropertyChangedEventManager.RemoveHandler(item, this.HandlePreviewPathNameChanged, nameof(TreeItem.Name));
+            }
+        }
+    }
+
+    private void HandlePreviewPathNameChanged(object? sender, PropertyChangedEventArgs e)
+        => this.OnPropertyChanged(nameof(this.PreviewSelectionPath));
 
     #endregion
 
