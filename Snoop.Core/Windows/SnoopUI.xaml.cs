@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
@@ -65,6 +66,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         this.InitializeComponent();
         this.RestoreWorkbenchLayout();
+        this.WorkbenchGrid.LayoutUpdated += this.HandleWorkbenchLayoutUpdated;
+        this.WorkbenchCenterGrid.SizeChanged += (_, e) =>
+        {
+            if (e.WidthChanged)
+            {
+                this.UpdateWorkbenchColumnLimits();
+            }
+        };
 
         this.CommandBindings.Add(new(ApplicationCommands.Close, (_, _) => this.Close()));
 
@@ -451,6 +460,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         CacheManager.Instance.DecreaseUsageCount();
 
+        this.WorkbenchGrid.LayoutUpdated -= this.HandleWorkbenchLayoutUpdated;
         InputManager.Current.PreProcessInput -= this.HandlePreProcessInputForTracking;
 
         this.filterTimer.Stop();
@@ -1013,13 +1023,30 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     #region Private Fields
 
-    private const double DefaultTreeFraction = 1d / 3;
-    private const double DefaultDiagnosticsFraction = 3d / 13;
-    private const double PreviewTreeFraction = 1d / 4;
-    private const double PreviewDiagnosticsFraction = 1d / 2;
-    private const double PropertiesTreeFraction = 3d / 10;
-    private const double PropertiesDiagnosticsFraction = 1d / 6;
-    private const double LayoutFractionTolerance = 0.000001;
+    private const double SplitterSize = 5;
+    private const double MinimumCenterWidth = 240;
+    private const double MinimumTreeWidth = 165;
+    private const double MaximumTreeWidth = 500;
+    private const double MinimumPropertiesWidth = 240;
+    private const double MaximumPropertiesWidth = 590;
+    private const double MinimumDiagnosticsHeight = 110;
+    private const double MaximumDiagnosticsHeight = 440;
+    private const double MinimumPreviewHeight = 110;
+    private const double LayoutSizeTolerance = 0.001;
+
+    // The v1.1 reference window's work area, after allowing for the chrome.
+    private const double ReferenceWorkbenchWidth = 1360;
+    private const double ReferenceWorkbenchHeight = 790;
+    private static readonly WorkbenchPaneSizes DefaultLayout = new(282, 354, 210);
+    private static readonly WorkbenchPaneSizes PreviewLayout = new(210, 285, 160);
+    private static readonly WorkbenchPaneSizes PropertiesLayout = new(270, 460, 240);
+
+    private struct WorkbenchPaneSizes(double tree, double properties, double diagnostics)
+    {
+        public double Tree = tree;
+        public double Properties = properties;
+        public double Diagnostics = diagnostics;
+    }
 
     private static readonly Lazy<string> inspectedProcessIdentity = new(() =>
     {
@@ -1047,10 +1074,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private bool isShuttingDown;
 
-    private double savedTreeFraction;
-    private double savedDiagnosticsFraction;
-    private double expandedTreeFraction;
-    private double expandedDiagnosticsFraction;
+    private WorkbenchPaneSizes savedWorkbenchSizes;
+    private WorkbenchPaneSizes expandedWorkbenchSizes;
+    private WorkbenchPaneSizes appliedWorkbenchSizes;
+    private double workbenchViewportWidth = ReferenceWorkbenchWidth;
+    private double workbenchViewportHeight = ReferenceWorkbenchHeight;
+    private bool savedTreeCollapsed;
+    private bool savedPropertiesCollapsed;
+    private bool savedDiagnosticsCollapsed;
 
     #endregion
 
@@ -1115,17 +1146,32 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private void RestoreWorkbenchLayout()
     {
         var settings = Settings.Default;
-        this.savedTreeFraction = ReadPaneFraction(settings.WorkbenchTreeFraction, DefaultTreeFraction);
-        this.savedDiagnosticsFraction = ReadPaneFraction(settings.WorkbenchDiagnosticsFraction, DefaultDiagnosticsFraction);
-        this.expandedTreeFraction = this.savedTreeFraction;
-        this.expandedDiagnosticsFraction = this.savedDiagnosticsFraction;
+        this.savedWorkbenchSizes = new WorkbenchPaneSizes(
+            ReadPaneSize(
+                settings.WorkbenchTreeWidth,
+                ReadLegacyPaneSize(settings.WorkbenchTreeFraction, ReferenceWorkbenchWidth, DefaultLayout.Tree),
+                MinimumTreeWidth,
+                MaximumTreeWidth),
+            ReadPaneSize(settings.WorkbenchPropertiesWidth, DefaultLayout.Properties, MinimumPropertiesWidth, MaximumPropertiesWidth),
+            ReadPaneSize(
+                settings.WorkbenchDiagnosticsHeight,
+                ReadLegacyPaneSize(settings.WorkbenchDiagnosticsFraction, ReferenceWorkbenchHeight, DefaultLayout.Diagnostics),
+                MinimumDiagnosticsHeight,
+                MaximumDiagnosticsHeight));
+        this.expandedWorkbenchSizes = this.savedWorkbenchSizes;
+        this.savedTreeCollapsed = settings.WorkbenchTreeCollapsed;
+        this.savedPropertiesCollapsed = settings.WorkbenchPropertiesCollapsed;
+        this.savedDiagnosticsCollapsed = settings.WorkbenchDiagnosticsCollapsed;
+        this.ShowTreePaneItem.IsChecked = !this.savedTreeCollapsed;
+        this.ShowPropertiesPaneItem.IsChecked = !this.savedPropertiesCollapsed;
+        this.ShowDiagnosticsPaneItem.IsChecked = !this.savedDiagnosticsCollapsed;
         this.ApplyWorkbenchPaneLayout();
         this.RefreshWorkbenchLayoutMenu();
     }
 
     private void HandleToggleWorkbenchPane_OnClick(object sender, RoutedEventArgs e)
     {
-        this.ReadExpandedWorkbenchFractions();
+        this.ReadExpandedWorkbenchSizes();
         this.ApplyWorkbenchPaneLayout();
     }
 
@@ -1162,7 +1208,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
                 this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchEventsTab);
                 break;
             case WorkbenchDestination.Preview:
-                this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);
+                this.WorkbenchPreviewPane.Focus();
                 break;
             case WorkbenchDestination.Output:
                 this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchOutputTab);
@@ -1184,140 +1230,277 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             return;
         }
 
-        this.ReadExpandedWorkbenchFractions();
+        this.ReadExpandedWorkbenchSizes();
         paneMenuItem.IsChecked = true;
         this.ApplyWorkbenchPaneLayout();
     }
 
     private void ApplyWorkbenchPaneLayout()
     {
-        var showTree = this.ShowTreePaneItem.IsChecked;
-        var showProperties = this.ShowPropertiesPaneItem.IsChecked;
-        var showDiagnostics = this.ShowDiagnosticsPaneItem.IsChecked;
-        var showRight = showProperties || showDiagnostics;
-        var treeVisibility = showTree ? Visibility.Visible : Visibility.Collapsed;
-        var collapsedSize = new GridLength(0);
-
+        var treeVisibility = this.ShowTreePaneItem.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+        this.TreeWorkbenchPane.Visibility = treeVisibility;
         this.TreeHeaderLabel.Visibility = treeVisibility;
         this.TreeTypeComboBox.Visibility = treeVisibility;
-        this.Tree.Visibility = treeVisibility;
-        this.filterComboBox.Visibility = treeVisibility;
-        this.PropertiesWorkbenchPane.Visibility = showProperties ? Visibility.Visible : Visibility.Collapsed;
-        this.DiagnosticsWorkbenchPane.Visibility = showDiagnostics ? Visibility.Visible : Visibility.Collapsed;
-        this.GridSplitter.Visibility = showTree && showRight ? Visibility.Visible : Visibility.Collapsed;
-        this.DiagnosticsSplitter.Visibility = showProperties && showDiagnostics ? Visibility.Visible : Visibility.Collapsed;
+        this.GridSplitter.Visibility = treeVisibility;
+        this.PropertiesWorkbenchPane.Visibility = this.ShowPropertiesPaneItem.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+        this.PropertiesSplitter.Visibility = this.PropertiesWorkbenchPane.Visibility;
+        this.DiagnosticsWorkbenchPane.Visibility = this.ShowDiagnosticsPaneItem.IsChecked ? Visibility.Visible : Visibility.Collapsed;
+        this.DiagnosticsSplitter.Visibility = this.DiagnosticsWorkbenchPane.Visibility;
 
-        this.TreePaneColumn.MinWidth = showTree ? 120 : 0;
-        this.InspectorPaneColumn.MinWidth = showRight ? 220 : 0;
-        this.PropertiesPaneRow.MinHeight = showProperties ? 80 : 0;
-        this.DiagnosticsPaneRow.MinHeight = showDiagnostics ? 100 : 0;
-
-        // Retain one star column for the status bar and one star row for a tree-only layout.
-        this.TreePaneColumn.Width = showTree ? new GridLength(this.expandedTreeFraction, GridUnitType.Star) : collapsedSize;
-        this.InspectorPaneColumn.Width = showRight || !showTree ? new GridLength(1 - this.expandedTreeFraction, GridUnitType.Star) : collapsedSize;
-        this.PropertiesPaneRow.Height = showProperties || !showDiagnostics ? new GridLength(1 - this.expandedDiagnosticsFraction, GridUnitType.Star) : collapsedSize;
-        this.DiagnosticsPaneRow.Height = showDiagnostics ? new GridLength(this.expandedDiagnosticsFraction, GridUnitType.Star) : collapsedSize;
-
-        Grid.SetRow(this.DiagnosticsWorkbenchPane, showProperties ? 2 : 0);
-        Grid.SetRowSpan(this.DiagnosticsWorkbenchPane, showProperties ? 1 : 3);
+        this.ApplyWorkbenchColumns();
+        this.ApplyWorkbenchRows();
     }
 
-    private void ReadExpandedWorkbenchFractions()
+    private void HandleWorkbenchLayoutUpdated(object? sender, EventArgs e)
     {
-        // A closed splitter axis retains the last ratio measured with both panes open.
-        if (this.GridSplitter.Visibility == Visibility.Visible
-            && TryGetPaneFraction(this.TreePaneColumn.Width, this.InspectorPaneColumn.Width, out var treeFraction))
+        // The grid can measure larger than the space it was assigned when its pixel tracks are up against their minima.
+        var slot = LayoutInformation.GetLayoutSlot(this.WorkbenchGrid);
+        if (slot.Width <= 0 || slot.Height <= 0)
         {
-            this.expandedTreeFraction = treeFraction;
+            return;
         }
 
-        if (this.DiagnosticsSplitter.Visibility == Visibility.Visible
-            && TryGetPaneFraction(this.DiagnosticsPaneRow.Height, this.PropertiesPaneRow.Height, out var diagnosticsFraction))
+        var statusHeight = Math.Max(0, LayoutInformation.GetLayoutSlot(this.WorkbenchStatusBar).Height);
+        var height = Math.Max(0, slot.Height - statusHeight);
+        var widthChanged = SizeChangedFrom(slot.Width, this.workbenchViewportWidth);
+        var heightChanged = SizeChangedFrom(height, this.workbenchViewportHeight);
+        if (!widthChanged && !heightChanged)
         {
-            this.expandedDiagnosticsFraction = diagnosticsFraction;
+            return;
+        }
+
+        this.ReadExpandedWorkbenchSizes();
+        if (widthChanged)
+        {
+            this.workbenchViewportWidth = slot.Width;
+            this.ApplyWorkbenchColumns();
+        }
+
+        if (heightChanged)
+        {
+            this.workbenchViewportHeight = height;
+            this.ApplyWorkbenchRows();
+        }
+    }
+
+    private void ApplyWorkbenchColumns()
+    {
+        var showTree = this.ShowTreePaneItem.IsChecked;
+        var showProperties = this.ShowPropertiesPaneItem.IsChecked;
+        var treeSplitterWidth = showTree ? SplitterSize : 0;
+        var propertiesSplitterWidth = showProperties ? SplitterSize : 0;
+        this.TreeSplitterColumn.Width = new GridLength(treeSplitterWidth);
+        this.PropertiesSplitterColumn.Width = new GridLength(propertiesSplitterWidth);
+        var availableWidth = this.GetAvailableWorkbenchWidth();
+        var centerMinimum = Math.Min(MinimumCenterWidth, availableWidth);
+        var lateralBudget = availableWidth - centerMinimum;
+        var treeMinimum = showTree ? MinimumTreeWidth : 0;
+        var propertiesMinimum = showProperties ? MinimumPropertiesWidth : 0;
+
+        // At narrow widths, leave room to move the splitters while keeping the preview usable.
+        if (treeMinimum + propertiesMinimum > lateralBudget)
+        {
+            var scale = 0.8 * lateralBudget / (treeMinimum + propertiesMinimum);
+            treeMinimum *= scale;
+            propertiesMinimum *= scale;
+        }
+
+        var treeExtra = showTree ? Math.Max(0, this.expandedWorkbenchSizes.Tree - treeMinimum) : 0;
+        var propertiesExtra = showProperties ? Math.Max(0, this.expandedWorkbenchSizes.Properties - propertiesMinimum) : 0;
+        var totalExtra = treeExtra + propertiesExtra;
+        var extraBudget = Math.Max(0, lateralBudget - treeMinimum - propertiesMinimum);
+        var extraScale = totalExtra > 0
+            ? Math.Min(1, extraBudget / totalExtra)
+            : 0;
+
+        this.appliedWorkbenchSizes.Tree = treeMinimum + (treeExtra * extraScale);
+        this.appliedWorkbenchSizes.Properties = propertiesMinimum + (propertiesExtra * extraScale);
+        this.TreePaneColumn.MinWidth = treeMinimum;
+        this.TreePaneColumn.Width = new GridLength(this.appliedWorkbenchSizes.Tree);
+        this.CenterPaneColumn.MinWidth = centerMinimum;
+        this.InspectorPaneColumn.MinWidth = propertiesMinimum;
+        this.InspectorPaneColumn.Width = new GridLength(this.appliedWorkbenchSizes.Properties);
+        this.UpdateWorkbenchColumnLimits();
+    }
+
+    private double GetAvailableWorkbenchWidth()
+    {
+        return Math.Max(0, this.workbenchViewportWidth - this.TreeSplitterColumn.Width.Value - this.PropertiesSplitterColumn.Width.Value);
+    }
+
+    private void UpdateWorkbenchColumnLimits()
+    {
+        // Pixel-to-star splitters enforce the pixel pane's limits. Include the room needed by its neighbors.
+        var lateralBudget = this.GetAvailableWorkbenchWidth() - this.CenterPaneColumn.MinWidth;
+        this.TreePaneColumn.MaxWidth = BoundSize(lateralBudget - this.InspectorPaneColumn.Width.Value, this.TreePaneColumn.MinWidth, MaximumTreeWidth);
+        this.InspectorPaneColumn.MaxWidth = BoundSize(lateralBudget - this.TreePaneColumn.Width.Value, this.InspectorPaneColumn.MinWidth, MaximumPropertiesWidth);
+    }
+
+    private void ApplyWorkbenchRows()
+    {
+        var showDiagnostics = this.ShowDiagnosticsPaneItem.IsChecked;
+        var splitterHeight = showDiagnostics ? SplitterSize : 0;
+        var availableHeight = Math.Max(0, this.workbenchViewportHeight - splitterHeight);
+        var diagnosticsMinimum = showDiagnostics ? Math.Min(MinimumDiagnosticsHeight, availableHeight / 2) : 0;
+        var previewMinimum = Math.Min(MinimumPreviewHeight, availableHeight - diagnosticsMinimum);
+        this.appliedWorkbenchSizes.Diagnostics = showDiagnostics
+            ? Math.Min(this.expandedWorkbenchSizes.Diagnostics, availableHeight - previewMinimum)
+            : 0;
+
+        this.PreviewPaneRow.MinHeight = previewMinimum;
+        this.DiagnosticsSplitterRow.Height = new GridLength(splitterHeight);
+        this.DiagnosticsPaneRow.MinHeight = diagnosticsMinimum;
+        this.DiagnosticsPaneRow.MaxHeight = Math.Min(MaximumDiagnosticsHeight, availableHeight - previewMinimum);
+        this.DiagnosticsPaneRow.Height = new GridLength(this.appliedWorkbenchSizes.Diagnostics);
+    }
+
+    private void ReadExpandedWorkbenchSizes()
+    {
+        // Compare with the applied sizes so passive window clamps and folded panes are never saved as edits.
+        if (this.GridSplitter.Visibility == Visibility.Visible)
+        {
+            ReadSplitterEdit(
+                this.TreePaneColumn.Width.Value, ref this.appliedWorkbenchSizes.Tree, ref this.expandedWorkbenchSizes.Tree, MinimumTreeWidth, MaximumTreeWidth);
+        }
+
+        if (this.PropertiesSplitter.Visibility == Visibility.Visible)
+        {
+            ReadSplitterEdit(
+                this.InspectorPaneColumn.Width.Value, ref this.appliedWorkbenchSizes.Properties, ref this.expandedWorkbenchSizes.Properties, MinimumPropertiesWidth, MaximumPropertiesWidth);
+        }
+
+        if (this.DiagnosticsSplitter.Visibility == Visibility.Visible)
+        {
+            ReadSplitterEdit(
+                this.DiagnosticsPaneRow.Height.Value, ref this.appliedWorkbenchSizes.Diagnostics, ref this.expandedWorkbenchSizes.Diagnostics, MinimumDiagnosticsHeight, MaximumDiagnosticsHeight);
+        }
+    }
+
+    private static void ReadSplitterEdit(double current, ref double applied, ref double expanded, double minimum, double maximum)
+    {
+        if (SizeChangedFrom(current, applied))
+        {
+            // In a compact window, apply the drag delta to the requested size for the expanded layout.
+            expanded = BoundSize(expanded + (current - applied), minimum, maximum);
+            applied = current;
         }
     }
 
     private void CaptureWorkbenchLayout()
     {
-        this.ReadExpandedWorkbenchFractions();
+        this.ReadExpandedWorkbenchSizes();
         var settings = Settings.Default;
         // Save only changed axes so closing an untouched inspector cannot overwrite another window's layout.
-        if (Math.Abs(this.expandedTreeFraction - this.savedTreeFraction) > LayoutFractionTolerance)
+        if (SizeChangedFrom(this.expandedWorkbenchSizes.Tree, this.savedWorkbenchSizes.Tree))
         {
-            settings.WorkbenchTreeFraction = this.expandedTreeFraction.ToString("R", CultureInfo.InvariantCulture);
-            this.savedTreeFraction = this.expandedTreeFraction;
+            settings.WorkbenchTreeWidth = FormatPaneSize(this.expandedWorkbenchSizes.Tree);
         }
 
-        if (Math.Abs(this.expandedDiagnosticsFraction - this.savedDiagnosticsFraction) > LayoutFractionTolerance)
+        if (SizeChangedFrom(this.expandedWorkbenchSizes.Properties, this.savedWorkbenchSizes.Properties))
         {
-            settings.WorkbenchDiagnosticsFraction = this.expandedDiagnosticsFraction.ToString("R", CultureInfo.InvariantCulture);
-            this.savedDiagnosticsFraction = this.expandedDiagnosticsFraction;
+            settings.WorkbenchPropertiesWidth = FormatPaneSize(this.expandedWorkbenchSizes.Properties);
+        }
+
+        if (SizeChangedFrom(this.expandedWorkbenchSizes.Diagnostics, this.savedWorkbenchSizes.Diagnostics))
+        {
+            settings.WorkbenchDiagnosticsHeight = FormatPaneSize(this.expandedWorkbenchSizes.Diagnostics);
+        }
+
+        this.savedWorkbenchSizes = this.expandedWorkbenchSizes;
+        var treeCollapsed = !this.ShowTreePaneItem.IsChecked;
+        if (treeCollapsed != this.savedTreeCollapsed)
+        {
+            settings.WorkbenchTreeCollapsed = treeCollapsed;
+            this.savedTreeCollapsed = treeCollapsed;
+        }
+
+        var propertiesCollapsed = !this.ShowPropertiesPaneItem.IsChecked;
+        if (propertiesCollapsed != this.savedPropertiesCollapsed)
+        {
+            settings.WorkbenchPropertiesCollapsed = propertiesCollapsed;
+            this.savedPropertiesCollapsed = propertiesCollapsed;
+        }
+
+        var diagnosticsCollapsed = !this.ShowDiagnosticsPaneItem.IsChecked;
+        if (diagnosticsCollapsed != this.savedDiagnosticsCollapsed)
+        {
+            settings.WorkbenchDiagnosticsCollapsed = diagnosticsCollapsed;
+            this.savedDiagnosticsCollapsed = diagnosticsCollapsed;
         }
     }
 
-    private static double ReadPaneFraction(string? value, double fallback)
+    private static double ReadLegacyPaneSize(string? value, double referenceLength, double fallback)
     {
         return double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction)
-            && fraction is > 0 and < 1 ? fraction : fallback;
+            && fraction is > 0 and < 1 ? referenceLength * fraction : fallback;
     }
 
-    private static bool TryGetPaneFraction(GridLength pane, GridLength otherPane, out double fraction)
+    private static double ReadPaneSize(string? value, double fallback, double minimum, double maximum)
     {
-        fraction = pane.Value / (pane.Value + otherPane.Value);
-        return pane.IsStar && otherPane.IsStar && fraction is > 0 and < 1;
+        var size = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+            && parsed is > 0 and < double.PositiveInfinity ? parsed : fallback;
+        return BoundSize(size, minimum, maximum);
     }
 
-    private void ShowAllWorkbenchPanes()
-    {
-        this.ShowTreePaneItem.IsChecked = true;
-        this.ShowPropertiesPaneItem.IsChecked = true;
-        this.ShowDiagnosticsPaneItem.IsChecked = true;
-    }
+    private static double BoundSize(double size, double minimum, double maximum)
+        => Math.Max(minimum, Math.Min(maximum, size));
+
+    private static bool SizeChangedFrom(double current, double previous)
+        => Math.Abs(current - previous) > LayoutSizeTolerance;
+
+    private static string? FormatPaneSize(double? size)
+        => size?.ToString("R", CultureInfo.InvariantCulture);
 
     private void HandleResetWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
     {
-        this.ApplyWorkbenchLayoutPreset(null, null);
+        this.ApplyWorkbenchLayoutPreset(null);
     }
 
     private void HandlePreviewWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
     {
-        this.ApplyWorkbenchLayoutPreset(PreviewTreeFraction, PreviewDiagnosticsFraction);
+        this.ApplyWorkbenchLayoutPreset(PreviewLayout);
     }
 
     private void HandlePropertiesWorkbenchLayout_OnClick(object sender, RoutedEventArgs e)
     {
-        this.ApplyWorkbenchLayoutPreset(PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+        this.ApplyWorkbenchLayoutPreset(PropertiesLayout);
     }
 
-    private void ApplyWorkbenchLayoutPreset(double? treeFraction, double? diagnosticsFraction)
+    private void ApplyWorkbenchLayoutPreset(WorkbenchPaneSizes? preset)
     {
-        Settings.Default.WorkbenchTreeFraction = treeFraction?.ToString("R", CultureInfo.InvariantCulture);
-        Settings.Default.WorkbenchDiagnosticsFraction = diagnosticsFraction?.ToString("R", CultureInfo.InvariantCulture);
-        this.ShowAllWorkbenchPanes();
+        var settings = Settings.Default;
+        settings.WorkbenchTreeFraction = null;
+        settings.WorkbenchDiagnosticsFraction = null;
+        settings.WorkbenchTreeWidth = FormatPaneSize(preset?.Tree);
+        settings.WorkbenchPropertiesWidth = FormatPaneSize(preset?.Properties);
+        settings.WorkbenchDiagnosticsHeight = FormatPaneSize(preset?.Diagnostics);
+        settings.WorkbenchTreeCollapsed = false;
+        settings.WorkbenchPropertiesCollapsed = false;
+        settings.WorkbenchDiagnosticsCollapsed = false;
         this.RestoreWorkbenchLayout();
     }
 
     private void HandleWorkbenchLayoutMenuOpened(object sender, RoutedEventArgs e)
     {
-        this.ReadExpandedWorkbenchFractions();
+        this.ReadExpandedWorkbenchSizes();
         this.RefreshWorkbenchLayoutMenu();
     }
 
     private void RefreshWorkbenchLayoutMenu()
     {
-        this.DefaultWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(DefaultTreeFraction, DefaultDiagnosticsFraction);
-        this.PreviewWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PreviewTreeFraction, PreviewDiagnosticsFraction);
-        this.PropertiesWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+        this.DefaultWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(DefaultLayout);
+        this.PreviewWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PreviewLayout);
+        this.PropertiesWorkbenchLayoutItem.IsChecked = this.MatchesWorkbenchLayout(PropertiesLayout);
         var custom = !this.DefaultWorkbenchLayoutItem.IsChecked && !this.PreviewWorkbenchLayoutItem.IsChecked && !this.PropertiesWorkbenchLayoutItem.IsChecked;
         this.CustomWorkbenchLayoutItem.IsChecked = custom;
         this.CustomWorkbenchLayoutItem.Visibility = custom ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private bool MatchesWorkbenchLayout(double treeFraction, double diagnosticsFraction)
+    private bool MatchesWorkbenchLayout(WorkbenchPaneSizes layout)
     {
-        return Math.Abs(this.expandedTreeFraction - treeFraction) <= LayoutFractionTolerance
-            && Math.Abs(this.expandedDiagnosticsFraction - diagnosticsFraction) <= LayoutFractionTolerance;
+        return !SizeChangedFrom(this.expandedWorkbenchSizes.Tree, layout.Tree)
+            && !SizeChangedFrom(this.expandedWorkbenchSizes.Properties, layout.Properties)
+            && !SizeChangedFrom(this.expandedWorkbenchSizes.Diagnostics, layout.Diagnostics);
     }
 
     private void HandleResetSettings_OnClick(object sender, RoutedEventArgs e)
@@ -1328,7 +1511,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         Settings.Default.Reset();
-        this.ShowAllWorkbenchPanes();
         this.RestoreWorkbenchLayout();
 
         // load whether all properties are shown by default

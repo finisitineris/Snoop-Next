@@ -22,8 +22,10 @@ internal static class WorkbenchOutputDockSmoke
         }
 
         var chrome = Find<DockPanel>(inspector, "WorkbenchChrome");
+        var center = Find<Grid>(inspector, "WorkbenchCenterGrid");
         var properties = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
         var eventsTab = Find<TabItem>(inspector, "WorkbenchEventsTab");
+        var previewPane = Find<FrameworkElement>(inspector, "WorkbenchPreviewPane");
         var showDiagnostics = Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem");
         var listener = Find<DebugListenerControl>(inspector, "debugListenerControl");
         var textbox = Find<TextBox>(listener, "textBoxDebugContent");
@@ -33,7 +35,9 @@ internal static class WorkbenchOutputDockSmoke
         var filtersMenu = Find<Menu>(listener, "OutputFiltersMenu");
         var filters = (FiltersViewModel)listener.DataContext;
         Require(!properties.Items.Contains(output) && ReferenceEquals(output.Content, listener)
-                && diagnostics.Items.IndexOf(output) == diagnostics.Items.IndexOf(eventsTab) + 1,
+                && diagnostics.Items.IndexOf(output) == diagnostics.Items.IndexOf(eventsTab) + 1
+                && center.Children.Contains(diagnostics) && center.Children.Contains(previewPane)
+                && Grid.GetRow(previewPane) < Grid.GetRow(diagnostics),
             "The Output tab must reuse the debug listener after Events in the diagnostics dock.");
         Require(ReferenceEquals(label.Target, search), "The output search label must identify its text box.");
         Require(!filtersMenu.IsMainMenu, "The Output filters menu must leave Alt and F10 activation to the workbench menu.");
@@ -75,6 +79,7 @@ internal static class WorkbenchOutputDockSmoke
             InspectorLocalization.Default.SetLanguage("zh-CN");
             diagnostics.SelectedItem = eventsTab;
             SetDiagnosticsVisible(false);
+            Require(previewPane.Visibility == Visibility.Visible, "Folding output diagnostics must leave Preview available.");
             SetDiagnosticsVisible(true);
             Require(ReferenceEquals(diagnostics.SelectedItem, eventsTab), "Restoring the diagnostics dock changed its active tab.");
             diagnostics.SelectedItem = output;
@@ -165,9 +170,7 @@ internal static class WorkbenchOutputDockSmoke
             var frame = SystemParameters.WindowNonClientFrameThickness;
             var width = inspector.MinWidth - frame.Left - frame.Right;
             var height = inspector.MinHeight - frame.Top - frame.Bottom;
-            chrome.Measure(new Size(width, height));
-            chrome.Arrange(new Rect(0, 0, width, height));
-            DrainDispatcher();
+            WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, width, height));
 
             Require(search.ActualWidth > 16 && search.ActualHeight > 0 && clear.ActualWidth > 0 && clear.ActualHeight > 0
                     && clear.TranslatePoint(new Point(clear.ActualWidth, 0), listener).X <= listener.ActualWidth + 1,

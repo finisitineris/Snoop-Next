@@ -32,7 +32,7 @@ internal static class InspectorThemeResourceSmoke
             var chrome = Find<DockPanel>("WorkbenchChrome");
             var status = Find<StatusBar>("WorkbenchStatusBar");
             var focusStyle = (Style)inspector.FindResource("SnoopNext.WorkbenchFocusVisual");
-            foreach (var name in new[] { "TreeTypeComboBox", "ThemeComboBox", "RefreshTreeButton", "GridSplitter", "DiagnosticsSplitter" })
+            foreach (var name in new[] { "TreeTypeComboBox", "ThemeComboBox", "RefreshTreeButton", "GridSplitter", "PropertiesSplitter", "DiagnosticsSplitter" })
             {
                 if (!ReferenceEquals(Find<Control>(name).FocusVisualStyle, focusStyle))
                 {

@@ -121,6 +121,18 @@ public sealed class Settings : SettingsBase<Settings>
 
     public string? WorkbenchDiagnosticsFraction { get; set; }
 
+    public string? WorkbenchTreeWidth { get; set; }
+
+    public string? WorkbenchPropertiesWidth { get; set; }
+
+    public string? WorkbenchDiagnosticsHeight { get; set; }
+
+    public bool WorkbenchTreeCollapsed { get; set; }
+
+    public bool WorkbenchPropertiesCollapsed { get; set; }
+
+    public bool WorkbenchDiagnosticsCollapsed { get; set; }
+
     public ObservableCollection<PropertyFilterSet> UserDefinedPropertyFilterSets { get; private set; } = new();
 
     public ObservableCollection<SnoopSingleFilter> SnoopDebugFilters { get; private set; } = new();
@@ -185,6 +197,12 @@ public sealed class Settings : SettingsBase<Settings>
         this.ZoomerWindowPlacement = settings.ZoomerWindowPlacement;
         this.WorkbenchTreeFraction = settings.WorkbenchTreeFraction;
         this.WorkbenchDiagnosticsFraction = settings.WorkbenchDiagnosticsFraction;
+        this.WorkbenchTreeWidth = settings.WorkbenchTreeWidth;
+        this.WorkbenchPropertiesWidth = settings.WorkbenchPropertiesWidth;
+        this.WorkbenchDiagnosticsHeight = settings.WorkbenchDiagnosticsHeight;
+        this.WorkbenchTreeCollapsed = settings.WorkbenchTreeCollapsed;
+        this.WorkbenchPropertiesCollapsed = settings.WorkbenchPropertiesCollapsed;
+        this.WorkbenchDiagnosticsCollapsed = settings.WorkbenchDiagnosticsCollapsed;
 
         this.UserDefinedPropertyFilterSets.UpdateWith(settings.UserDefinedPropertyFilterSets);
         this.SnoopDebugFilters.UpdateWith(settings.SnoopDebugFilters);

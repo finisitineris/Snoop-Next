@@ -416,122 +416,132 @@
 
         <Grid x:Name="WorkbenchGrid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition x:Name="PropertiesPaneRow" Height="5*" />
-                <RowDefinition x:Name="DiagnosticsPaneRow" Height="1.5*" />
+                <RowDefinition />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="TreePaneColumn" Width="1*" />
-                <ColumnDefinition x:Name="InspectorPaneColumn" Width="2*" />
+                <ColumnDefinition x:Name="TreePaneColumn" Width="282" />
+                <ColumnDefinition x:Name="TreeSplitterColumn" Width="5" />
+                <ColumnDefinition x:Name="CenterPaneColumn" />
+                <ColumnDefinition x:Name="PropertiesSplitterColumn" Width="5" />
+                <ColumnDefinition x:Name="InspectorPaneColumn" Width="354" />
             </Grid.ColumnDefinitions>
 
-            <!-- Filter Combo Box -->
-            <ComboBox x:Name="filterComboBox"
-                      Margin="2"
-                      infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
-                      IsEditable="True"
-                      Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
-                <ComboBoxItem x:Name="ClearTreeFilterItem"
-                              Content="{localization:InspectorLoc Tooltip.ClearFilter}" />
-                <ComboBoxItem x:Name="BindingErrorsFilterItem"
-                              Content="{localization:InspectorLoc Tooltip.ShowBindingErrors}" />
-                <ComboBox.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Tooltip.FilterByNameOrType}" />
-                </ComboBox.ToolTip>
-            </ComboBox>
+            <Grid x:Name="TreeWorkbenchPane" ClipToBounds="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
 
-            <!-- Visual Tree TreeView -->
-            <controls:ProperTreeView x:Name="Tree"
-                                     Style="{DynamicResource Snoop.Styles.ProperTreeView}"
-                                     Grid.Row="1"
-                                     Grid.RowSpan="2"
-                                     MinWidth="0"
-                                     MinHeight="0"
-                                     Margin="2 0 2 0"
-                                     HorizontalAlignment="Stretch"
-                                     ItemsSource="{Binding TreeItems}">
-                <TreeView.Resources>
-                    <HierarchicalDataTemplate DataType="{x:Type tree:TreeItem}"
-                                              ItemsSource="{Binding Children}">
-                        <TextBlock HorizontalAlignment="Stretch"
-                                   infrastructure:BringIntoViewBehavior.IsActive="{Binding IsSelected}"
-                                   Background="Transparent"
-                                   Text="{Binding}" />
-                    </HierarchicalDataTemplate>
-                </TreeView.Resources>
+                <!-- Filter Combo Box -->
+                <ComboBox x:Name="filterComboBox"
+                          Margin="2"
+                          infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
+                          IsEditable="True"
+                          Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
+                    <ComboBoxItem x:Name="ClearTreeFilterItem"
+                                  Content="{localization:InspectorLoc Tooltip.ClearFilter}" />
+                    <ComboBoxItem x:Name="BindingErrorsFilterItem"
+                                  Content="{localization:InspectorLoc Tooltip.ShowBindingErrors}" />
+                    <ComboBox.ToolTip>
+                        <TextBlock Text="{localization:InspectorLoc Tooltip.FilterByNameOrType}" />
+                    </ComboBox.ToolTip>
+                </ComboBox>
 
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="{x:Type controls:ProperTreeViewItem}"
-                           BasedOn="{StaticResource ProperTreeViewItemStyle}">
-                        <!-- <Setter Property="Background" Value="{Binding TreeBackgroundBrush}" /> -->
+                <!-- Visual Tree TreeView -->
+                <controls:ProperTreeView x:Name="Tree"
+                                         Style="{DynamicResource Snoop.Styles.ProperTreeView}"
+                                         Grid.Row="1"
+                                         MinWidth="0"
+                                         MinHeight="0"
+                                         Margin="2 0 2 0"
+                                         HorizontalAlignment="Stretch"
+                                         ItemsSource="{Binding TreeItems}">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type tree:TreeItem}"
+                                                  ItemsSource="{Binding Children}">
+                            <TextBlock HorizontalAlignment="Stretch"
+                                       infrastructure:BringIntoViewBehavior.IsActive="{Binding IsSelected}"
+                                       Background="Transparent"
+                                       Text="{Binding}" />
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
 
-                        <Setter Property="ContextMenu">
-                            <Setter.Value>
-                                <ContextMenu ItemsSource="{Binding MenuItems}" />
-                            </Setter.Value>
-                        </Setter>
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                        <Setter Property="Padding" Value="1 2 0 2" />
-                        <Setter Property="ToolTip" Value="{Binding VisualBrush}" />
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type controls:ProperTreeViewItem}"
+                               BasedOn="{StaticResource ProperTreeViewItemStyle}">
+                            <!-- <Setter Property="Background" Value="{Binding TreeBackgroundBrush}" /> -->
 
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
-                                         Value="{x:Static core:Settings.CompactDensity}">
-                                <Setter Property="Padding" Value="1 0 0 0" />
-                            </DataTrigger>
-                        </Style.Triggers>
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu ItemsSource="{Binding MenuItems}" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                            <Setter Property="Padding" Value="1 2 0 2" />
+                            <Setter Property="ToolTip" Value="{Binding VisualBrush}" />
 
-                        <Style.Resources>
-                            <Style TargetType="{x:Type ToolTip}"
-                                   BasedOn="{StaticResource {x:Type ToolTip}}">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="{x:Type ToolTip}">
-                                            <Grid Width="200"
-                                                  Height="200">
-                                                <Rectangle Margin="10"
-                                                           Fill="{TemplateBinding Content}"
-                                                           RadiusX="10"
-                                                           RadiusY="10" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
+                                             Value="{x:Static core:Settings.CompactDensity}">
+                                    <Setter Property="Padding" Value="1 0 0 0" />
+                                </DataTrigger>
+                            </Style.Triggers>
 
-                                                <Grid.Effect>
-                                                    <DropShadowEffect />
-                                                </Grid.Effect>
-                                            </Grid>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Style.Resources>
-                    </Style>
-                </TreeView.ItemContainerStyle>
+                            <Style.Resources>
+                                <Style TargetType="{x:Type ToolTip}"
+                                       BasedOn="{StaticResource {x:Type ToolTip}}">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type ToolTip}">
+                                                <Grid Width="200"
+                                                      Height="200">
+                                                    <Rectangle Margin="10"
+                                                               Fill="{TemplateBinding Content}"
+                                                               RadiusX="10"
+                                                               RadiusY="10" />
 
-                <controls:ProperTreeView.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Tooltip.TreeSelect}" />
-                </controls:ProperTreeView.ToolTip>
-            </controls:ProperTreeView>
+                                                    <Grid.Effect>
+                                                        <DropShadowEffect />
+                                                    </Grid.Effect>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Style.Resources>
+                        </Style>
+                    </TreeView.ItemContainerStyle>
 
-            <!-- Vertical GridSplitter (between the visual tree tree view and the tab control (with the property grid/events view)) -->
+                    <controls:ProperTreeView.ToolTip>
+                        <TextBlock Text="{localization:InspectorLoc Tooltip.TreeSelect}" />
+                    </controls:ProperTreeView.ToolTip>
+                </controls:ProperTreeView>
+            </Grid>
+
             <GridSplitter x:Name="GridSplitter"
-                          Grid.Row="0"
-                          Grid.RowSpan="3"
                           Grid.Column="1"
-                          Grid.ColumnSpan="1"
-                          ResizeBehavior="PreviousAndCurrent"
+                          AutomationProperties.Name="{localization:InspectorLoc Tree.Label}"
+                          ResizeBehavior="PreviousAndNext"
                           ResizeDirection="Columns"
                           FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
-                          Width="4"
-                          MinHeight="0"
-                          Margin="-2 0 0 0"
-                          HorizontalAlignment="Left" />
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch" />
 
-            <!-- Tab Control (for the property grid, the data context property grid, and the events view) -->
+            <GridSplitter x:Name="PropertiesSplitter"
+                          Grid.Column="3"
+                          AutomationProperties.Name="{localization:InspectorLoc Tab.Properties}"
+                          ResizeBehavior="PreviousAndNext"
+                          ResizeDirection="Columns"
+                          FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch" />
+
             <TabControl x:Name="PropertiesWorkbenchPane"
-                        Grid.RowSpan="2"
-                        Grid.Column="1"
-                        Margin="2 2 2 0">
+                        Grid.Column="4"
+                        Margin="2 2 2 0"
+                        ClipToBounds="True">
                 <TabItem x:Name="WorkbenchPropertiesTab">
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Properties}">
@@ -635,96 +645,108 @@
 
             </TabControl>
 
-            <!-- Horizontal GridSplitter (between the tab control (with the property grid/events view) and the diagnostics/previewer) -->
-            <GridSplitter x:Name="DiagnosticsSplitter"
-                          Grid.Row="2"
-                          Grid.Column="1"
-                          ResizeBehavior="PreviousAndCurrent"
-                          ResizeDirection="Rows"
-                          FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
-                          Height="4"
-                          Margin="2 0 2 0"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Top" />
+            <Grid x:Name="WorkbenchCenterGrid" Grid.Column="2" ClipToBounds="True">
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="PreviewPaneRow" />
+                    <RowDefinition x:Name="DiagnosticsSplitterRow" Height="5" />
+                    <RowDefinition x:Name="DiagnosticsPaneRow" Height="210" />
+                </Grid.RowDefinitions>
 
-            <TabControl x:Name="DiagnosticsWorkbenchPane"
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        Margin="2 4 2 0">
-                <TabItem x:Name="WorkbenchDiagnosticsTab">
-                    <TabItem.Header>
-                        <TextBlock>
-                            <Run Text="{localization:InspectorLoc Tab.Diagnostics}" />
-                            <Run Text=" (" />
-                            <Run Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count, Mode=OneWay}" />
-                            <Run Text=")" />
-                            <TextBlock.ToolTip>
-                                <StackPanel MaxWidth="300">
-                                    <TextBlock Text="{localization:InspectorLoc Tab.Diagnostics}" />
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DiagnosticsDescription}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
+                <Grid x:Name="WorkbenchPreviewPane"
+                      AutomationProperties.Name="{localization:InspectorLoc Tab.Preview}"
+                      Focusable="True"
+                      FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                      KeyboardNavigation.IsTabStop="False">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition />
+                    </Grid.RowDefinitions>
 
-                    <views:DiagnosticsView x:Name="WorkbenchDiagnosticsView"
-                                           DiagnosticContext="{Binding TreeService.DiagnosticContext}" />
-                </TabItem>
-
-                <TabItem x:Name="WorkbenchPreviewTab">
-                    <TabItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Tab.Preview}">
-                            <TextBlock.ToolTip>
-                                <StackPanel MaxWidth="300">
-                                    <TextBlock Text="{localization:InspectorLoc Tab.Preview}" />
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.PreviewDescription}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
+                    <TextBlock Margin="6 4"
+                               Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                               Text="{localization:InspectorLoc Tab.Preview}"
+                               TextTrimming="CharacterEllipsis">
+                        <TextBlock.ToolTip>
+                            <TextBlock MaxWidth="300"
+                                       Text="{localization:InspectorLoc Tooltip.PreviewDescription}"
+                                       TextWrapping="Wrap" />
+                        </TextBlock.ToolTip>
+                    </TextBlock>
 
                     <controls:Previewer x:Name="PreviewArea"
+                                        Grid.Row="1"
                                         Target="{Binding CurrentSelection.Target}" />
-                </TabItem>
+                </Grid>
 
-                <TabItem x:Name="WorkbenchEventsTab">
-                    <TabItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Tab.Events}">
-                            <TextBlock.ToolTip>
-                                <StackPanel MaxWidth="300">
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsTitle}" />
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsDescription}"
+                <GridSplitter x:Name="DiagnosticsSplitter"
+                              Grid.Row="1"
+                              AutomationProperties.Name="{localization:InspectorLoc Tab.Diagnostics}"
+                              ResizeBehavior="PreviousAndNext"
+                              ResizeDirection="Rows"
+                              FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                              HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch" />
+
+                <TabControl x:Name="DiagnosticsWorkbenchPane"
+                            Grid.Row="2">
+                    <TabItem x:Name="WorkbenchDiagnosticsTab">
+                        <TabItem.Header>
+                            <TextBlock>
+                                <Run Text="{localization:InspectorLoc Tab.Diagnostics}" />
+                                <Run Text=" (" />
+                                <Run Text="{Binding TreeService.DiagnosticContext.DiagnosticItems.Count, Mode=OneWay}" />
+                                <Run Text=")" />
+                                <TextBlock.ToolTip>
+                                    <StackPanel MaxWidth="300">
+                                        <TextBlock Text="{localization:InspectorLoc Tab.Diagnostics}" />
+                                        <TextBlock Text="{localization:InspectorLoc Tooltip.DiagnosticsDescription}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </TabItem.Header>
+
+                        <views:DiagnosticsView x:Name="WorkbenchDiagnosticsView"
+                                               DiagnosticContext="{Binding TreeService.DiagnosticContext}" />
+                    </TabItem>
+
+                    <TabItem x:Name="WorkbenchEventsTab">
+                        <TabItem.Header>
+                            <TextBlock Text="{localization:InspectorLoc Tab.Events}">
+                                <TextBlock.ToolTip>
+                                    <StackPanel MaxWidth="300">
+                                        <TextBlock Text="{localization:InspectorLoc Tooltip.EventsTitle}" />
+                                        <TextBlock Text="{localization:InspectorLoc Tooltip.EventsDescription}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </TabItem.Header>
+
+                        <views:EventsView x:Name="eventsView" />
+                    </TabItem>
+
+                    <TabItem x:Name="WorkbenchOutputTab">
+                        <TabItem.Header>
+                            <TextBlock Text="{localization:InspectorLoc Tab.Output}">
+                                <TextBlock.ToolTip>
+                                    <TextBlock MaxWidth="300"
+                                               Text="{localization:InspectorLoc Tooltip.DebugListenerDescription}"
                                                TextWrapping="Wrap" />
-                                </StackPanel>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                        </TabItem.Header>
 
-                    <views:EventsView x:Name="eventsView" />
-                </TabItem>
-
-                <TabItem x:Name="WorkbenchOutputTab">
-                    <TabItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Tab.Output}">
-                            <TextBlock.ToolTip>
-                                <TextBlock MaxWidth="300"
-                                           Text="{localization:InspectorLoc Tooltip.DebugListenerDescription}"
-                                           TextWrapping="Wrap" />
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
-
-                    <debugListenerTab:DebugListenerControl x:Name="debugListenerControl" />
-                </TabItem>
-            </TabControl>
+                        <debugListenerTab:DebugListenerControl x:Name="debugListenerControl" />
+                    </TabItem>
+                </TabControl>
+            </Grid>
 
             <!-- StatusBar -->
             <StatusBar x:Name="WorkbenchStatusBar"
-                       Grid.Row="3"
+                       Grid.Row="1"
                        Grid.Column="0"
-                       Grid.ColumnSpan="2"
+                       Grid.ColumnSpan="5"
                        Background="{DynamicResource SnoopNext.Brush.Panel}"
                        BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                        BorderThickness="0 1 0 0"

@@ -1,7 +1,6 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Windows;
@@ -19,12 +18,6 @@ using CoreSettings = Snoop.Core.Settings;
 
 internal static class WorkbenchLayoutPresetSmoke
 {
-    private const double DefaultTreeFraction = 1.0 / 3;
-    private const double DefaultDiagnosticsFraction = 3.0 / 13;
-    private const double PreviewTreeFraction = 1.0 / 4;
-    private const double PreviewDiagnosticsFraction = 1.0 / 2;
-    private const double PropertiesTreeFraction = 3.0 / 10;
-    private const double PropertiesDiagnosticsFraction = 1.0 / 6;
     private const string DefaultItem = "DefaultWorkbenchLayoutItem";
     private const string PreviewItem = "PreviewWorkbenchLayoutItem";
     private const string PropertiesItem = "PropertiesWorkbenchLayoutItem";
@@ -48,47 +41,81 @@ internal static class WorkbenchLayoutPresetSmoke
                 new XElement("WorkbenchDensity", CoreSettings.CompactDensity))).Save(layoutPath);
             settings.Reload();
 
-            var customTreeFraction = 0.0;
+            var customPropertiesWidth = 0.0;
             WithInspector(untouched =>
             {
-                VerifyLayout(untouched, DefaultItem, DefaultTreeFraction, DefaultDiagnosticsFraction);
+                VerifyLayout(untouched, DefaultItem, 282, 354, 210);
                 WithInspector(edited =>
                 {
                     VerifyLabels(edited, "en-US", "Workspace layout", "Default layout", "Preview focus", "Inspector focus", "Custom");
                     VerifyLabels(edited, "zh-CN", "工作台布局", "默认布局", "预览优先", "属性优先", "自定义");
-                    customTreeFraction = VerifyPresetAfterCollapseAndResize(edited);
+                    customPropertiesWidth = VerifyPresetAfterCollapseAndResize(edited);
                 });
-                VerifySavedLayout(layoutPath, customTreeFraction, PreviewDiagnosticsFraction);
+                VerifySavedLayout(layoutPath, 210, customPropertiesWidth, 160);
             });
-            VerifySavedLayout(layoutPath, customTreeFraction, PreviewDiagnosticsFraction);
+            VerifySavedLayout(layoutPath, 210, customPropertiesWidth, 160);
+            var foldedDocument = XDocument.Load(layoutPath).Root!;
+            Require((bool?)foldedDocument.Element("WorkbenchPropertiesCollapsed") == true,
+                "Closing an older untouched workbench lost the other window's collapsed properties pane.");
 
             settings.Reload();
             WithInspector(reopened =>
             {
-                VerifyLayout(reopened, CustomItem, customTreeFraction, PreviewDiagnosticsFraction);
+                VerifySelectedLayout(reopened, CustomItem);
+                Require(!Find<MenuItem>(reopened, "ShowPropertiesPaneItem").IsChecked
+                        && Find<TabControl>(reopened, "PropertiesWorkbenchPane").Visibility == Visibility.Collapsed
+                        && Find<GridSplitter>(reopened, "PropertiesSplitter").Visibility == Visibility.Collapsed,
+                    "Reopening a workbench did not keep the properties pane and its splitter folded.");
+                SetPaneVisibility(reopened, "ShowPropertiesPaneItem", true);
+                VerifyLayout(reopened, CustomItem, 210, customPropertiesWidth, 160);
+
                 Click(Find<MenuItem>(reopened, PropertiesItem));
-                VerifyLayout(reopened, PropertiesItem, PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+                VerifyLayout(reopened, PropertiesItem, 270, 460, 240);
             });
-            VerifySavedLayout(layoutPath, PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+            VerifySavedLayout(layoutPath, 270, 460, 240);
 
             settings.Reload();
             WithInspector(reopened =>
             {
-                VerifyLayout(reopened, PropertiesItem, PropertiesTreeFraction, PropertiesDiagnosticsFraction);
+                VerifyLayout(reopened, PropertiesItem, 270, 460, 240);
                 Click(Find<MenuItem>(reopened, DefaultItem));
-                VerifyLayout(reopened, DefaultItem, DefaultTreeFraction, DefaultDiagnosticsFraction);
+                VerifyLayout(reopened, DefaultItem, 282, 354, 210);
+            });
 
-                Click(Find<MenuItem>(reopened, PreviewItem));
-                SetPaneVisibility(reopened, "ShowDiagnosticsPaneItem", false);
+            new XDocument(new XElement("Settings",
+                new XElement("WorkbenchDensity", CoreSettings.CompactDensity),
+                new XElement("WorkbenchTreeFraction", "0.28"),
+                new XElement("WorkbenchDiagnosticsFraction", "0.22"),
+                new XElement("WorkbenchTreeWidth", "320"),
+                new XElement("WorkbenchPropertiesWidth", "405"),
+                new XElement("WorkbenchDiagnosticsHeight", "220"),
+                new XElement("WorkbenchTreeCollapsed", true),
+                new XElement("WorkbenchPropertiesCollapsed", true),
+                new XElement("WorkbenchDiagnosticsCollapsed", true))).Save(layoutPath);
+            settings.Reload();
+
+            WithInspector(reopened =>
+            {
+                Require(!Find<MenuItem>(reopened, "ShowTreePaneItem").IsChecked
+                        && !Find<MenuItem>(reopened, "ShowPropertiesPaneItem").IsChecked
+                        && !Find<MenuItem>(reopened, "ShowDiagnosticsPaneItem").IsChecked,
+                    "The saved folded panes were not restored.");
                 Click(Find<MenuItem>(reopened, "ResetWorkbenchLayoutItem"));
                 VerifyVisiblePanes(reopened);
-                VerifyLayout(reopened, DefaultItem, DefaultTreeFraction, DefaultDiagnosticsFraction);
+                VerifyLayout(reopened, DefaultItem, 282, 354, 210);
                 Require(settings.WorkbenchDensity == CoreSettings.CompactDensity, "Reset layout changed the density preference.");
             });
             var resetDocument = XDocument.Load(layoutPath).Root!;
             Require(resetDocument.Element("WorkbenchTreeFraction") == null
-                    && resetDocument.Element("WorkbenchDiagnosticsFraction") == null,
-                "The reset wrote explicit ratios instead of using the default layout.");
+                    && resetDocument.Element("WorkbenchDiagnosticsFraction") == null
+                    && resetDocument.Element("WorkbenchTreeWidth") == null
+                    && resetDocument.Element("WorkbenchPropertiesWidth") == null
+                    && resetDocument.Element("WorkbenchDiagnosticsHeight") == null,
+                "Reset layout kept an old fraction or an explicit pane size.");
+            Require((bool?)resetDocument.Element("WorkbenchTreeCollapsed") != true
+                    && (bool?)resetDocument.Element("WorkbenchPropertiesCollapsed") != true
+                    && (bool?)resetDocument.Element("WorkbenchDiagnosticsCollapsed") != true,
+                "Reset layout retained a persisted fold.");
         }
         finally
         {
@@ -104,7 +131,7 @@ internal static class WorkbenchLayoutPresetSmoke
             File.Delete(layoutPath);
         }
 
-        Console.WriteLine("PASS: workbench layout presets and custom ratios survive XML reload");
+        Console.WriteLine("PASS: workbench layout presets, custom sizes and pane folds survive XML reload");
     }
 
     private static double VerifyPresetAfterCollapseAndResize(SnoopUI inspector)
@@ -127,27 +154,25 @@ internal static class WorkbenchLayoutPresetSmoke
             SetPaneVisibility(inspector, "ShowDiagnosticsPaneItem", false);
             Click(Find<MenuItem>(inspector, PreviewItem));
             VerifyVisiblePanes(inspector);
-            VerifyLayout(inspector, PreviewItem, PreviewTreeFraction, PreviewDiagnosticsFraction);
+            VerifyLayout(inspector, PreviewItem, 210, 285, 160);
             Require(ReferenceEquals(inspector.CurrentSelection, selection) && selection.IsSelected
                     && ReferenceEquals(propertyInspector.RootTarget, target) && Equals(target.Content, "Selected value")
                     && properties.SelectedIndex == 1 && diagnostics.SelectedIndex == 1
                     && propertyInspector.FilterString == "Width",
                 "A layout preset lost a tab, filter, selection or value.");
 
-            var grid = Find<Grid>(inspector, "WorkbenchGrid");
-            grid.Measure(new Size(1200, 700));
-            grid.Arrange(new Rect(0, 0, 1200, 700));
-            var splitter = Find<GridSplitter>(inspector, "GridSplitter");
-            ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(75, 0);
-            var customTreeFraction = GetFraction(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[1].Width);
-            Require(customTreeFraction > PreviewTreeFraction, "The splitter did not change the preview layout's tree ratio.");
-            VerifyLayout(inspector, CustomItem, customTreeFraction, PreviewDiagnosticsFraction);
-            SetPaneVisibility(inspector, "ShowTreePaneItem", false);
+            var splitter = Find<GridSplitter>(inspector, "PropertiesSplitter");
+            ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(-50, 0);
+            WorkbenchLayoutSmoke.Arrange(inspector);
+            var customPropertiesWidth = WorkbenchLayoutSmoke.ReadPaneSizes(inspector).Properties;
+            Require(customPropertiesWidth > 285, "The right splitter did not widen the properties pane.");
+            VerifyLayout(inspector, CustomItem, 210, customPropertiesWidth, 160);
+            SetPaneVisibility(inspector, "ShowPropertiesPaneItem", false);
             VerifySelectedLayout(inspector, CustomItem);
-            SetPaneVisibility(inspector, "ShowTreePaneItem", true);
-            VerifyLayout(inspector, CustomItem, customTreeFraction, PreviewDiagnosticsFraction);
-            SetPaneVisibility(inspector, "ShowTreePaneItem", false);
-            return customTreeFraction;
+            SetPaneVisibility(inspector, "ShowPropertiesPaneItem", true);
+            VerifyLayout(inspector, CustomItem, 210, customPropertiesWidth, 160);
+            SetPaneVisibility(inspector, "ShowPropertiesPaneItem", false);
+            return customPropertiesWidth;
         }
         finally
         {
@@ -179,12 +204,11 @@ internal static class WorkbenchLayoutPresetSmoke
             "Applying a preset did not restore all workbench panes.");
     }
 
-    private static void VerifyLayout(SnoopUI inspector, string expectedItem, double tree, double diagnostics)
+    private static void VerifyLayout(SnoopUI inspector, string expectedItem, double tree, double properties, double diagnostics)
     {
         VerifySelectedLayout(inspector, expectedItem);
-        var grid = Find<Grid>(inspector, "WorkbenchGrid");
-        RequireClose(GetFraction(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[1].Width), tree, "Tree ratio");
-        RequireClose(GetFraction(grid.RowDefinitions[2].Height, grid.RowDefinitions[1].Height), diagnostics, "Diagnostics ratio");
+        WorkbenchLayoutSmoke.Arrange(inspector);
+        WorkbenchLayoutSmoke.VerifyPaneSizes(inspector, tree, properties, diagnostics);
     }
 
     private static void VerifySelectedLayout(SnoopUI inspector, string expectedItem)
@@ -198,21 +222,15 @@ internal static class WorkbenchLayoutPresetSmoke
         var custom = Find<MenuItem>(inspector, CustomItem);
         Require(!custom.IsEnabled
                 && custom.Visibility == (expectedItem == CustomItem ? Visibility.Visible : Visibility.Collapsed),
-            "Custom layout should be a visible indicator only when the ratios differ from the presets.");
+            "Custom layout should be a visible indicator only when pane sizes differ from the presets.");
     }
 
-    private static void VerifySavedLayout(string path, double tree, double diagnostics)
+    private static void VerifySavedLayout(string path, double tree, double properties, double diagnostics)
     {
         var xml = XDocument.Load(path).Root;
-        RequireSavedFraction(xml, "WorkbenchTreeFraction", tree);
-        RequireSavedFraction(xml, "WorkbenchDiagnosticsFraction", diagnostics);
-    }
-
-    private static void RequireSavedFraction(XElement? xml, string name, double expected)
-    {
-        Require(double.TryParse((string?)xml?.Element(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction),
-            "Closing the workbench failed to save " + name + ".");
-        RequireClose(fraction, expected, name);
+        WorkbenchLayoutSmoke.RequireSavedSize(xml, "WorkbenchTreeWidth", tree);
+        WorkbenchLayoutSmoke.RequireSavedSize(xml, "WorkbenchPropertiesWidth", properties);
+        WorkbenchLayoutSmoke.RequireSavedSize(xml, "WorkbenchDiagnosticsHeight", diagnostics);
     }
 
     private static void SetPaneVisibility(SnoopUI inspector, string name, bool shown)
@@ -229,12 +247,6 @@ internal static class WorkbenchLayoutPresetSmoke
         DrainDispatcher();
     }
 
-    private static double GetFraction(GridLength pane, GridLength other)
-    {
-        Require(pane.IsStar && other.IsStar, "The expanded panes must remain proportional.");
-        return pane.Value / (pane.Value + other.Value);
-    }
-
     private static void WithInspector(Action<SnoopUI> action)
     {
         var inspector = new SnoopUI();
@@ -242,6 +254,7 @@ internal static class WorkbenchLayoutPresetSmoke
         CacheManager.Instance.IncreaseUsageCount();
         try
         {
+            WorkbenchLayoutSmoke.Arrange(inspector);
             action(inspector);
         }
         finally
@@ -255,11 +268,6 @@ internal static class WorkbenchLayoutPresetSmoke
     {
         return inspector.FindName(name) as T
             ?? throw new InvalidOperationException("Missing workbench layout preset element " + name + ".");
-    }
-
-    private static void RequireClose(double actual, double expected, string state)
-    {
-        Require(Math.Abs(actual - expected) < 0.000001, state + " did not match the selected workbench layout.");
     }
 
     private static void DrainDispatcher()

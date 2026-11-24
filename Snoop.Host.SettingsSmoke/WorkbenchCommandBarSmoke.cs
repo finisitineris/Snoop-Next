@@ -63,9 +63,7 @@ internal static class WorkbenchCommandBarSmoke
             var frame = SystemParameters.WindowNonClientFrameThickness;
             var bounds = new Rect(0, 0, inspector.MinWidth - frame.Left - frame.Right,
                 inspector.MinHeight - frame.Top - frame.Bottom);
-            chrome.Measure(bounds.Size);
-            chrome.Arrange(bounds);
-            DrainDispatcher();
+            WorkbenchLayoutSmoke.Arrange(chrome, bounds);
 
             var toolTip = refresh.ToolTip is TextBlock textBlock ? textBlock.Text : refresh.ToolTip as string;
             Require(refresh.Content as string == caption && toolTip == expectedToolTip,
