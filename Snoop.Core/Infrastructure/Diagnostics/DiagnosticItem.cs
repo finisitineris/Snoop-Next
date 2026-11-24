@@ -2,6 +2,7 @@
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Threading;
 using JetBrains.Annotations;
 using Snoop.Data.Tree;
@@ -40,6 +41,8 @@ public class DiagnosticItem : INotifyPropertyChanged
     internal object[]? DisplayDescriptionArguments { get; set; }
 
     public object? SourceObject { get; set; }
+
+    public DependencyProperty? TargetProperty { get; internal set; }
 
     public TreeItem? TreeItem { get; set; }
 

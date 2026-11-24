@@ -28,10 +28,10 @@ public sealed class DiagnosticContext : IDisposable, INotifyPropertyChanged
         this.DiagnosticProviders.Add(new LocalResourceDefinitionsDiagnosticProvider());
         this.DiagnosticProviders.Add(new NonVirtualizedListsDiagnosticProvider());
         this.DiagnosticProviders.Add(new UnresolvedDynamicResourceDiagnosticProvider());
+        this.DiagnosticProviders.Add(new BindingDiagnosticProvider());
         this.DiagnosticProviders.Add(new BindingLeakDiagnosticProvider());
 #if USE_WPF_BINDING_DIAG
         // todo: add providers
-        //this.DiagnosticProviders.Add(new BindingDiagnosticProvider());
         //System.Windows.Diagnostics.ResourceDictionaryDiagnostics.StaticResourceResolved += this.ResourceDictionaryDiagnosticsOnStaticResourceResolved;
 #endif
 
@@ -100,7 +100,13 @@ public sealed class DiagnosticContext : IDisposable, INotifyPropertyChanged
 
         using var suspender = this.DiagnosticItems.SuspendNotifications();
 
-        // Only add global Diagnostics if with we should analyze the whole tree
+        // A full analysis replaces provider results. Selection diagnostics have their own lifetime.
+        var selectionDiagnostics = this.DiagnosticItems
+            .Where(diagnostic => !this.DiagnosticProviders.Contains(diagnostic.DiagnosticProvider))
+            .ToArray();
+        this.DiagnosticItems.Clear();
+        this.AddRange(selectionDiagnostics);
+
         foreach (var diagnosticProvider in this.DiagnosticProviders)
         {
             this.AddRange(diagnosticProvider.GetGlobalDiagnosticItems());

@@ -402,8 +402,8 @@
   <data name="zh-CN.DebugFilter.SaveChangesMessage" xml:space="preserve"><value>是否保存更改？</value></data>
   <data name="en-US.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>Changes</value></data>
   <data name="zh-CN.DebugFilter.SaveChangesTitle" xml:space="preserve"><value>更改</value></data>
-  <data name="en-US.Diagnostics.Provider.Binding" xml:space="preserve"><value>Binding errors</value></data>
-  <data name="zh-CN.Diagnostics.Provider.Binding" xml:space="preserve"><value>绑定错误</value></data>
+  <data name="en-US.Diagnostics.Provider.Binding" xml:space="preserve"><value>Local binding failures</value></data>
+  <data name="zh-CN.Diagnostics.Provider.Binding" xml:space="preserve"><value>本地绑定错误</value></data>
   <data name="en-US.Diagnostics.Provider.BindingLeak" xml:space="preserve"><value>Binding leak</value></data>
   <data name="zh-CN.Diagnostics.Provider.BindingLeak" xml:space="preserve"><value>绑定泄漏</value></data>
   <data name="en-US.Diagnostics.Provider.FreezeFreezables" xml:space="preserve"><value>Freeze freezables</value></data>
@@ -616,8 +616,8 @@
   <data name="zh-CN.PropertyInspector.ShowDefaultsBadge" xml:space="preserve"><value>默认</value></data>
   <data name="en-US.PropertyInspector.ShowUncommonBadge" xml:space="preserve"><value>U</value></data>
   <data name="zh-CN.PropertyInspector.ShowUncommonBadge" xml:space="preserve"><value>少用</value></data>
-  <data name="en-US.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>You should fix binding errors.</value></data>
-  <data name="zh-CN.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>应修复绑定错误。</value></data>
+  <data name="en-US.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>Reports path or update errors on locally bound dependency properties.</value></data>
+  <data name="zh-CN.Diagnostics.Provider.Binding.Description" xml:space="preserve"><value>报告本地绑定的依赖属性发生的路径或更新错误。</value></data>
   <data name="en-US.Diagnostics.Provider.BindingLeak.Description" xml:space="preserve"><value>Detects binding leaks.</value></data>
   <data name="zh-CN.Diagnostics.Provider.BindingLeak.Description" xml:space="preserve"><value>检测绑定泄漏。</value></data>
   <data name="en-US.Diagnostics.Provider.FreezeFreezables.Description" xml:space="preserve"><value>You should freeze freezable to save memory and increase performance.</value></data>
@@ -632,6 +632,10 @@
   <data name="zh-CN.Diagnostics.Provider.UnresolvedDynamicResource.Description" xml:space="preserve"><value>查找无法解析的 {DynamicResource} 用法。</value></data>
   <data name="en-US.Diagnostics.Result.BindingError" xml:space="preserve"><value>Binding error</value></data>
   <data name="zh-CN.Diagnostics.Result.BindingError" xml:space="preserve"><value>绑定错误</value></data>
+  <data name="en-US.Diagnostics.Result.BindingFailureWithPath" xml:space="preserve"><value>Binding path '{3}' for '{0}' on '{1}' failed with {2}.</value></data>
+  <data name="zh-CN.Diagnostics.Result.BindingFailureWithPath" xml:space="preserve"><value>元素“{1}”的属性“{0}”在绑定路径“{3}”上失败（{2}）。</value></data>
+  <data name="en-US.Diagnostics.Result.BindingFailure" xml:space="preserve"><value>The binding for '{0}' on '{1}' failed with {2}.</value></data>
+  <data name="zh-CN.Diagnostics.Result.BindingFailure" xml:space="preserve"><value>元素“{1}”的属性“{0}”绑定失败（{2}）。</value></data>
   <data name="en-US.Diagnostics.Result.BindingLeakDescription" xml:space="preserve"><value>Property '{0}' from type '{1}' is bound {2} times causing binding leaks.</value></data>
   <data name="zh-CN.Diagnostics.Result.BindingLeakDescription" xml:space="preserve"><value>{1} 类型的属性“{0}”已绑定 {2} 次，导致绑定泄漏。</value></data>
   <data name="en-US.Diagnostics.Result.FreezeResourceDescription" xml:space="preserve"><value>Freezing the resource '{0}' can save memory and increase performance.</value></data>

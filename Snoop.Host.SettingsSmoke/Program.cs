@@ -343,6 +343,7 @@ internal static class Program
                         WorkbenchEventsDockSmoke.Verify(inspector);
                         WorkbenchOutputDockSmoke.Verify(inspector);
                         WorkbenchDiagnosticLocationSmoke.Verify();
+                        WorkbenchBindingDiagnosticsSmoke.Verify();
                         InspectorAuxiliaryViewSmoke.Verify();
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();
