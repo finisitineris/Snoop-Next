@@ -122,8 +122,8 @@
   <data name="zh-CN.Tooltip.PowerShellTitle" xml:space="preserve"><value>PowerShell 视图</value></data>
   <data name="en-US.Tooltip.PowerShellDescription" xml:space="preserve"><value>A view which lets you script the Snooped app using PowerShell.</value></data>
   <data name="zh-CN.Tooltip.PowerShellDescription" xml:space="preserve"><value>使用 PowerShell 对正在检查的应用进行脚本操作的视图。</value></data>
-  <data name="en-US.Tab.DebugListener" xml:space="preserve"><value>Debug Listener</value></data>
-  <data name="zh-CN.Tab.DebugListener" xml:space="preserve"><value>调试侦听器</value></data>
+  <data name="en-US.Tab.Output" xml:space="preserve"><value>Output</value></data>
+  <data name="zh-CN.Tab.Output" xml:space="preserve"><value>输出</value></data>
   <data name="en-US.Tooltip.DebugListenerTitle" xml:space="preserve"><value>Debug Listener</value></data>
   <data name="zh-CN.Tooltip.DebugListenerTitle" xml:space="preserve"><value>调试侦听器</value></data>
   <data name="en-US.Tooltip.DebugListenerDescription" xml:space="preserve"><value>Shows and filters debug output from the application being Snooped.</value></data>
@@ -334,10 +334,14 @@
   <data name="zh-CN.PropertyGrid.ColumnTypeTip" xml:space="preserve"><value>属性的目标类型</value></data>
   <data name="en-US.PropertyGrid.BindingErrorsFor" xml:space="preserve"><value>Binding Errors for {0}</value></data>
   <data name="zh-CN.PropertyGrid.BindingErrorsFor" xml:space="preserve"><value>{0} 的绑定错误</value></data>
-  <data name="en-US.DebugListener.StartListening" xml:space="preserve"><value>Start Listening</value></data>
-  <data name="zh-CN.DebugListener.StartListening" xml:space="preserve"><value>开始监听</value></data>
-  <data name="en-US.DebugListener.TraceLevel" xml:space="preserve"><value>WPF Trace Level: </value></data>
-  <data name="zh-CN.DebugListener.TraceLevel" xml:space="preserve"><value>WPF 跟踪级别：</value></data>
+  <data name="en-US.DebugListener.StartListening" xml:space="preserve"><value>Listen</value></data>
+  <data name="zh-CN.DebugListener.StartListening" xml:space="preserve"><value>监听</value></data>
+  <data name="en-US.DebugListener.TraceLevel" xml:space="preserve"><value>Trace level</value></data>
+  <data name="zh-CN.DebugListener.TraceLevel" xml:space="preserve"><value>跟踪级别</value></data>
+  <data name="en-US.DebugListener.Search" xml:space="preserve"><value>Search output</value></data>
+  <data name="zh-CN.DebugListener.Search" xml:space="preserve"><value>搜索输出</value></data>
+  <data name="en-US.DebugListener.Filters" xml:space="preserve"><value>Filters</value></data>
+  <data name="zh-CN.DebugListener.Filters" xml:space="preserve"><value>筛选器</value></data>
   <data name="en-US.DebugListener.TraceOff" xml:space="preserve"><value>Off</value></data>
   <data name="zh-CN.DebugListener.TraceOff" xml:space="preserve"><value>关闭</value></data>
   <data name="en-US.DebugListener.TraceCritical" xml:space="preserve"><value>Critical</value></data>
@@ -354,8 +358,8 @@
   <data name="zh-CN.DebugListener.TraceActivityTracing" xml:space="preserve"><value>活动跟踪</value></data>
   <data name="en-US.DebugListener.TraceAll" xml:space="preserve"><value>All</value></data>
   <data name="zh-CN.DebugListener.TraceAll" xml:space="preserve"><value>全部</value></data>
-  <data name="en-US.DebugListener.ClearText" xml:space="preserve"><value>Clear Text</value></data>
-  <data name="zh-CN.DebugListener.ClearText" xml:space="preserve"><value>清除文本</value></data>
+  <data name="en-US.DebugListener.ClearText" xml:space="preserve"><value>Clear</value></data>
+  <data name="zh-CN.DebugListener.ClearText" xml:space="preserve"><value>清空</value></data>
   <data name="en-US.DebugListener.ClearFilters" xml:space="preserve"><value>Clear Filters</value></data>
   <data name="zh-CN.DebugListener.ClearFilters" xml:space="preserve"><value>清除筛选器</value></data>
   <data name="en-US.DebugListener.EditFilter" xml:space="preserve"><value>Edit Filter</value></data>

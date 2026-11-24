@@ -1070,6 +1070,9 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             case WorkbenchDestination.Preview:
                 this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);
                 break;
+            case WorkbenchDestination.Output:
+                this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchOutputTab);
+                break;
         }
     }
 

@@ -29,6 +29,7 @@ internal static class WorkbenchPaletteSmoke
         var showDiagnostics = Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem");
         var diagnostics = Find<TabControl>(inspector, "DiagnosticsWorkbenchPane");
         var diagnosticsTab = Find<TabItem>(inspector, "WorkbenchDiagnosticsTab");
+        var outputTab = Find<TabItem>(inspector, "WorkbenchOutputTab");
 
         Require(ReferenceEquals(palette.Child, surface) && ReferenceEquals(palette.PlacementTarget, button)
                 && surface.IsAncestorOf(query) && surface.IsAncestorOf(results),
@@ -64,7 +65,7 @@ internal static class WorkbenchPaletteSmoke
             InspectorLocalization.Default.SetLanguage("en-US");
             Open();
             Require(button.Content as string == "Command palette", "Missing English command palette button label.");
-            VerifyCaptions("Element tree", "Properties", "Diagnostics", "Events", "Preview");
+            VerifyCaptions("Element tree", "Properties", "Diagnostics", "Events", "Preview", "Output");
             SetQuery("pREv");
             VerifyCaptions("Preview");
             SetQuery("A command that cannot match");
@@ -80,7 +81,7 @@ internal static class WorkbenchPaletteSmoke
             Open();
             Require(button.Content as string == "快速命令" && query.Text.Length == 0,
                 "Reopening the palette must use the current language and start with a fresh search.");
-            VerifyCaptions("元素树", "属性", "诊断", "事件", "预览");
+            VerifyCaptions("元素树", "属性", "诊断", "事件", "预览", "输出");
             SetQuery("诊断");
             VerifyCaptions("诊断");
             Require(empty.Visibility == Visibility.Collapsed && results.SelectedIndex == 0,
@@ -89,6 +90,15 @@ internal static class WorkbenchPaletteSmoke
             Require(!OpenRequested() && showDiagnostics.IsChecked && diagnostics.Visibility == Visibility.Visible
                     && ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab),
                 "Enter must close the palette and reveal the Diagnostics tab.");
+
+            SetDiagnosticsVisible(false);
+            Open();
+            SetQuery("输出");
+            VerifyCaptions("输出");
+            SendKey(Key.Enter);
+            Require(!OpenRequested() && showDiagnostics.IsChecked && diagnostics.Visibility == Visibility.Visible
+                    && ReferenceEquals(diagnostics.SelectedItem, outputTab),
+                "Enter must close the palette and reveal the Output tab.");
             Require(ReferenceEquals(inspector.CurrentSelection, selection) && selection.IsSelected
                     && propertyInspector.FilterString == "Width",
                 "Executing a palette navigation command must preserve selection and the property filter.");

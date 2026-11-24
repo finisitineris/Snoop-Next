@@ -1,8 +1,10 @@
 namespace Snoop.Views.DebugListenerTab;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
+using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -15,7 +17,10 @@ public partial class DebugListenerControl : IListener, IDisposable
 #pragma warning disable CA2213
     private readonly SnoopDebugListener snoopDebugListener = new();
 #pragma warning restore CA2213
-    private StringBuilder allText = new();
+    private readonly List<string> capturedOutput = new();
+    private string search = string.Empty;
+    private int outputGeneration;
+    private bool disposed;
     private bool ignoreWrites;
 
     public DebugListenerControl()
@@ -47,41 +52,78 @@ public partial class DebugListenerControl : IListener, IDisposable
 
     public void Write(string? str)
     {
-        this.allText.Append(str);
-
-        if (!this.FiltersViewModel.IsSet || this.FiltersViewModel.FilterMatches(str))
-        {
-            this.Dispatcher.RunInDispatcherAsync(() => this.DoWrite(str), DispatcherPriority.Send);
-        }
-    }
-
-    private void DoWrite(string? str)
-    {
-        // prevent reentrancy
-        if (this.ignoreWrites)
+        if (str is not { Length: > 0 }
+            || Volatile.Read(ref this.disposed)
+            || (this.Dispatcher.CheckAccess() && this.ignoreWrites))
         {
             return;
         }
 
-        this.ignoreWrites = true;
+        var generation = Volatile.Read(ref this.outputGeneration);
+        this.Dispatcher.RunInDispatcherAsync(() => this.AppendOutput(str, generation), DispatcherPriority.Background);
+    }
 
-        var shouldScrollToEnd = this.textBoxDebugContent.SelectionLength == 0
-                                && this.textBoxDebugContent.SelectionStart == this.textBoxDebugContent.Text.Length;
-        this.textBoxDebugContent.AppendText(str);
-
-        if (shouldScrollToEnd)
+    private void AppendOutput(string text, int generation)
+    {
+        if (Volatile.Read(ref this.disposed) || generation != this.outputGeneration)
         {
-            this.textBoxDebugContent.ScrollToEnd();
-            this.textBoxDebugContent.SelectionStart = this.textBoxDebugContent.Text.Length;
+            return;
         }
 
-        this.ignoreWrites = false;
+        this.capturedOutput.Add(text);
+        if (this.MatchesOutput(text))
+        {
+            this.UpdateOutput(text, append: true);
+        }
+    }
+
+    private bool MatchesOutput(string text)
+        => (this.search.Length == 0 || text.IndexOf(this.search, StringComparison.OrdinalIgnoreCase) >= 0)
+           && (!this.FiltersViewModel.IsSet || this.FiltersViewModel.FilterMatches(text));
+
+    private void HandleOutputSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        this.search = ((TextBox)sender).Text.Trim();
+        this.RefreshOutput();
+    }
+
+    private void RefreshOutput()
+        => this.UpdateOutput(string.Concat(this.capturedOutput.Where(this.MatchesOutput)), append: false);
+
+    private void UpdateOutput(string text, bool append)
+    {
+        this.ignoreWrites = true;
+        try
+        {
+            var output = this.textBoxDebugContent;
+            var shouldScrollToEnd = output.SelectionLength == 0 && output.SelectionStart == output.Text.Length;
+            if (append)
+            {
+                output.AppendText(text);
+            }
+            else
+            {
+                output.Text = text;
+            }
+
+            if (shouldScrollToEnd)
+            {
+                output.ScrollToEnd();
+                output.SelectionStart = output.Text.Length;
+            }
+        }
+        finally
+        {
+            this.ignoreWrites = false;
+        }
     }
 
     private void ButtonClear_Click(object sender, RoutedEventArgs e)
     {
-        this.textBoxDebugContent.Clear();
-        this.allText = new StringBuilder();
+        // Discard callbacks queued before this clear, including filtered writes.
+        Interlocked.Increment(ref this.outputGeneration);
+        this.capturedOutput.Clear();
+        this.UpdateOutput(string.Empty, append: false);
     }
 
     private void ButtonClearFilters_Click(object sender, RoutedEventArgs e)
@@ -95,7 +137,7 @@ public partial class DebugListenerControl : IListener, IDisposable
         {
             this.FiltersViewModel.ClearFilters();
             Settings.Default.SnoopDebugFilters.Clear();
-            this.textBoxDebugContent.Text = this.allText.ToString();
+            this.RefreshOutput();
         }
     }
 
@@ -108,16 +150,7 @@ public partial class DebugListenerControl : IListener, IDisposable
 
         setFiltersWindow.ShowDialogEx(this);
 
-        var allLines = this.allText.ToString().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-        this.textBoxDebugContent.Clear();
-
-        foreach (var line in allLines)
-        {
-            if (this.FiltersViewModel.FilterMatches(line))
-            {
-                this.textBoxDebugContent.AppendText(line + Environment.NewLine);
-            }
-        }
+        this.RefreshOutput();
     }
 
     private void ComboBoxPresentationTraceLevel_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -141,13 +174,14 @@ public partial class DebugListenerControl : IListener, IDisposable
 
     private void CleanupListeners()
     {
-        Trace.Listeners.Remove(SnoopDebugListener.ListenerName);
+        Trace.Listeners.Remove(this.snoopDebugListener);
         PresentationTraceSources.DataBindingSource.Listeners.Remove(this.snoopDebugListener);
     }
 
     public void Dispose()
     {
-        this.snoopDebugListener.Dispose();
+        Volatile.Write(ref this.disposed, true);
         this.CleanupListeners();
+        this.snoopDebugListener.Dispose();
     }
 }
