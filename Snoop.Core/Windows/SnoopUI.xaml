@@ -271,6 +271,69 @@
                             ToolTip="{localization:InspectorLoc Tooltip.RefreshTree}"
                             FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                             Command="{x:Static windows:SnoopUI.RefreshCommand}" />
+                    <Button x:Name="CommandPaletteButton"
+                            MinHeight="28"
+                            Margin="0 2 8 2"
+                            Padding="8 2"
+                            Content="{localization:InspectorLoc CommandPalette.Title}"
+                            ToolTip="{localization:InspectorLoc CommandPalette.Tooltip}"
+                            FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                            Command="{x:Static windows:SnoopUI.OpenCommandPaletteCommand}" />
+                    <Popup x:Name="WorkbenchCommandPalette"
+                           PlacementTarget="{Binding ElementName=CommandPaletteButton}"
+                           Placement="Bottom"
+                           VerticalOffset="4"
+                           StaysOpen="False"
+                           Opened="HandleCommandPaletteOpened"
+                           Closed="HandleCommandPaletteClosed">
+                        <Border x:Name="CommandPaletteSurface"
+                                Width="320"
+                                Padding="10"
+                                Background="{DynamicResource SnoopNext.Brush.Panel}"
+                                BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
+                                BorderThickness="1"
+                                FocusManager.IsFocusScope="True"
+                                KeyboardNavigation.TabNavigation="Cycle"
+                                PreviewKeyDown="HandleCommandPalettePreviewKeyDown">
+                            <StackPanel>
+                                <Label Padding="0 0 0 4"
+                                       Content="{localization:InspectorLoc CommandPalette.Search}"
+                                       Target="{Binding ElementName=WorkbenchCommandQuery}" />
+                                <TextBox x:Name="WorkbenchCommandQuery"
+                                         MinHeight="28"
+                                         Padding="4 2"
+                                         FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}" />
+                                <ListBox x:Name="WorkbenchCommandResults"
+                                         Margin="0 4 0 0"
+                                         MaxHeight="190"
+                                         AutomationProperties.Name="{localization:InspectorLoc CommandPalette.Title}"
+                                         DisplayMemberPath="Caption"
+                                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
+                                            <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.WorkbenchFocusVisual}" />
+                                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="HandleCommandPaletteItemClick" />
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                                <TextBlock x:Name="WorkbenchCommandNoResults"
+                                           Margin="4 4 0 0"
+                                           Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                           Text="{localization:InspectorLoc CommandPalette.Empty}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding HasItems, ElementName=WorkbenchCommandResults}" Value="False">
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Label x:Name="TreeHeaderLabel"
                                Padding="2 2 4 2"

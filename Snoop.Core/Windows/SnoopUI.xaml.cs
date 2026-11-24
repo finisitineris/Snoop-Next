@@ -78,9 +78,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.CommandBindings.Add(new CommandBinding(SelectFocusScopeCommand, this.HandleSelectFocusScope));
 
         this.CommandBindings.Add(new CommandBinding(ClearSearchFilterCommand, this.ClearSearchFilterHandler));
+        this.CommandBindings.Add(new CommandBinding(OpenCommandPaletteCommand, this.HandleOpenCommandPalette));
 
         this.CommandBindings.Add(new CommandBinding(CopyPropertyChangesCommand, this.CopyPropertyChangesHandler));
 
+        this.WorkbenchCommandQuery.TextChanged += (_, _) => this.FilterWorkbenchCommands();
         InputManager.Current.PreProcessInput += this.HandlePreProcessInputForTracking;
         this.Tree.SelectedItemChanged += this.HandleTreeSelectedItemChanged;
 
@@ -432,6 +434,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        this.WorkbenchCommandPalette.IsOpen = false;
         this.isShuttingDown = true;
         this.CurrentSelection = null;
 
@@ -1033,29 +1036,41 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     }
 
     private void HandleNavigateToTree_OnClick(object sender, RoutedEventArgs e)
-    {
-        this.ShowWorkbenchPane(this.ShowTreePaneItem);
-        this.filterComboBox.Focus();
-    }
+        => this.NavigateToWorkbench(WorkbenchDestination.Tree);
 
     private void HandleNavigateToProperties_OnClick(object sender, RoutedEventArgs e)
-    {
-        this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchPropertiesTab);
-    }
+        => this.NavigateToWorkbench(WorkbenchDestination.Properties);
 
     private void HandleNavigateToDiagnostics_OnClick(object sender, RoutedEventArgs e)
-    {
-        this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchDiagnosticsTab);
-    }
+        => this.NavigateToWorkbench(WorkbenchDestination.Diagnostics);
 
     private void HandleNavigateToEvents_OnClick(object sender, RoutedEventArgs e)
-    {
-        this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchEventsTab);
-    }
+        => this.NavigateToWorkbench(WorkbenchDestination.Events);
 
     private void HandleNavigateToPreview_OnClick(object sender, RoutedEventArgs e)
+        => this.NavigateToWorkbench(WorkbenchDestination.Preview);
+
+    private void NavigateToWorkbench(WorkbenchDestination destination)
     {
-        this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);
+        switch (destination)
+        {
+            case WorkbenchDestination.Tree:
+                this.ShowWorkbenchPane(this.ShowTreePaneItem);
+                this.filterComboBox.Focus();
+                break;
+            case WorkbenchDestination.Properties:
+                this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchPropertiesTab);
+                break;
+            case WorkbenchDestination.Diagnostics:
+                this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchDiagnosticsTab);
+                break;
+            case WorkbenchDestination.Events:
+                this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchEventsTab);
+                break;
+            case WorkbenchDestination.Preview:
+                this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);
+                break;
+        }
     }
 
     private void NavigateToWorkbenchTab(MenuItem paneMenuItem, TabControl pane, TabItem tab)
