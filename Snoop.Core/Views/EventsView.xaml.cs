@@ -33,6 +33,7 @@ public partial class EventsView : INotifyPropertyChanged, IDisposable
     public EventsView()
     {
         this.InterestingEvents = new(this.interestingEvents);
+        this.DisplayedEvents = new ListCollectionView(this.InterestingEvents);
 
         this.InitializeComponent();
 
@@ -78,6 +79,8 @@ public partial class EventsView : INotifyPropertyChanged, IDisposable
     }
 
     public ReadOnlyObservableCollection<TrackedEvent> InterestingEvents { get; }
+
+    public ICollectionView DisplayedEvents { get; }
 
     private readonly ObservableCollection<TrackedEvent> interestingEvents = new();
 
@@ -169,6 +172,15 @@ public partial class EventsView : INotifyPropertyChanged, IDisposable
     private void HandleClear(object sender, ExecutedRoutedEventArgs e)
     {
         this.interestingEvents.Clear();
+    }
+
+    private void HandleEventFilterTextChanged(object sender, TextChangedEventArgs e)
+    {
+        var search = ((TextBox)sender).Text.Trim();
+        this.DisplayedEvents.Filter = search.Length == 0
+            ? null
+            : item => item is TrackedEvent tracked
+                      && tracked.EventArgs.RoutedEvent.Name.IndexOf(search, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private void HandleResetEventTrackersToDefault(object sender, ExecutedRoutedEventArgs e)

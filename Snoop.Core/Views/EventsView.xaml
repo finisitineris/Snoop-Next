@@ -102,8 +102,8 @@
 
     <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
-        <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
     </Grid.RowDefinitions>
 
     <controls:NoSelectionComboBox x:Name="EventChooser"
@@ -127,6 +127,8 @@
             Height="18"
             Padding="3"
             HorizontalAlignment="Right"
+            AutomationProperties.Name="{localization:InspectorLoc Events.ClearTip}"
+            FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
             Command="{x:Static views:EventsView.ClearCommand}">
         <Grid>
             <Path Data="M18.33996,8.7972167 L1.8622991,25.274878"
@@ -143,10 +145,42 @@
         </Button.ToolTip>
     </Button>
 
+    <Grid Grid.Row="1" Margin="0 2">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Label x:Name="EventFilterLabel"
+               Padding="2 2 6 2"
+               VerticalAlignment="Center"
+               Content="{localization:InspectorLoc Events.Filter}"
+               Target="{Binding ElementName=EventFilter}" />
+        <TextBox x:Name="EventFilter"
+                 Grid.Column="1"
+                 MinWidth="0"
+                 Padding="4 2"
+                 FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
+                 ToolTip="{localization:InspectorLoc Events.FilterTip}"
+                 TextChanged="HandleEventFilterTextChanged" />
+        <StackPanel Grid.Column="2" Margin="6 0 0 0" Orientation="Horizontal">
+            <Label Padding="0 2 4 2"
+                   VerticalAlignment="Center"
+                   Content="{localization:InspectorLoc Events.MaximumDisplayed}"
+                   Target="{Binding ElementName=MaxEventsEditor}" />
+            <TextBox x:Name="MaxEventsEditor"
+                     Width="46"
+                     Padding="4 2"
+                     FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
+                     Text="{Binding ElementName=Events, Path=MaxEventsDisplayed}" />
+        </StackPanel>
+    </Grid>
+
     <TreeView x:Name="EventTree"
-              Grid.Row="1"
+              Grid.Row="2"
               HorizontalContentAlignment="Stretch"
-              ItemsSource="{Binding ElementName=Events, Path=InterestingEvents}"
+              ItemsSource="{Binding ElementName=Events, Path=DisplayedEvents}"
               SelectedItemChanged="EventTree_SelectedItemChanged">
         <TreeView.ItemContainerStyle>
             <Style TargetType="{x:Type TreeViewItem}"
@@ -163,11 +197,4 @@
         </TreeView.ItemContainerStyle>
     </TreeView>
 
-    <StackPanel Grid.Row="2"
-                Orientation="Horizontal">
-        <TextBlock Text="{localization:InspectorLoc Events.MaximumDisplayed}" />
-        <TextBox MinWidth="64"
-                 VerticalAlignment="Stretch"
-                 Text="{Binding ElementName=Events, Path=MaxEventsDisplayed}" />
-    </StackPanel>
 </Grid>

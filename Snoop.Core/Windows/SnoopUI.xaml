@@ -566,22 +566,6 @@
                                                 RootTarget="{Binding CurrentSelection.Target, Converter={x:Static converters:DataContextExtractorConverter.Instance}}" />
                 </TabItem>
 
-                <TabItem x:Name="WorkbenchEventsTab">
-                    <TabItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Tab.Events}">
-                            <TextBlock.ToolTip>
-                                <StackPanel MaxWidth="300">
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsTitle}" />
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsDescription}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
-
-                    <views:EventsView x:Name="eventsView" />
-                </TabItem>
-
                 <TabItem>
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Triggers}">
@@ -717,6 +701,22 @@
 
                     <controls:Previewer x:Name="PreviewArea"
                                         Target="{Binding CurrentSelection.Target}" />
+                </TabItem>
+
+                <TabItem x:Name="WorkbenchEventsTab">
+                    <TabItem.Header>
+                        <TextBlock Text="{localization:InspectorLoc Tab.Events}">
+                            <TextBlock.ToolTip>
+                                <StackPanel MaxWidth="300">
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsTitle}" />
+                                    <TextBlock Text="{localization:InspectorLoc Tooltip.EventsDescription}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                    </TabItem.Header>
+
+                    <views:EventsView x:Name="eventsView" />
                 </TabItem>
             </TabControl>
 
