@@ -250,8 +250,12 @@
   <data name="zh-CN.Events.ChooseTrackedTip" xml:space="preserve"><value>选择要跟踪的事件。</value></data>
   <data name="en-US.Events.ClearTip" xml:space="preserve"><value>Clear the current list of events.</value></data>
   <data name="zh-CN.Events.ClearTip" xml:space="preserve"><value>清除当前事件列表。</value></data>
-  <data name="en-US.Events.MaximumDisplayed" xml:space="preserve"><value>Maximum events displayed: </value></data>
-  <data name="zh-CN.Events.MaximumDisplayed" xml:space="preserve"><value>最多显示的事件数：</value></data>
+  <data name="en-US.Events.Filter" xml:space="preserve"><value>Filter events</value></data>
+  <data name="zh-CN.Events.Filter" xml:space="preserve"><value>筛选事件</value></data>
+  <data name="en-US.Events.FilterTip" xml:space="preserve"><value>Filter captured events by name, for example KeyDown.</value></data>
+  <data name="zh-CN.Events.FilterTip" xml:space="preserve"><value>按名称筛选已捕获的事件，例如 KeyDown。</value></data>
+  <data name="en-US.Events.MaximumDisplayed" xml:space="preserve"><value>Max events</value></data>
+  <data name="zh-CN.Events.MaximumDisplayed" xml:space="preserve"><value>事件上限</value></data>
   <data name="en-US.PropertyInspector.DelvePathTip" xml:space="preserve"><value>This is the delve path of the currently selected object</value></data>
   <data name="zh-CN.PropertyInspector.DelvePathTip" xml:space="preserve"><value>当前所选对象的深入查看路径</value></data>
   <data name="en-US.PropertyInspector.DelveTypeTip" xml:space="preserve"><value>This is the type of the currently selected object</value></data>

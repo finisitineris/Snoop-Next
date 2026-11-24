@@ -1065,7 +1065,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
                 this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchDiagnosticsTab);
                 break;
             case WorkbenchDestination.Events:
-                this.NavigateToWorkbenchTab(this.ShowPropertiesPaneItem, this.PropertiesWorkbenchPane, this.WorkbenchEventsTab);
+                this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchEventsTab);
                 break;
             case WorkbenchDestination.Preview:
                 this.NavigateToWorkbenchTab(this.ShowDiagnosticsPaneItem, this.DiagnosticsWorkbenchPane, this.WorkbenchPreviewTab);

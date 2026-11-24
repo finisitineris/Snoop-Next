@@ -26,6 +26,8 @@ internal static class WorkbenchNavigationSmoke
         var showProperties = Find<MenuItem>(inspector, "ShowPropertiesPaneItem");
         var showDiagnostics = Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem");
         var propertiesTab = Find<TabItem>(inspector, "WorkbenchPropertiesTab");
+        var dataContextTab = LogicalTreeHelper.GetParent(Find<PropertyInspector>(inspector, "DataContextPropertyGrid")) as TabItem
+            ?? throw new InvalidOperationException("Missing workbench Data Context tab.");
         var eventsTab = Find<TabItem>(inspector, "WorkbenchEventsTab");
         var diagnosticsTab = Find<TabItem>(inspector, "WorkbenchDiagnosticsTab");
         var previewTab = Find<TabItem>(inspector, "WorkbenchPreviewTab");
@@ -79,7 +81,7 @@ internal static class WorkbenchNavigationSmoke
             VerifyLabels(buttons, "zh-CN", "元素树", "属性", "诊断", "事件", "预览");
             inspector.CurrentSelection = selection;
             propertyInspector.FilterString = "Width";
-            properties.SelectedItem = eventsTab;
+            properties.SelectedItem = dataContextTab;
             diagnostics.SelectedItem = previewTab;
             grid.ColumnDefinitions[0].Width = new GridLength(0.42, GridUnitType.Star);
             grid.ColumnDefinitions[1].Width = new GridLength(0.58, GridUnitType.Star);
@@ -94,7 +96,7 @@ internal static class WorkbenchNavigationSmoke
 
             Click(treeButton);
             VerifyPanes(true, false, false);
-            Require(ReferenceEquals(properties.SelectedItem, eventsTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
                 "Opening the element tree changed a tab.");
 
             SetPaneVisible(showTree, false);
@@ -103,22 +105,24 @@ internal static class WorkbenchNavigationSmoke
             Require(ReferenceEquals(properties.SelectedItem, propertiesTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
                 "Properties navigation did not select only the Properties tab.");
 
+            properties.SelectedItem = dataContextTab;
             SetPaneVisible(showProperties, false);
             Click(eventsButton);
-            VerifyPanes(false, true, false);
-            Require(ReferenceEquals(properties.SelectedItem, eventsTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
-                "Events navigation did not select only the Events tab.");
+            VerifyPanes(false, false, true);
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, eventsTab),
+                "Events navigation must open the diagnostics dock without changing the Properties tabs.");
 
             Click(diagnosticsButton);
-            VerifyPanes(false, true, true);
-            Require(ReferenceEquals(properties.SelectedItem, eventsTab) && ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab),
+            VerifyPanes(false, false, true);
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab),
                 "Diagnostics navigation did not select only the Diagnostics tab.");
 
             SetPaneVisible(showDiagnostics, false);
+            SetPaneVisible(showProperties, true);
             Click(previewButton);
             Click(treeButton);
             VerifyPanes(true, true, true);
-            Require(ReferenceEquals(properties.SelectedItem, eventsTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
                 "Preview navigation did not select only the Preview tab.");
             Require(ReferenceEquals(inspector.CurrentSelection, selection) && selection.IsSelected
                     && ReferenceEquals(propertyInspector.RootTarget, target) && Equals(target.Content, "Edited value")
