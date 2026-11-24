@@ -156,6 +156,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             this.rootTreeItem = value;
             this.OnPropertyChanged();
             this.OnPropertyChanged(nameof(this.InspectedProcess));
+            this.OnPropertyChanged(nameof(this.ScopedPreviewTarget));
         }
     }
 
@@ -163,6 +164,8 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     /// Identifies the process that owns the inspected tree.
     /// </summary>
     public string? InspectedProcess => this.RootTreeItem is null ? null : inspectedProcessIdentity.Value;
+
+    public object? ScopedPreviewTarget => this.RootTreeItem is { IsScoped: true } root ? root.Target : null;
 
     /// <summary>
     /// Root element of the tree.

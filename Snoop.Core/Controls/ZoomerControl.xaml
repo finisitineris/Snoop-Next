@@ -30,6 +30,14 @@
 
         <Viewbox x:Name="Viewbox" />
 
+        <Canvas IsHitTestVisible="False">
+            <Rectangle x:Name="PreviewSelectionOutline"
+                       Stroke="{DynamicResource SnoopNext.Brush.Accent}"
+                       StrokeThickness="2"
+                       SnapsToDevicePixels="True"
+                       Visibility="Collapsed" />
+        </Canvas>
+
         <Slider x:Name="ColorSlider"
                 Width="100"
                 Margin="0 2 2 0"

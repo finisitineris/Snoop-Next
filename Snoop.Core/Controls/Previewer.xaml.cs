@@ -23,6 +23,18 @@ public partial class Previewer
         this.CommandBindings.Add(new CommandBinding(ScreenshotCommand, this.HandleScreenshot, this.HandleCanScreenshot));
     }
 
+    public static readonly DependencyProperty ScopeTargetProperty = DependencyProperty.Register(
+        nameof(ScopeTarget),
+        typeof(object),
+        typeof(Previewer),
+        new PropertyMetadata(null, (d, e) => ((Previewer)d).Zoomer.SetScopeTarget(e.NewValue)));
+
+    public object? ScopeTarget
+    {
+        get => this.GetValue(ScopeTargetProperty);
+        set => this.SetValue(ScopeTargetProperty, value);
+    }
+
     #region Target
 
     /// <summary>

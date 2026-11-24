@@ -339,6 +339,7 @@ internal static class Program
                         WorkbenchNavigationSmoke.Verify(inspector);
                         WorkbenchStatusSmoke.Verify(inspector);
                         WorkbenchPreviewPathSmoke.Verify(inspector);
+                        WorkbenchPreviewHighlightSmoke.Verify(inspector);
                         WorkbenchCommandBarSmoke.Verify(inspector);
                         WorkbenchPaletteSmoke.Verify(inspector);
                         WorkbenchEventsDockSmoke.Verify(inspector);
