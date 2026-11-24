@@ -214,6 +214,10 @@
   <data name="zh-CN.Common.ResetDefaults" xml:space="preserve"><value>恢复默认设置</value></data>
   <data name="en-US.Diagnostics.Export" xml:space="preserve"><value>Export</value></data>
   <data name="zh-CN.Diagnostics.Export" xml:space="preserve"><value>导出</value></data>
+  <data name="en-US.Diagnostics.Locate" xml:space="preserve"><value>Locate</value></data>
+  <data name="zh-CN.Diagnostics.Locate" xml:space="preserve"><value>定位</value></data>
+  <data name="en-US.Diagnostics.LocateTip" xml:space="preserve"><value>Show this element in the inspected tree.</value></data>
+  <data name="zh-CN.Diagnostics.LocateTip" xml:space="preserve"><value>在检查树中显示此元素。</value></data>
   <data name="en-US.Diagnostics.ColumnLevel" xml:space="preserve"><value>Level</value></data>
   <data name="zh-CN.Diagnostics.ColumnLevel" xml:space="preserve"><value>级别</value></data>
   <data name="en-US.Diagnostics.ColumnLevelTip" xml:space="preserve"><value>This column shows the level of the diagnostic.</value></data>

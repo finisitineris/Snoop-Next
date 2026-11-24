@@ -9,12 +9,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Diagnostics;
 using Snoop.Infrastructure.Helpers;
 using Snoop.Localization;
+using Snoop.Windows;
 
 public partial class DiagnosticsView
 {
@@ -228,22 +230,32 @@ public partial class DiagnosticsView
 
     private void Control_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
     {
-        this.NavigateToSelectedTreeItem();
-    }
-
-    private void Diagnostics_OnKeyUp(object sender, KeyEventArgs e)
-    {
-        this.NavigateToSelectedTreeItem();
-    }
-
-    private void NavigateToSelectedTreeItem()
-    {
-        var diagnosticItem = this.diagnostics.SelectedItem as DiagnosticItem;
-
-        if (diagnosticItem?.TreeItem != null)
+        if (e.ChangedButton == MouseButton.Left
+            && e.OriginalSource is DependencyObject source
+            && ItemsControl.ContainerFromElement(this.diagnostics, source) is ListViewItem row)
         {
-            diagnosticItem.TreeItem.IsSelected = true;
+            e.Handled = this.TryLocate(row.Content);
         }
+    }
+
+    private void Diagnostics_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Enter)
+        {
+            e.Handled = this.TryLocate(this.diagnostics.SelectedItem);
+        }
+    }
+
+    private bool TryLocate(object? diagnostic)
+    {
+        var command = SnoopUI.LocateDiagnosticElementCommand;
+        if (!command.CanExecute(diagnostic, this))
+        {
+            return false;
+        }
+
+        command.Execute(diagnostic, this);
+        return true;
     }
 
     private void ExportDiagnostics_OnClick(object sender, RoutedEventArgs e)
