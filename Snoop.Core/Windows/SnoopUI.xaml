@@ -662,16 +662,39 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <TextBlock Margin="6 4"
-                               Foreground="{DynamicResource SnoopNext.Brush.Text}"
-                               Text="{localization:InspectorLoc Tab.Preview}"
-                               TextTrimming="CharacterEllipsis">
-                        <TextBlock.ToolTip>
-                            <TextBlock MaxWidth="300"
-                                       Text="{localization:InspectorLoc Tooltip.PreviewDescription}"
-                                       TextWrapping="Wrap" />
-                        </TextBlock.ToolTip>
-                    </TextBlock>
+                    <DockPanel Margin="6 4" ClipToBounds="True">
+                        <TextBlock DockPanel.Dock="Left"
+                                   Margin="0 0 10 0"
+                                   Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                   Text="{localization:InspectorLoc Tab.Preview}">
+                            <TextBlock.ToolTip>
+                                <TextBlock MaxWidth="300"
+                                           Text="{localization:InspectorLoc Tooltip.PreviewDescription}"
+                                           TextWrapping="Wrap" />
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                        <TextBlock x:Name="WorkbenchPreviewSelectionPath"
+                                   Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                   TextTrimming="CharacterEllipsis">
+                            <TextBlock.ToolTip>
+                                <ToolTip>
+                                    <TextBlock MaxWidth="420"
+                                               Text="{Binding PlacementTarget.Text, RelativeSource={RelativeSource AncestorType={x:Type ToolTip}}}"
+                                               TextWrapping="Wrap" />
+                                </ToolTip>
+                            </TextBlock.ToolTip>
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Text" Value="{Binding PreviewSelectionPath, Mode=OneWay}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentSelection}" Value="{x:Null}">
+                                            <Setter Property="Text" Value="{localization:InspectorLoc Status.NoSelection}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </DockPanel>
 
                     <controls:Previewer x:Name="PreviewArea"
                                         Grid.Row="1"
