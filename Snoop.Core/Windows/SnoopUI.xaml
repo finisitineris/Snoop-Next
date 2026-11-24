@@ -698,6 +698,7 @@
 
                     <controls:Previewer x:Name="PreviewArea"
                                         Grid.Row="1"
+                                        ScopeTarget="{Binding ScopedPreviewTarget}"
                                         Target="{Binding CurrentSelection.Target}" />
                 </Grid>
 
