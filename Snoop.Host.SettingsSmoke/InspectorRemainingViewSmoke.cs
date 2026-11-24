@@ -62,12 +62,12 @@ internal static class InspectorRemainingViewSmoke
             var generatedDiagnostic = provider.GetDiagnosticItems(treeItem).Single();
             const string rawDescription = "Freezing the resource 'SmokeBrush' can save memory and increase performance.";
             var columns = ((GridView)Find<ListView>(diagnostics, "diagnostics").View).Columns;
-            var levelLabel = CreateDiagnosticLabel(columns[0], diagnosticItem);
-            var areaLabel = CreateDiagnosticLabel(columns[3], diagnosticItem);
-            var customName = CreateDiagnosticLabel(columns[1], diagnosticItem);
-            var defaultName = CreateDiagnosticLabel(columns[1], defaultDiagnostic);
-            var defaultDescription = CreateDiagnosticLabel(columns[2], defaultDiagnostic);
-            var generatedDescription = CreateDiagnosticLabel(columns[2], generatedDiagnostic);
+            var levelLabel = CreateDiagnosticLabel(columns[1], diagnosticItem);
+            var areaLabel = CreateDiagnosticLabel(columns[4], diagnosticItem);
+            var customName = CreateDiagnosticLabel(columns[2], diagnosticItem);
+            var defaultName = CreateDiagnosticLabel(columns[2], defaultDiagnostic);
+            var defaultDescription = CreateDiagnosticLabel(columns[3], defaultDiagnostic);
+            var generatedDescription = CreateDiagnosticLabel(columns[3], generatedDiagnostic);
             DrainDispatcher();
 
             RequireText(useDataContext.Text, "使用 DataContext 属性", "Methods DataContext action");

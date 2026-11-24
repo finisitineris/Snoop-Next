@@ -9,6 +9,7 @@
              xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:views="clr-namespace:Snoop.Views"
+             xmlns:windows="clr-namespace:Snoop.Windows"
              x:Name="self"
              d:DesignHeight="450"
              d:DesignWidth="800"
@@ -113,7 +114,7 @@
                   Grid.Row="1"
                   AlternationCount="2"
                   ItemsSource="{Binding ElementName=self, Path=DiagnosticsItemsView}"
-                  KeyUp="Diagnostics_OnKeyUp"
+                  KeyDown="Diagnostics_OnKeyDown"
                   MouseDoubleClick="Control_OnMouseDoubleClick">
             <ListView.ItemContainerStyle>
                 <Style TargetType="{x:Type ListViewItem}"
@@ -135,6 +136,20 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
+                    <GridViewColumn>
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate DataType="{x:Type diagnostics:DiagnosticItem}">
+                                <Button x:Name="DiagnosticLocateButton"
+                                        HorizontalAlignment="Left"
+                                        Padding="6 1"
+                                        Content="{localization:InspectorLoc Diagnostics.Locate}"
+                                        ToolTip="{localization:InspectorLoc Diagnostics.LocateTip}"
+                                        FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
+                                        Command="{x:Static windows:SnoopUI.LocateDiagnosticElementCommand}"
+                                        CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                     <GridViewColumn Width="50">
                         <GridViewColumn.Header>
                             <TextBlock Text="{localization:InspectorLoc Diagnostics.ColumnLevel}">

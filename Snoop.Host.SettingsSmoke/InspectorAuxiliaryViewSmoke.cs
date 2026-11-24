@@ -21,7 +21,7 @@ internal static class InspectorAuxiliaryViewSmoke
         {
             var diagnostics = new DiagnosticsView();
             var list = (ListView)diagnostics.FindName("diagnostics");
-            var diagnosticLevel = (TextBlock)((GridView)list.View).Columns[0].Header;
+            var diagnosticLevel = (TextBlock)((GridView)list.View).Columns[1].Header;
             using var events = new EventsView();
             var eventChooser = (NoSelectionComboBox)events.FindName("EventChooser");
 

@@ -668,7 +668,8 @@
                         </TextBlock>
                     </TabItem.Header>
 
-                    <views:DiagnosticsView DiagnosticContext="{Binding TreeService.DiagnosticContext}" />
+                    <views:DiagnosticsView x:Name="WorkbenchDiagnosticsView"
+                                           DiagnosticContext="{Binding TreeService.DiagnosticContext}" />
                 </TabItem>
 
                 <TabItem x:Name="WorkbenchPreviewTab">

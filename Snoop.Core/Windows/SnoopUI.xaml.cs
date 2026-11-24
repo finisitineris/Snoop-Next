@@ -25,6 +25,7 @@ using JetBrains.Annotations;
 using Snoop.Core;
 using Snoop.Data.Tree;
 using Snoop.Infrastructure;
+using Snoop.Infrastructure.Diagnostics;
 using Snoop.Infrastructure.Helpers;
 using Snoop.Localization;
 using Snoop.Views;
@@ -38,6 +39,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     public static readonly RoutedCommand ExportTreeWithFilterCommand = new(nameof(ExportTreeWithFilterCommand), typeof(SnoopUI));
     public static readonly RoutedCommand HelpCommand = new(nameof(HelpCommand), typeof(SnoopUI));
     public static readonly RoutedCommand InspectCommand = new(nameof(InspectCommand), typeof(SnoopUI));
+    public static readonly RoutedCommand LocateDiagnosticElementCommand = new(nameof(LocateDiagnosticElementCommand), typeof(SnoopUI));
     public static readonly RoutedCommand SelectFocusCommand = new(nameof(SelectFocusCommand), typeof(SnoopUI));
     public static readonly RoutedCommand SelectFocusScopeCommand = new(nameof(SelectFocusScopeCommand), typeof(SnoopUI));
     public static readonly RoutedCommand ClearSearchFilterCommand = new(nameof(ClearSearchFilterCommand), typeof(SnoopUI));
@@ -73,6 +75,10 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.CommandBindings.Add(new CommandBinding(HelpCommand, this.HandleHelp));
 
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspect));
+        this.CommandBindings.Add(new CommandBinding(
+            LocateDiagnosticElementCommand,
+            this.HandleLocateDiagnosticElement,
+            (_, e) => e.CanExecute = this.GetDiagnosticTreeItem(e.Parameter) is not null));
 
         this.CommandBindings.Add(new CommandBinding(SelectFocusCommand, this.HandleSelectFocus));
         this.CommandBindings.Add(new CommandBinding(SelectFocusScopeCommand, this.HandleSelectFocusScope));
@@ -610,6 +616,94 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         {
             this.PropertyInspector.SetTarget(e.Parameter);
         }
+    }
+
+    private TreeItem? GetDiagnosticTreeItem(object? parameter)
+    {
+        if (this.isShuttingDown
+            || parameter is not DiagnosticItem { TreeItem: { } item } diagnostic
+            || !ReferenceEquals(item.TreeService, this.TreeService)
+            || !this.TreeService.DiagnosticContext.DiagnosticItems.Contains(diagnostic))
+        {
+            return null;
+        }
+
+        var ancestor = item;
+        while (ancestor.Parent is { } parent)
+        {
+            if (!parent.Children.Contains(ancestor))
+            {
+                return null;
+            }
+
+            ancestor = parent;
+        }
+
+        return ReferenceEquals(ancestor, this.RootTreeItem) ? item : null;
+    }
+
+    private void HandleLocateDiagnosticElement(object sender, ExecutedRoutedEventArgs e)
+    {
+        var diagnostic = e.Parameter;
+        if (this.GetDiagnosticTreeItem(diagnostic) is not null)
+        {
+            // A stopped debounce timer may already have queued the filter.
+            this.RunInDispatcherAsync(() => this.LocateDiagnosticElement(diagnostic), DispatcherPriority.Background);
+        }
+    }
+
+    private void LocateDiagnosticElement(object? diagnostic)
+    {
+        if (this.filterTimer.IsEnabled)
+        {
+            this.filterTimer.Stop();
+            this.ProcessFilter();
+        }
+
+        if (this.GetDiagnosticTreeItem(diagnostic) is not { } item)
+        {
+            return;
+        }
+
+        if (this.IsTreeItemDisplayed(item))
+        {
+            this.RevealDiagnosticTreeItem(item);
+            return;
+        }
+
+        // Rebuild only the displayed roots. Refresh would replace the inspected tree.
+        this.filterComboBox.SelectedIndex = -1;
+        this.SetFilter(string.Empty);
+        this.RunInDispatcherAsync(() =>
+        {
+            if (this.GetDiagnosticTreeItem(diagnostic) is { } current && this.IsTreeItemDisplayed(current))
+            {
+                this.RevealDiagnosticTreeItem(current);
+            }
+        }, DispatcherPriority.Background);
+    }
+
+    private bool IsTreeItemDisplayed(TreeItem item)
+    {
+        for (TreeItem? ancestor = item; ancestor is not null; ancestor = ancestor.Parent)
+        {
+            if (this.TreeItems.Contains(ancestor))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RevealDiagnosticTreeItem(TreeItem item)
+    {
+        this.ShowWorkbenchPane(this.ShowTreePaneItem);
+        item.Parent?.ExpandTo();
+        this.CurrentSelection = item;
+        // Filtering can reset the tree container without changing CurrentSelection.
+        item.IsSelected = true;
+        this.Tree.Focus();
     }
 
     private void HandleSelectFocus(object sender, ExecutedRoutedEventArgs e)
