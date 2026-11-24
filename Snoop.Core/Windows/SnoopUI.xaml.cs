@@ -100,6 +100,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.WorkbenchCommandQuery.TextChanged += (_, _) => this.FilterWorkbenchCommands();
         InputManager.Current.PreProcessInput += this.HandlePreProcessInputForTracking;
         this.Tree.SelectedItemChanged += this.HandleTreeSelectedItemChanged;
+        this.PreviewArea.ElementPicked += this.HandlePreviewElementPicked;
 
         this.filterTimer = new DispatcherTimer
         {
@@ -386,7 +387,15 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     public bool TrackOnClick { get; set; } = false;
 
-    public bool IgnoreHitTestVisibility { get; set; } = true;
+    public bool IgnoreHitTestVisibility
+    {
+        get => this.ignoreHitTestVisibility;
+        set
+        {
+            this.ignoreHitTestVisibility = value;
+            this.PreviewArea?.SetIgnoreHitTestVisibility(value);
+        }
+    }
 
     public bool SkipTemplateParts { get; set; } = false;
 
@@ -504,6 +513,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         CacheManager.Instance.DecreaseUsageCount();
 
         this.WorkbenchGrid.LayoutUpdated -= this.HandleWorkbenchLayoutUpdated;
+        this.PreviewArea.ElementPicked -= this.HandlePreviewElementPicked;
         InputManager.Current.PreProcessInput -= this.HandlePreProcessInputForTracking;
 
         this.filterTimer.Stop();
@@ -693,6 +703,89 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         return ReferenceEquals(ancestor, this.RootTreeItem) ? item : null;
+    }
+
+    private void HandlePreviewElementPicked(Visual visual, UIElement scene)
+    {
+        var request = ++this.previewPickRequest;
+        if (this.RootTreeItem is not { } root
+            || this.GetPreviewTreeItem(root, visual, scene) is not { } item)
+        {
+            return;
+        }
+
+        if (this.filterTimer.IsEnabled)
+        {
+            this.filterTimer.Stop();
+            this.ProcessFilter();
+        }
+
+        if (this.IsTreeItemDisplayed(item))
+        {
+            this.SelectPreviewTreeItem(item);
+            return;
+        }
+
+        // A preview pick can reveal an element hidden by the tree filter without rebuilding the inspected tree.
+        this.filterComboBox.SelectedIndex = -1;
+        this.SetFilter(string.Empty);
+        var selection = this.CurrentSelection;
+        this.RunInDispatcherAsync(() =>
+        {
+            if (request == this.previewPickRequest
+                && ReferenceEquals(this.CurrentSelection, selection)
+                && !this.filterTimer.IsEnabled
+                && this.filter.Length == 0
+                && this.GetPreviewTreeItem(root, visual, scene) is { } current
+                && this.IsTreeItemDisplayed(current))
+            {
+                this.SelectPreviewTreeItem(current);
+            }
+        }, DispatcherPriority.Background);
+    }
+
+    private TreeItem? GetPreviewTreeItem(TreeItem root, Visual visual, UIElement scene)
+    {
+        if (this.isShuttingDown
+            || !this.PreviewArea.IsActive
+            || !ReferenceEquals(root, this.RootTreeItem)
+            || (this.ScopedPreviewTarget is { } scope && !ReferenceEquals(scene, scope))
+            || PresentationSource.FromVisual(scene)?.CompositionTarget is null
+            || (!ReferenceEquals(visual, scene) && !visual.IsDescendantOf(scene)))
+        {
+            return null;
+        }
+
+        for (DependencyObject? candidate = visual; candidate is Visual or Visual3D; candidate = VisualTreeHelper.GetParent(candidate))
+        {
+            if (this.SkipTemplateParts
+                && candidate is FrameworkElement element
+                && GetItemToFindAndSkipTemplateParts(element) is { } templateOwner
+                && (ReferenceEquals(templateOwner, scene) || templateOwner.IsDescendantOf(scene))
+                && root.FindNode(templateOwner) is { } owner)
+            {
+                return owner;
+            }
+
+            if (root.FindNode(candidate) is { } item)
+            {
+                return item;
+            }
+
+            if (ReferenceEquals(candidate, scene))
+            {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    private void SelectPreviewTreeItem(TreeItem item)
+    {
+        item.Parent?.ExpandTo();
+        this.CurrentSelection = item;
+        item.IsSelected = true;
     }
 
     private void HandleLocateDiagnosticElement(object sender, ExecutedRoutedEventArgs e)
@@ -1116,6 +1209,8 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private TreeService treeService = null!;
 
     private bool isShuttingDown;
+    private bool ignoreHitTestVisibility = true;
+    private int previewPickRequest;
 
     private WorkbenchPaneSizes savedWorkbenchSizes;
     private WorkbenchPaneSizes expandedWorkbenchSizes;

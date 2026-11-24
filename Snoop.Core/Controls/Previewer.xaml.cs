@@ -5,6 +5,7 @@
 
 namespace Snoop.Controls;
 
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -22,6 +23,15 @@ public partial class Previewer
         this.CommandBindings.Add(new CommandBinding(MagnifyCommand, this.HandleMagnify, this.HandleCanMagnify));
         this.CommandBindings.Add(new CommandBinding(ScreenshotCommand, this.HandleScreenshot, this.HandleCanScreenshot));
     }
+
+    internal event Action<Visual, UIElement> ElementPicked
+    {
+        add => this.Zoomer.ElementPicked += value;
+        remove => this.Zoomer.ElementPicked -= value;
+    }
+
+    internal void SetIgnoreHitTestVisibility(bool value)
+        => this.Zoomer.IgnoreHitTestVisibility = value;
 
     public static readonly DependencyProperty ScopeTargetProperty = DependencyProperty.Register(
         nameof(ScopeTarget),

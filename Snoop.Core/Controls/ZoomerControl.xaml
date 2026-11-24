@@ -19,6 +19,7 @@
     <Grid x:Name="DocumentRoot"
           ClipToBounds="True"
           Focusable="True"
+          LostMouseCapture="Content_LostMouseCapture"
           Mouse.MouseDown="Content_MouseDown"
           Mouse.MouseMove="Content_MouseMove"
           Mouse.MouseUp="Content_MouseUp">
