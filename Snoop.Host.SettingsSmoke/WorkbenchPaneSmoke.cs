@@ -26,6 +26,16 @@ internal static class WorkbenchPaneSmoke
         var showProperties = Find<MenuItem>(inspector, "ShowPropertiesPaneItem");
         var showDiagnostics = Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem");
         var grid = Find<Grid>(inspector, "WorkbenchGrid");
+        var center = Find<Grid>(inspector, "WorkbenchCenterGrid");
+        var treePane = Find<Grid>(inspector, "TreeWorkbenchPane");
+        var previewPane = Find<FrameworkElement>(inspector, "WorkbenchPreviewPane");
+        var treeColumn = Find<ColumnDefinition>(inspector, "TreePaneColumn");
+        var treeSplitterColumn = Find<ColumnDefinition>(inspector, "TreeSplitterColumn");
+        var propertiesColumn = Find<ColumnDefinition>(inspector, "InspectorPaneColumn");
+        var propertiesSplitterColumn = Find<ColumnDefinition>(inspector, "PropertiesSplitterColumn");
+        var previewRow = Find<RowDefinition>(inspector, "PreviewPaneRow");
+        var diagnosticsRow = Find<RowDefinition>(inspector, "DiagnosticsPaneRow");
+        var diagnosticsSplitterRow = Find<RowDefinition>(inspector, "DiagnosticsSplitterRow");
         var tree = Find<ProperTreeView>(inspector, "Tree");
         var treeFilter = Find<ComboBox>(inspector, "filterComboBox");
         var refresh = Find<Button>(inspector, "RefreshTreeButton");
@@ -34,7 +44,8 @@ internal static class WorkbenchPaneSmoke
         var properties = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
         var diagnostics = Find<TabControl>(inspector, "DiagnosticsWorkbenchPane");
         var propertyInspector = Find<PropertyInspector>(inspector, "PropertyInspector");
-        var verticalSplitter = Find<GridSplitter>(inspector, "GridSplitter");
+        var treeSplitter = Find<GridSplitter>(inspector, "GridSplitter");
+        var propertiesSplitter = Find<GridSplitter>(inspector, "PropertiesSplitter");
         var horizontalSplitter = Find<GridSplitter>(inspector, "DiagnosticsSplitter");
         var status = Find<StatusBar>(inspector, "WorkbenchStatusBar");
         var reset = Find<MenuItem>(inspector, "ResetWorkbenchLayoutItem");
@@ -47,6 +58,12 @@ internal static class WorkbenchPaneSmoke
         var settings = CoreSettings.Default;
         var savedTreeFraction = settings.WorkbenchTreeFraction;
         var savedDiagnosticsFraction = settings.WorkbenchDiagnosticsFraction;
+        var savedTreeWidth = settings.WorkbenchTreeWidth;
+        var savedPropertiesWidth = settings.WorkbenchPropertiesWidth;
+        var savedDiagnosticsHeight = settings.WorkbenchDiagnosticsHeight;
+        var savedTreeCollapsed = settings.WorkbenchTreeCollapsed;
+        var savedPropertiesCollapsed = settings.WorkbenchPropertiesCollapsed;
+        var savedDiagnosticsCollapsed = settings.WorkbenchDiagnosticsCollapsed;
         var savedDensity = settings.WorkbenchDensity;
         var savedTheme = settings.ThemeMode;
         using var treeService = TreeService.From(TreeType.Visual);
@@ -71,11 +88,21 @@ internal static class WorkbenchPaneSmoke
             diagnostics.SelectedIndex = 1;
 
             Arrange(grid);
-            Move(verticalSplitter, 75, 0);
+            var originalTreeWidth = treeColumn.ActualWidth;
+            var originalPropertiesWidth = propertiesColumn.ActualWidth;
+            var originalDiagnosticsHeight = diagnosticsRow.ActualHeight;
+            Move(treeSplitter, 42, 0);
+            Arrange(grid);
+            Move(propertiesSplitter, -37, 0);
             Arrange(grid);
             Move(horizontalSplitter, 0, -45);
-            var treeFraction = TreeFraction(grid);
-            var diagnosticsFraction = DiagnosticsFraction(grid);
+            Arrange(grid);
+            var treeWidth = treeColumn.ActualWidth;
+            var propertiesWidth = propertiesColumn.ActualWidth;
+            var diagnosticsHeight = diagnosticsRow.ActualHeight;
+            Require(treeWidth > originalTreeWidth && propertiesWidth > originalPropertiesWidth
+                    && diagnosticsHeight > originalDiagnosticsHeight,
+                "Each native splitter must resize its own workbench pane.");
 
             for (var mask = 0; mask < 8; ++mask)
             {
@@ -87,7 +114,7 @@ internal static class WorkbenchPaneSmoke
                 SetChecked(showDiagnostics, diagnosticsShown);
                 Arrange(grid);
 
-                Require(HasVisibility(tree, treeShown) && HasVisibility(treeFilter, treeShown)
+                Require(HasVisibility(treePane, treeShown) && treePane.Children.Contains(tree) && treePane.Children.Contains(treeFilter)
                         && HasVisibility(treeLabel, treeShown)
                         && HasVisibility(treeType, treeShown),
                     "The tree, its header and filter controls should collapse together.");
@@ -95,21 +122,31 @@ internal static class WorkbenchPaneSmoke
                     "The workbench refresh command must stay visible with any pane combination.");
                 Require(HasVisibility(properties, propertiesShown) && HasVisibility(diagnostics, diagnosticsShown),
                     "The Properties and Diagnostics panes should collapse independently.");
-                Require(HasVisibility(verticalSplitter, treeShown && (propertiesShown || diagnosticsShown))
-                        && HasVisibility(horizontalSplitter, propertiesShown && diagnosticsShown),
-                    "A splitter should be available only when both of its neighboring panes are shown.");
+                Require(HasVisibility(treeSplitter, treeShown) && HasVisibility(propertiesSplitter, propertiesShown)
+                        && HasVisibility(horizontalSplitter, diagnosticsShown),
+                    "Each splitter must depend on its own pane and the persistent center preview.");
                 Require(menu.Visibility == Visibility.Visible && status.Visibility == Visibility.Visible && status.ActualWidth > 0,
                     "The View menu and status bar must remain available with any pane combination.");
 
-                Require(treeShown ? tree.ActualWidth > 0 && tree.ActualHeight > 0 : grid.ColumnDefinitions[0].ActualWidth == 0,
+                Require(treeShown ? tree.ActualWidth > 0 && tree.ActualHeight > 0
+                            : treeColumn.ActualWidth == 0 && treeSplitterColumn.ActualWidth == 0,
                     "The tree should have a surface when shown and release its column when hidden.");
-                Require(!propertiesShown || (properties.ActualWidth > 0 && properties.ActualHeight > 0),
-                    "The Properties pane should have a surface when shown.");
-                Require(!diagnosticsShown || (diagnostics.ActualWidth > 0 && diagnostics.ActualHeight > 0),
-                    "The Diagnostics pane should have a surface when shown.");
-                Require(!diagnosticsShown || (Grid.GetRow(diagnostics) == (propertiesShown ? 2 : 0)
-                                                && Grid.GetRowSpan(diagnostics) == (propertiesShown ? 1 : 3)),
-                    "The Diagnostics pane should fill its column when Properties is hidden.");
+                Require(propertiesShown ? properties.ActualWidth > 0 && properties.ActualHeight > 0
+                            : propertiesColumn.ActualWidth == 0 && propertiesSplitterColumn.ActualWidth == 0,
+                    "Properties should have a surface when shown and release its column when hidden.");
+                Require(diagnosticsShown ? diagnostics.ActualWidth > 0 && diagnostics.ActualHeight > 0
+                            : diagnosticsRow.ActualHeight == 0 && diagnosticsSplitterRow.ActualHeight == 0,
+                    "Diagnostics should have a surface when shown and release its row when hidden.");
+                Require(center.Children.Contains(previewPane) && center.Children.Contains(diagnostics)
+                        && Grid.GetRow(diagnostics) > Grid.GetRow(previewPane)
+                        && previewPane.Visibility == Visibility.Visible
+                        && previewPane.ActualWidth > 0 && previewPane.ActualHeight > 0,
+                    "The center preview must remain available above Diagnostics with every pane combination.");
+                if (!diagnosticsShown)
+                {
+                    RequireClose(previewPane.ActualHeight, center.ActualHeight, "Preview did not fill the center with Diagnostics folded.");
+                }
+
                 Require(ReferenceEquals(inspector.CurrentSelection, selection) && selection.IsSelected
                         && ReferenceEquals(propertyInspector.RootTarget, target) && Equals(target.Content, "Edited value")
                         && propertyInspector.FilterString == "Width"
@@ -117,20 +154,24 @@ internal static class WorkbenchPaneSmoke
                     "Collapsing a pane lost its tab, property filter, selection or value.");
             }
 
-            RequireClose(TreeFraction(grid), treeFraction, "Restoring the tree lost its last splitter ratio.");
-            RequireClose(DiagnosticsFraction(grid), diagnosticsFraction, "Restoring Diagnostics lost its last splitter ratio.");
-            Require(grid.ColumnDefinitions[0].MinWidth >= 120 && grid.ColumnDefinitions[1].MinWidth >= 220
-                    && grid.RowDefinitions[1].MinHeight >= 80 && grid.RowDefinitions[2].MinHeight >= 100,
-                "The expanded pane minimum dimensions were lost.");
+            RequireClose(treeColumn.ActualWidth, treeWidth, "Restoring the tree lost its last splitter size.");
+            RequireClose(propertiesColumn.ActualWidth, propertiesWidth, "Restoring Properties lost its last splitter size.");
+            RequireClose(diagnosticsRow.ActualHeight, diagnosticsHeight, "Restoring Diagnostics lost its last splitter size.");
+            Require(treeColumn.ActualWidth >= 164 && propertiesColumn.ActualWidth >= 239 && center.ActualWidth >= 239
+                    && previewRow.ActualHeight >= 109 && diagnosticsRow.ActualHeight >= 109,
+                "The expanded tree, Properties, Preview or Diagnostics lost its normal minimum size.");
 
             SetChecked(showTree, false);
+            SetChecked(showProperties, false);
             SetChecked(showDiagnostics, false);
             reset.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, reset));
             DrainDispatcher();
+            Arrange(grid);
             Require(showTree.IsChecked && showProperties.IsChecked && showDiagnostics.IsChecked,
                 "Reset layout should show all three panes.");
-            RequireClose(TreeFraction(grid), 1.0 / 3, "Reset layout did not restore the tree default ratio.");
-            RequireClose(DiagnosticsFraction(grid), 3.0 / 13, "Reset layout did not restore the Diagnostics default ratio.");
+            RequireClose(treeColumn.ActualWidth, 282, "Reset layout did not restore the default tree width.");
+            RequireClose(propertiesColumn.ActualWidth, 354, "Reset layout did not restore the default Properties width.");
+            RequireClose(diagnosticsRow.ActualHeight, 210, "Reset layout did not restore the default Diagnostics height.");
             Require(settings.WorkbenchDensity == savedDensity && settings.ThemeMode == savedTheme
                     && ReferenceEquals(inspector.CurrentSelection, selection),
                 "Reset layout changed the density, theme or selection.");
@@ -147,9 +188,15 @@ internal static class WorkbenchPaneSmoke
             InspectorLocalization.Default.SetLanguage(savedLanguage);
             settings.WorkbenchTreeFraction = savedTreeFraction;
             settings.WorkbenchDiagnosticsFraction = savedDiagnosticsFraction;
+            settings.WorkbenchTreeWidth = savedTreeWidth;
+            settings.WorkbenchPropertiesWidth = savedPropertiesWidth;
+            settings.WorkbenchDiagnosticsHeight = savedDiagnosticsHeight;
+            settings.WorkbenchTreeCollapsed = savedTreeCollapsed;
+            settings.WorkbenchPropertiesCollapsed = savedPropertiesCollapsed;
+            settings.WorkbenchDiagnosticsCollapsed = savedDiagnosticsCollapsed;
         }
 
-        Console.WriteLine("PASS: workbench panes collapse and restore without losing state or splitter ratios");
+        Console.WriteLine("PASS: workbench panes collapse and restore without losing state or splitter sizes");
     }
 
     private static void VerifySaveWhileCollapsed(string settingsDirectory)
@@ -166,18 +213,24 @@ internal static class WorkbenchPaneSmoke
             var inspector = new SnoopUI();
             // This hidden fixture window does not run OnSourceInitialized.
             CacheManager.Instance.IncreaseUsageCount();
-            double treeFraction;
-            double diagnosticsFraction;
+            double treeWidth;
+            double propertiesWidth;
+            double diagnosticsHeight;
             try
             {
                 var grid = Find<Grid>(inspector, "WorkbenchGrid");
                 Arrange(grid);
-                Move(Find<GridSplitter>(inspector, "GridSplitter"), 75, 0);
+                Move(Find<GridSplitter>(inspector, "GridSplitter"), 42, 0);
+                Arrange(grid);
+                Move(Find<GridSplitter>(inspector, "PropertiesSplitter"), -37, 0);
                 Arrange(grid);
                 Move(Find<GridSplitter>(inspector, "DiagnosticsSplitter"), 0, -45);
-                treeFraction = TreeFraction(grid);
-                diagnosticsFraction = DiagnosticsFraction(grid);
+                Arrange(grid);
+                treeWidth = Find<ColumnDefinition>(inspector, "TreePaneColumn").ActualWidth;
+                propertiesWidth = Find<ColumnDefinition>(inspector, "InspectorPaneColumn").ActualWidth;
+                diagnosticsHeight = Find<RowDefinition>(inspector, "DiagnosticsPaneRow").ActualHeight;
                 SetChecked(Find<MenuItem>(inspector, "ShowTreePaneItem"), false);
+                SetChecked(Find<MenuItem>(inspector, "ShowPropertiesPaneItem"), false);
                 SetChecked(Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem"), false);
             }
             finally
@@ -186,8 +239,13 @@ internal static class WorkbenchPaneSmoke
             }
 
             var xml = XDocument.Load(temporaryFile).Root;
-            RequireSavedFraction(xml, "WorkbenchTreeFraction", treeFraction);
-            RequireSavedFraction(xml, "WorkbenchDiagnosticsFraction", diagnosticsFraction);
+            RequireSavedSize(xml, "WorkbenchTreeWidth", treeWidth);
+            RequireSavedSize(xml, "WorkbenchPropertiesWidth", propertiesWidth);
+            RequireSavedSize(xml, "WorkbenchDiagnosticsHeight", diagnosticsHeight);
+            Require((bool?)xml?.Element("WorkbenchTreeCollapsed") is true
+                    && (bool?)xml?.Element("WorkbenchPropertiesCollapsed") is true
+                    && (bool?)xml?.Element("WorkbenchDiagnosticsCollapsed") is true,
+                "Closing a folded workbench did not save its three pane states.");
         }
         finally
         {
@@ -199,11 +257,11 @@ internal static class WorkbenchPaneSmoke
         }
     }
 
-    private static void RequireSavedFraction(XElement? xml, string name, double expected)
+    private static void RequireSavedSize(XElement? xml, string name, double expected)
     {
-        Require(double.TryParse((string?)xml?.Element(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var fraction),
+        Require(double.TryParse((string?)xml?.Element(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var size),
             "Closing while collapsed failed to write " + name + ".");
-        RequireClose(fraction, expected, "Closing while collapsed lost " + name + ".");
+        RequireClose(size, expected, "Closing while collapsed lost " + name + ".");
     }
 
     private static void SetChecked(MenuItem item, bool isChecked)
@@ -224,8 +282,7 @@ internal static class WorkbenchPaneSmoke
 
     private static void Arrange(Grid grid)
     {
-        grid.Measure(new Size(960, 540));
-        grid.Arrange(new Rect(0, 0, 960, 540));
+        WorkbenchLayoutSmoke.Arrange(grid, new Rect(0, 0, 960, 540));
     }
 
     private static void Move(GridSplitter splitter, double x, double y)
@@ -233,19 +290,9 @@ internal static class WorkbenchPaneSmoke
         ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(x, y);
     }
 
-    private static double TreeFraction(Grid grid)
-    {
-        return grid.ColumnDefinitions[0].Width.Value / (grid.ColumnDefinitions[0].Width.Value + grid.ColumnDefinitions[1].Width.Value);
-    }
-
-    private static double DiagnosticsFraction(Grid grid)
-    {
-        return grid.RowDefinitions[2].Height.Value / (grid.RowDefinitions[1].Height.Value + grid.RowDefinitions[2].Height.Value);
-    }
-
     private static void RequireClose(double actual, double expected, string message)
     {
-        Require(Math.Abs(actual - expected) < 0.000001, message);
+        Require(Math.Abs(actual - expected) < 1, message);
     }
 
     private static void DrainDispatcher()

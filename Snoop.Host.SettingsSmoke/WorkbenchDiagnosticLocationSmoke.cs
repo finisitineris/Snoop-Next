@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -31,6 +33,12 @@ internal static class WorkbenchDiagnosticLocationSmoke
         var originalPlacement = settings.SnoopUIWindowPlacement;
         var originalTreeFraction = settings.WorkbenchTreeFraction;
         var originalDiagnosticFraction = settings.WorkbenchDiagnosticsFraction;
+        var originalTreeWidth = settings.WorkbenchTreeWidth;
+        var originalPropertiesWidth = settings.WorkbenchPropertiesWidth;
+        var originalDiagnosticsHeight = settings.WorkbenchDiagnosticsHeight;
+        var originalTreeCollapsed = settings.WorkbenchTreeCollapsed;
+        var originalPropertiesCollapsed = settings.WorkbenchPropertiesCollapsed;
+        var originalDiagnosticsCollapsed = settings.WorkbenchDiagnosticsCollapsed;
         var originalShowDefaults = settings.ShowDefaults;
         var originalShowPreviewer = settings.ShowPreviewer;
         var originalTraceLevel = PresentationTraceSources.DataBindingSource.Switch.Level;
@@ -56,6 +64,12 @@ internal static class WorkbenchDiagnosticLocationSmoke
             settings.SnoopUIWindowPlacement = originalPlacement;
             settings.WorkbenchTreeFraction = originalTreeFraction;
             settings.WorkbenchDiagnosticsFraction = originalDiagnosticFraction;
+            settings.WorkbenchTreeWidth = originalTreeWidth;
+            settings.WorkbenchPropertiesWidth = originalPropertiesWidth;
+            settings.WorkbenchDiagnosticsHeight = originalDiagnosticsHeight;
+            settings.WorkbenchTreeCollapsed = originalTreeCollapsed;
+            settings.WorkbenchPropertiesCollapsed = originalPropertiesCollapsed;
+            settings.WorkbenchDiagnosticsCollapsed = originalDiagnosticsCollapsed;
             settings.ShowDefaults = originalShowDefaults;
             settings.ShowPreviewer = originalShowPreviewer;
             PresentationTraceSources.DataBindingSource.Switch.Level = originalTraceLevel;
@@ -76,7 +90,11 @@ internal static class WorkbenchDiagnosticLocationSmoke
             throw new InvalidOperationException("Missing the workbench diagnostic Locate button.");
         }
 
-        var grid = Find<Grid>(inspector, "WorkbenchGrid");
+        var chrome = Find<DockPanel>(inspector, "WorkbenchChrome");
+        var treeHost = Find<FrameworkElement>(inspector, "TreeWorkbenchPane");
+        var treeColumn = Find<ColumnDefinition>(inspector, "TreePaneColumn");
+        var propertiesColumn = Find<ColumnDefinition>(inspector, "InspectorPaneColumn");
+        var diagnosticsRow = Find<RowDefinition>(inspector, "DiagnosticsPaneRow");
         var properties = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
         var diagnostics = Find<TabControl>(inspector, "DiagnosticsWorkbenchPane");
         var diagnosticsTab = Find<TabItem>(inspector, "WorkbenchDiagnosticsTab");
@@ -130,10 +148,13 @@ internal static class WorkbenchDiagnosticLocationSmoke
         properties.SelectedIndex = 1;
         diagnostics.SelectedItem = diagnosticsTab;
         propertyInspector.FilterString = "Width";
-        grid.ColumnDefinitions[0].Width = new GridLength(0.43, GridUnitType.Star);
-        grid.ColumnDefinitions[1].Width = new GridLength(0.57, GridUnitType.Star);
-        grid.RowDefinitions[1].Height = new GridLength(0.62, GridUnitType.Star);
-        grid.RowDefinitions[2].Height = new GridLength(0.38, GridUnitType.Star);
+        Arrange();
+        MoveSplitter("GridSplitter", 42, 0);
+        MoveSplitter("PropertiesSplitter", -37, 0);
+        MoveSplitter("DiagnosticsSplitter", 0, -45);
+        var customTreeWidth = treeColumn.ActualWidth;
+        var customPropertiesWidth = propertiesColumn.ActualWidth;
+        var customDiagnosticsHeight = diagnosticsRow.ActualHeight;
         list.SelectedItem = row;
         Require(ReferenceEquals(inspector.CurrentSelection, otherNode), "Selecting a diagnostic row must leave the tree selection alone.");
 
@@ -191,6 +212,20 @@ internal static class WorkbenchDiagnosticLocationSmoke
             DrainDispatcher();
         }
 
+        void Arrange()
+        {
+            chrome.Measure(new Size(1200, 700));
+            chrome.Arrange(new Rect(0, 0, 1200, 700));
+            DrainDispatcher();
+        }
+
+        void MoveSplitter(string name, double x, double y)
+        {
+            var splitter = Find<GridSplitter>(inspector, name);
+            ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(x, y);
+            Arrange();
+        }
+
         void SendKey(Key key)
         {
             // This provides a PresentationSource without displaying a native window.
@@ -213,7 +248,9 @@ internal static class WorkbenchDiagnosticLocationSmoke
 
         void VerifyLocation(string expectedFilter)
         {
-            Require(treePane.IsChecked && Find<ProperTreeView>(inspector, "Tree").Visibility == Visibility.Visible
+            Arrange();
+            Require(treePane.IsChecked && treeHost.Visibility == Visibility.Visible
+                    && Find<ProperTreeView>(inspector, "Tree").Visibility == Visibility.Visible
                     && ReferenceEquals(inspector.CurrentSelection, targetNode) && targetNode.IsSelected
                     && targetNode.Parent?.IsExpanded is true,
                 "Locate must reveal the tree and select the exact diagnosed element.");
@@ -223,19 +260,15 @@ internal static class WorkbenchDiagnosticLocationSmoke
             Require(propertiesPane.IsChecked && properties.SelectedIndex == 1 && ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab)
                     && ReferenceEquals(propertyInspector.RootTarget, target) && propertyInspector.FilterString == "Width",
                 "Locate must update the property target without losing the inspector tabs or property filter.");
-            RequireRatio(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[1].Width, 0.43);
-            RequireRatio(grid.RowDefinitions[2].Height, grid.RowDefinitions[1].Height, 0.38);
+            Require(Math.Abs(treeColumn.ActualWidth - customTreeWidth) < 1
+                    && Math.Abs(propertiesColumn.ActualWidth - customPropertiesWidth) < 1
+                    && Math.Abs(diagnosticsRow.ActualHeight - customDiagnosticsHeight) < 1,
+                "Locating a diagnostic changed a workbench splitter size.");
         }
     }
 
-    private static void RequireRatio(GridLength first, GridLength second, double expected)
-    {
-        Require(first.IsStar && second.IsStar && Math.Abs((first.Value / (first.Value + second.Value)) - expected) < 0.000001,
-            "Locating a diagnostic changed a workbench splitter ratio.");
-    }
-
     private static T Find<T>(FrameworkElement owner, string name)
-        where T : FrameworkElement
+        where T : class
     {
         return owner.FindName(name) as T
             ?? throw new InvalidOperationException("Missing diagnostic regression element " + name + ".");

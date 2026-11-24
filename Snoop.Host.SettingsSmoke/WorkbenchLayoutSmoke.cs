@@ -16,12 +16,20 @@ using CoreSettings = Snoop.Core.Settings;
 
 internal static class WorkbenchLayoutSmoke
 {
-    private const double DefaultTreeFraction = 1.0 / 3;
-    private const double DefaultDiagnosticsFraction = 3.0 / 13;
+    private const double ReferenceWidth = 1360;
+    private const double ReferenceHeight = 790;
+    private const double CompactWidth = 420;
+    private const double CompactHeight = 280;
 
     public static void Verify(SnoopUI inspector, string settingsDirectory)
     {
-        Find<Grid>(inspector, "WorkbenchGrid");
+        var workbench = Find<Grid>(inspector, "WorkbenchGrid");
+        Require(workbench.ColumnDefinitions.Count == 5,
+            "The workbench needs independent splitter tracks between the tree, center preview, and property panes.");
+        var center = Find<Grid>(inspector, "WorkbenchCenterGrid");
+        Require(Grid.GetColumn(center) == 2 && center.IsAncestorOf(Find<FrameworkElement>(inspector, "PreviewArea"))
+                && ReferenceEquals(workbench.ColumnDefinitions[2], Find<ColumnDefinition>(inspector, "CenterPaneColumn")),
+            "The live Preview should be in the center column independently of the diagnostic tabs.");
         var settings = CoreSettings.Default;
         var originalSettingsFile = settings.SettingsFile;
         var originalLanguage = InspectorLocalization.Default.LanguageTag;
@@ -32,48 +40,62 @@ internal static class WorkbenchLayoutSmoke
             settings.SettingsFile = snapshotPath;
             settings.Save();
             settings.SettingsFile = layoutPath;
-            LoadLayout("0.36", "0.31");
+            LoadLayout(new XElement("WorkbenchTreeFraction", "0.30"), new XElement("WorkbenchDiagnosticsFraction", "0.31"));
+            var migratedTree = 0.30 * ReferenceWidth;
+            var migratedDiagnostics = 0.31 * ReferenceHeight;
 
-            var lastDiagnostics = 0.0;
-            var lastTree = 0.0;
+            var last = new PaneSizes(migratedTree, 354, migratedDiagnostics);
             WithInspector(older =>
             {
-                VerifyFractions(older, 0.36, 0.31);
+                VerifyPaneSizes(older, migratedTree, 354, migratedDiagnostics);
                 WithInspector(edited =>
                 {
-                    VerifyFractions(edited, 0.36, 0.31);
+                    VerifyPaneSizes(edited, migratedTree, 354, migratedDiagnostics);
                     var grid = Find<Grid>(edited, "WorkbenchGrid");
-                    Arrange(grid, 1200, 700);
-                    MoveSplitter(edited, "GridSplitter", 75, 0);
-                    Arrange(grid, 1200, 700);
-                    MoveSplitter(edited, "DiagnosticsSplitter", 0, -45);
-                    lastTree = TreeFraction(edited);
-                    lastDiagnostics = DiagnosticsFraction(edited);
-                    Require(lastTree > 0.36 && lastDiagnostics > 0.31, "The WPF splitters did not change both star ratios.");
+                    var centerGrid = Find<Grid>(edited, "WorkbenchCenterGrid");
+                    RequireClose(grid.ColumnDefinitions[1].ActualWidth, 5, "Left splitter track");
+                    RequireClose(grid.ColumnDefinitions[3].ActualWidth, 5, "Right splitter track");
+                    RequireClose(centerGrid.RowDefinitions[Grid.GetRow(Find<GridSplitter>(edited, "DiagnosticsSplitter"))].ActualHeight,
+                        5, "Diagnostics splitter track");
 
-                    Arrange(grid, 480, 320);
-                    Require(Find<ColumnDefinition>(edited, "TreePaneColumn").ActualWidth >= 120
-                            && Find<ColumnDefinition>(edited, "InspectorPaneColumn").ActualWidth >= 220
-                            && Find<RowDefinition>(edited, "PropertiesPaneRow").ActualHeight >= 80
-                            && Find<RowDefinition>(edited, "DiagnosticsPaneRow").ActualHeight >= 100,
-                        "The workbench panel minima were lost at a narrow size.");
-                    VerifyFractions(edited, lastTree, lastDiagnostics);
+                    MoveSplitter(edited, "GridSplitter", 42, 0);
+                    VerifyPaneSizes(edited, migratedTree + 42, 354, migratedDiagnostics);
+
+                    MoveSplitter(edited, "PropertiesSplitter", -50, 0);
+                    VerifyPaneSizes(edited, migratedTree + 42, 404, migratedDiagnostics);
+
+                    MoveSplitter(edited, "DiagnosticsSplitter", 0, -36);
+                    VerifyPaneSizes(edited, migratedTree + 42, 404, migratedDiagnostics + 36);
+                    last = ReadPaneSizes(edited);
+
+                    Arrange(edited, CompactWidth, CompactHeight);
+                    var compact = ReadPaneSizes(edited);
+                    Require(compact.Tree > 0 && compact.Tree < last.Tree && compact.Properties > 0
+                            && compact.Properties < last.Properties && compact.Diagnostics < last.Diagnostics,
+                        $"A compact workbench did not temporarily fit all three requested pane sizes. "
+                        + $"Tree {compact.Tree}/{last.Tree}, Properties {compact.Properties}/{last.Properties}, Diagnostics {compact.Diagnostics}/{last.Diagnostics}.");
+                    Require(Find<ColumnDefinition>(edited, "CenterPaneColumn").ActualWidth >= 239
+                            && Find<RowDefinition>(edited, "PreviewPaneRow").ActualHeight >= 109
+                            && compact.Diagnostics >= 109,
+                        "The preview width and both center-row minima were lost at a compact size.");
+                    Arrange(edited);
+                    VerifyPaneSizes(edited, last.Tree, last.Properties, last.Diagnostics);
+                    Arrange(edited, CompactWidth, CompactHeight);
                 });
-                VerifySavedFractions(lastTree, lastDiagnostics);
+                VerifySavedSizes(last.Tree, last.Properties, last.Diagnostics);
 
                 // This earlier window only changed the tree width. Closing it must keep
-                // the diagnostics preference saved by the newer window.
-                Arrange(Find<Grid>(older, "WorkbenchGrid"), 1000, 650);
+                // the other two preferences saved by the newer window.
                 MoveSplitter(older, "GridSplitter", -50, 0);
-                lastTree = TreeFraction(older);
-                Require(lastTree < 0.36, "The older workbench did not change its tree width.");
+                VerifyPaneSizes(older, migratedTree - 50, 354, migratedDiagnostics);
+                last = new PaneSizes(ReadPaneSizes(older).Tree, last.Properties, last.Diagnostics);
             });
-            VerifySavedFractions(lastTree, lastDiagnostics);
+            VerifySavedSizes(last.Tree, last.Properties, last.Diagnostics);
 
             settings.Reload();
             WithInspector(reopened =>
             {
-                VerifyFractions(reopened, lastTree, lastDiagnostics);
+                VerifyPaneSizes(reopened, last.Tree, last.Properties, last.Diagnostics);
                 var reset = Find<MenuItem>(reopened, "ResetWorkbenchLayoutItem");
                 InspectorLocalization.Default.SetLanguage("en-US");
                 DrainDispatcher();
@@ -82,19 +104,29 @@ internal static class WorkbenchLayoutSmoke
                 DrainDispatcher();
                 Require(reset.Header as string == "重置布局", "Missing Chinese layout reset caption.");
                 reset.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, reset));
-                DrainDispatcher();
-                VerifyFractions(reopened, DefaultTreeFraction, DefaultDiagnosticsFraction);
+                Arrange(reopened);
+                VerifyPaneSizes(reopened, 282, 354, 210);
                 Require(settings.WorkbenchDensity == CoreSettings.CompactDensity, "Reset layout changed the density preference.");
             });
             settings.Reload();
-            WithInspector(reopened => VerifyFractions(reopened, DefaultTreeFraction, DefaultDiagnosticsFraction));
+            WithInspector(reopened => VerifyPaneSizes(reopened, 282, 354, 210));
 
-            LoadLayout("invalid", "0.42");
-            WithInspector(malformed => VerifyFractions(malformed, DefaultTreeFraction, 0.42));
-            LoadLayout("0.47", "NaN");
-            WithInspector(malformed => VerifyFractions(malformed, 0.47, DefaultDiagnosticsFraction));
-            LoadLayout(null, null);
-            WithInspector(legacy => VerifyFractions(legacy, DefaultTreeFraction, DefaultDiagnosticsFraction));
+            LoadLayout(new XElement("WorkbenchTreeFraction", "invalid"), new XElement("WorkbenchDiagnosticsFraction", "0.42"),
+                new XElement("WorkbenchTreeWidth", "NaN"), new XElement("WorkbenchPropertiesWidth", "389"),
+                new XElement("WorkbenchDiagnosticsHeight", "invalid"));
+            WithInspector(malformed => VerifyPaneSizes(malformed, 282, 389, 0.42 * ReferenceHeight));
+
+            LoadLayout(new XElement("WorkbenchTreeFraction", "0.98"), new XElement("WorkbenchDiagnosticsFraction", "0.02"),
+                new XElement("WorkbenchPropertiesWidth", "Infinity"));
+            WithInspector(legacy => VerifyPaneSizes(legacy, 500, 354, 110));
+
+            LoadLayout(new XElement("WorkbenchTreeFraction", "0.23"), new XElement("WorkbenchDiagnosticsFraction", "0.33"),
+                new XElement("WorkbenchTreeWidth", "315"), new XElement("WorkbenchPropertiesWidth", "610"),
+                new XElement("WorkbenchDiagnosticsHeight", "195"));
+            WithInspector(current => VerifyPaneSizes(current, 315, 590, 195));
+
+            LoadLayout(new XElement("WorkbenchTreeFraction", "1"), new XElement("WorkbenchDiagnosticsFraction", "NaN"));
+            WithInspector(malformed => VerifyPaneSizes(malformed, 282, 354, 210));
         }
         finally
         {
@@ -112,23 +144,20 @@ internal static class WorkbenchLayoutSmoke
 
         Console.WriteLine("PASS: workbench splitter bounds, persistence, layout reset and XML fallback");
 
-        void LoadLayout(string? treeFraction, string? diagnosticsFraction)
+        void LoadLayout(params XElement[] elements)
         {
-            new XDocument(new XElement("Settings",
-                new XElement("WorkbenchDensity", CoreSettings.CompactDensity),
-                treeFraction is null ? null : new XElement("WorkbenchTreeFraction", treeFraction),
-                diagnosticsFraction is null ? null : new XElement("WorkbenchDiagnosticsFraction", diagnosticsFraction)))
-                .Save(layoutPath);
+            var xml = new XElement("Settings", new XElement("WorkbenchDensity", CoreSettings.CompactDensity), elements);
+            new XDocument(xml).Save(layoutPath);
             settings.Reload();
             Require(settings.WorkbenchDensity == CoreSettings.CompactDensity, "Layout XML lost the density preference.");
         }
 
-        void VerifySavedFractions(double tree, double diagnostics)
+        void VerifySavedSizes(double tree, double properties, double diagnostics)
         {
             var xml = XDocument.Load(layoutPath).Root;
-            Require(TryRead(xml, "WorkbenchTreeFraction", out var savedTree) && Approximately(savedTree, tree)
-                    && TryRead(xml, "WorkbenchDiagnosticsFraction", out var savedDiagnostics) && Approximately(savedDiagnostics, diagnostics),
-                "Closing a workbench did not save both expected splitter ratios.");
+            RequireSavedSize(xml, "WorkbenchTreeWidth", tree);
+            RequireSavedSize(xml, "WorkbenchPropertiesWidth", properties);
+            RequireSavedSize(xml, "WorkbenchDiagnosticsHeight", diagnostics);
         }
     }
 
@@ -139,6 +168,7 @@ internal static class WorkbenchLayoutSmoke
         CacheManager.Instance.IncreaseUsageCount();
         try
         {
+            Arrange(inspector);
             action(inspector);
         }
         finally
@@ -151,46 +181,68 @@ internal static class WorkbenchLayoutSmoke
     {
         var splitter = Find<GridSplitter>(inspector, name);
         ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(x, y);
+        Arrange(inspector);
     }
 
-    private static void Arrange(Grid grid, double width, double height)
+    internal static void Arrange(SnoopUI inspector, double width = ReferenceWidth, double height = ReferenceHeight)
     {
-        grid.Measure(new Size(width, height));
-        grid.Arrange(new Rect(0, 0, width, height));
+        Arrange(Find<Grid>(inspector, "WorkbenchGrid"), new Rect(0, 0, width, height));
     }
 
-    private static bool TryRead(XElement? root, string name, out double value)
+    internal static void Arrange(FrameworkElement element, Rect bounds)
     {
-        return double.TryParse((string?)root?.Element(name), NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+        element.Measure(bounds.Size);
+        element.Arrange(bounds);
+        element.UpdateLayout();
+        // Hidden smoke windows need an explicit second layout after the viewport changes.
+        element.Measure(bounds.Size);
+        element.Arrange(bounds);
+        element.UpdateLayout();
+        DrainDispatcher();
     }
 
-    private static void VerifyFractions(SnoopUI inspector, double tree, double diagnostics)
+    internal static void RequireSavedSize(XElement? xml, string name, double expected)
     {
-        Require(Approximately(TreeFraction(inspector), tree), "Unexpected tree pane star ratio.");
-        Require(Approximately(DiagnosticsFraction(inspector), diagnostics), "Unexpected diagnostics pane star ratio.");
+        Require(double.TryParse((string?)xml?.Element(name), NumberStyles.Float, CultureInfo.InvariantCulture, out var size),
+            "Closing the workbench failed to save " + name + ".");
+        RequireClose(size, expected, name);
     }
 
-    private static double TreeFraction(SnoopUI inspector)
+    internal static void VerifyPaneSizes(SnoopUI inspector, double tree, double properties, double diagnostics)
     {
-        return Fraction(Find<ColumnDefinition>(inspector, "TreePaneColumn").Width,
-            Find<ColumnDefinition>(inspector, "InspectorPaneColumn").Width);
+        var actual = ReadPaneSizes(inspector);
+        RequireClose(actual.Tree, tree, "Tree pane width");
+        RequireClose(actual.Properties, properties, "Properties pane width");
+        RequireClose(actual.Diagnostics, diagnostics, "Diagnostics pane height");
     }
 
-    private static double DiagnosticsFraction(SnoopUI inspector)
+    internal static PaneSizes ReadPaneSizes(SnoopUI inspector)
     {
-        return Fraction(Find<RowDefinition>(inspector, "DiagnosticsPaneRow").Height,
-            Find<RowDefinition>(inspector, "PropertiesPaneRow").Height);
+        return new PaneSizes(Find<ColumnDefinition>(inspector, "TreePaneColumn").ActualWidth,
+            Find<ColumnDefinition>(inspector, "InspectorPaneColumn").ActualWidth,
+            Find<RowDefinition>(inspector, "DiagnosticsPaneRow").ActualHeight);
     }
 
-    private static double Fraction(GridLength pane, GridLength other)
+    internal readonly struct PaneSizes
     {
-        Require(pane.IsStar && other.IsStar, "Workbench pane definitions must remain proportional.");
-        return pane.Value / (pane.Value + other.Value);
+        public PaneSizes(double tree, double properties, double diagnostics)
+        {
+            this.Tree = tree;
+            this.Properties = properties;
+            this.Diagnostics = diagnostics;
+        }
+
+        public double Tree { get; }
+
+        public double Properties { get; }
+
+        public double Diagnostics { get; }
     }
 
-    private static bool Approximately(double actual, double expected)
+    private static void RequireClose(double actual, double expected, string description)
     {
-        return Math.Abs(actual - expected) < 0.000001;
+        // Layout rounding and the native splitter can each round by half a device pixel.
+        Require(Math.Abs(actual - expected) <= 1.001, $"{description} expected {expected} DIP, got {actual} DIP.");
     }
 
     private static void DrainDispatcher()

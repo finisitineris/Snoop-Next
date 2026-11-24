@@ -3,6 +3,8 @@ namespace Snoop.Host.SettingsSmoke;
 using System;
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -20,6 +22,9 @@ internal static class WorkbenchNavigationSmoke
             ?? throw new InvalidOperationException("Missing workbench navigation rail.");
         var grid = Find<Grid>(inspector, "WorkbenchGrid");
         var tree = Find<ProperTreeView>(inspector, "Tree");
+        var treeColumn = Find<ColumnDefinition>(inspector, "TreePaneColumn");
+        var propertiesColumn = Find<ColumnDefinition>(inspector, "InspectorPaneColumn");
+        var diagnosticsRow = Find<RowDefinition>(inspector, "DiagnosticsPaneRow");
         var properties = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
         var diagnostics = Find<TabControl>(inspector, "DiagnosticsWorkbenchPane");
         var showTree = Find<MenuItem>(inspector, "ShowTreePaneItem");
@@ -30,7 +35,8 @@ internal static class WorkbenchNavigationSmoke
             ?? throw new InvalidOperationException("Missing workbench Data Context tab.");
         var eventsTab = Find<TabItem>(inspector, "WorkbenchEventsTab");
         var diagnosticsTab = Find<TabItem>(inspector, "WorkbenchDiagnosticsTab");
-        var previewTab = Find<TabItem>(inspector, "WorkbenchPreviewTab");
+        var outputTab = Find<TabItem>(inspector, "WorkbenchOutputTab");
+        var previewPane = Find<FrameworkElement>(inspector, "WorkbenchPreviewPane");
         var treeButton = Find<Button>(inspector, "NavigateTreeButton");
         var propertiesButton = Find<Button>(inspector, "NavigatePropertiesButton");
         var diagnosticsButton = Find<Button>(inspector, "NavigateDiagnosticsButton");
@@ -39,9 +45,8 @@ internal static class WorkbenchNavigationSmoke
         var buttons = new[] { treeButton, propertiesButton, diagnosticsButton, eventsButton, previewButton };
         var focusVisual = inspector.FindResource("SnoopNext.WorkbenchFocusVisual");
         var chrome = Find<DockPanel>(inspector, "WorkbenchChrome");
-        chrome.Measure(new Size(480, 320));
-        chrome.Arrange(new Rect(0, 0, 480, 320));
-        DrainDispatcher();
+        var frame = SystemParameters.WindowNonClientFrameThickness;
+        Arrange(chrome, inspector.MinWidth - frame.Left - frame.Right, inspector.MinHeight - frame.Top - frame.Bottom);
         Require(rail.Visibility == Visibility.Visible && DockPanel.GetDock(rail) == Dock.Left && !IsWithin(rail, grid),
             "The rail should remain visible and docked outside the collapsible workbench grid.");
         Require(Math.Abs(rail.ActualWidth - rail.Width) < 1 && rail.ActualHeight > 0,
@@ -58,10 +63,10 @@ internal static class WorkbenchNavigationSmoke
 
         Require(showTree.IsChecked && showProperties.IsChecked && showDiagnostics.IsChecked,
             "The navigation fixture requires all workbench panes to start visible.");
-        var savedTreeWidth = grid.ColumnDefinitions[0].Width;
-        var savedInspectorWidth = grid.ColumnDefinitions[1].Width;
-        var savedPropertiesHeight = grid.RowDefinitions[1].Height;
-        var savedDiagnosticsHeight = grid.RowDefinitions[2].Height;
+        Arrange(chrome, 1200, 700);
+        var savedTreeWidth = treeColumn.Width;
+        var savedInspectorWidth = propertiesColumn.Width;
+        var savedDiagnosticsHeight = diagnosticsRow.Height;
         var savedLanguage = InspectorLocalization.Default.LanguageTag;
         var savedSelection = inspector.CurrentSelection;
         var savedPropertiesTab = properties.SelectedIndex;
@@ -70,6 +75,8 @@ internal static class WorkbenchNavigationSmoke
         var savedFilter = propertyInspector.FilterString;
         var preview = Find<Previewer>(inspector, "PreviewArea");
         var previewActive = preview.IsActive;
+        Require(IsWithin(preview, previewPane) && previewPane.Focusable,
+            "Preview navigation must have a focusable center pane containing the existing preview.");
         using var treeService = TreeService.From(TreeType.Visual);
         var target = new Button { Content = "Edited value" };
         using var selection = new TreeItem(target, null, treeService);
@@ -82,11 +89,13 @@ internal static class WorkbenchNavigationSmoke
             inspector.CurrentSelection = selection;
             propertyInspector.FilterString = "Width";
             properties.SelectedItem = dataContextTab;
-            diagnostics.SelectedItem = previewTab;
-            grid.ColumnDefinitions[0].Width = new GridLength(0.42, GridUnitType.Star);
-            grid.ColumnDefinitions[1].Width = new GridLength(0.58, GridUnitType.Star);
-            grid.RowDefinitions[1].Height = new GridLength(0.64, GridUnitType.Star);
-            grid.RowDefinitions[2].Height = new GridLength(0.36, GridUnitType.Star);
+            diagnostics.SelectedItem = outputTab;
+            MoveSplitter("GridSplitter", 42, 0);
+            MoveSplitter("PropertiesSplitter", -37, 0);
+            MoveSplitter("DiagnosticsSplitter", 0, -45);
+            var customTreeWidth = treeColumn.ActualWidth;
+            var customPropertiesWidth = propertiesColumn.ActualWidth;
+            var customDiagnosticsHeight = diagnosticsRow.ActualHeight;
 
             SetPaneVisible(showTree, false);
             SetPaneVisible(showProperties, false);
@@ -96,13 +105,13 @@ internal static class WorkbenchNavigationSmoke
 
             Click(treeButton);
             VerifyPanes(true, false, false);
-            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, outputTab),
                 "Opening the element tree changed a tab.");
 
             SetPaneVisible(showTree, false);
             Click(propertiesButton);
             VerifyPanes(false, true, false);
-            Require(ReferenceEquals(properties.SelectedItem, propertiesTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
+            Require(ReferenceEquals(properties.SelectedItem, propertiesTab) && ReferenceEquals(diagnostics.SelectedItem, outputTab),
                 "Properties navigation did not select only the Properties tab.");
 
             properties.SelectedItem = dataContextTab;
@@ -121,25 +130,29 @@ internal static class WorkbenchNavigationSmoke
             SetPaneVisible(showProperties, true);
             Click(previewButton);
             Click(treeButton);
-            VerifyPanes(true, true, true);
-            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, previewTab),
-                "Preview navigation did not select only the Preview tab.");
+            VerifyPanes(true, true, false);
+            Require(ReferenceEquals(properties.SelectedItem, dataContextTab) && ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab),
+                "Preview navigation must leave the folded diagnostics dock and its selected tab alone.");
             Require(ReferenceEquals(inspector.CurrentSelection, selection) && selection.IsSelected
-                    && ReferenceEquals(propertyInspector.RootTarget, target) && Equals(target.Content, "Edited value")
+                    && ReferenceEquals(propertyInspector.RootTarget, target) && ReferenceEquals(preview.Target, target)
+                    && previewPane.Visibility == Visibility.Visible && Equals(target.Content, "Edited value")
                     && propertyInspector.FilterString == "Width" && preview.IsActive == previewActive,
                 "Navigation lost the selected element, its value, the property filter or the preview preference.");
-            RequireRatio(grid.ColumnDefinitions[0].Width, grid.ColumnDefinitions[1].Width, 0.42);
-            RequireRatio(grid.RowDefinitions[2].Height, grid.RowDefinitions[1].Height, 0.36);
+            SetPaneVisible(showDiagnostics, true);
+            Arrange(chrome, 1200, 700);
+            Require(Math.Abs(treeColumn.ActualWidth - customTreeWidth) < 1
+                    && Math.Abs(propertiesColumn.ActualWidth - customPropertiesWidth) < 1
+                    && Math.Abs(diagnosticsRow.ActualHeight - customDiagnosticsHeight) < 1,
+                "Navigation lost a cached splitter size.");
         }
         finally
         {
             SetPaneVisible(showTree, true);
             SetPaneVisible(showProperties, true);
             SetPaneVisible(showDiagnostics, true);
-            grid.ColumnDefinitions[0].Width = savedTreeWidth;
-            grid.ColumnDefinitions[1].Width = savedInspectorWidth;
-            grid.RowDefinitions[1].Height = savedPropertiesHeight;
-            grid.RowDefinitions[2].Height = savedDiagnosticsHeight;
+            treeColumn.Width = savedTreeWidth;
+            propertiesColumn.Width = savedInspectorWidth;
+            diagnosticsRow.Height = savedDiagnosticsHeight;
             inspector.CurrentSelection = savedSelection;
             inspector.TreeItems.Remove(selection);
             properties.SelectedIndex = savedPropertiesTab;
@@ -152,11 +165,22 @@ internal static class WorkbenchNavigationSmoke
 
         void VerifyPanes(bool treeVisible, bool propertiesVisible, bool diagnosticsVisible)
         {
-            Require(showTree.IsChecked == treeVisible && tree.Visibility == VisibleWhen(treeVisible)
+            Require(showTree.IsChecked == treeVisible && IsShown(tree) == treeVisible
                     && showProperties.IsChecked == propertiesVisible && properties.Visibility == VisibleWhen(propertiesVisible)
                     && showDiagnostics.IsChecked == diagnosticsVisible && diagnostics.Visibility == VisibleWhen(diagnosticsVisible),
                 "The View menu and workbench pane visibility should stay in sync.");
         }
+
+        void MoveSplitter(string name, double x, double y)
+        {
+            var splitter = Find<GridSplitter>(inspector, name);
+            ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(x, y);
+            Arrange(chrome, 1200, 700);
+        }
+
+        bool IsShown(FrameworkElement pane)
+            => pane.Visibility == Visibility.Visible
+               && Find<FrameworkElement>(inspector, "TreeWorkbenchPane").Visibility == Visibility.Visible;
     }
 
     private static void VerifyLabels(Button[] buttons, string language, params string[] labels)
@@ -206,11 +230,9 @@ internal static class WorkbenchNavigationSmoke
         DrainDispatcher();
     }
 
-    private static void RequireRatio(GridLength first, GridLength second, double expected)
+    private static void Arrange(DockPanel chrome, double width, double height)
     {
-        Require(first.IsStar && second.IsStar
-                && Math.Abs((first.Value / (first.Value + second.Value)) - expected) < 0.000001,
-            "Navigation lost a cached splitter ratio.");
+        WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, width, height));
     }
 
     private static void DrainDispatcher()

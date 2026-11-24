@@ -71,9 +71,7 @@ internal static class WorkbenchStatusSmoke
             Require(GetTooltipText(selectionValue.ToolTip) == selection.DisplayName,
                 "The selection tooltip must retain the full display name.");
 
-            chrome.Measure(new Size(480, 320));
-            chrome.Arrange(new Rect(0, 0, 480, 320));
-            DrainDispatcher();
+            WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, 480, 320));
             Require(content.ActualWidth > 0 && content.ActualWidth <= statusBar.ActualWidth + 1,
                 "The workbench status content must fit its status bar at a width of 480 DIPs.");
             Require(targetValue.ActualWidth > 0 && selectionValue.ActualWidth > 0,

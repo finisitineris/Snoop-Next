@@ -24,9 +24,11 @@ internal static class WorkbenchEventsDockSmoke
         }
 
         var chrome = Find<DockPanel>(inspector, "WorkbenchChrome");
+        var center = Find<Grid>(inspector, "WorkbenchCenterGrid");
         var properties = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
-        var previewTab = Find<TabItem>(inspector, "WorkbenchPreviewTab");
         var diagnosticsTab = Find<TabItem>(inspector, "WorkbenchDiagnosticsTab");
+        var outputTab = Find<TabItem>(inspector, "WorkbenchOutputTab");
+        var previewPane = Find<FrameworkElement>(inspector, "WorkbenchPreviewPane");
         var showDiagnostics = Find<MenuItem>(inspector, "ShowDiagnosticsPaneItem");
         var eventsView = Find<EventsView>(inspector, "eventsView");
         var filter = Find<TextBox>(eventsView, "EventFilter");
@@ -34,8 +36,12 @@ internal static class WorkbenchEventsDockSmoke
         var maxEvents = Find<TextBox>(eventsView, "MaxEventsEditor");
         var eventTree = Find<TreeView>(eventsView, "EventTree");
         Require(!properties.Items.Contains(events) && ReferenceEquals(events.Content, eventsView)
-                && ReferenceEquals(diagnostics.Items[0], diagnosticsTab) && ReferenceEquals(diagnostics.Items[1], previewTab),
-            "The dock must contain the existing Events view alongside the same Diagnostics and Preview tabs.");
+                && ReferenceEquals(diagnostics.Items[0], diagnosticsTab)
+                && ReferenceEquals(diagnostics.Items[1], events)
+                && ReferenceEquals(diagnostics.Items[2], outputTab)
+                && center.Children.Contains(diagnostics) && center.Children.Contains(previewPane)
+                && Grid.GetRow(previewPane) < Grid.GetRow(diagnostics),
+            "The center must keep Preview above the Diagnostics, Events and Output tabs.");
         Require(ReferenceEquals(label.Target, filter), "The event filter label must identify its text box.");
         Require(ReferenceEquals(eventTree.ItemsSource, eventsView.DisplayedEvents),
             "The event tree must show the filtered view of its capture history.");
@@ -72,10 +78,11 @@ internal static class WorkbenchEventsDockSmoke
             Require(eventsView.InterestingEvents.Count == 4, "Filtering must leave the full capture history intact.");
 
             InspectorLocalization.Default.SetLanguage("zh-CN");
-            diagnostics.SelectedItem = previewTab;
+            diagnostics.SelectedItem = diagnosticsTab;
             SetDiagnosticsVisible(false);
+            Require(previewPane.Visibility == Visibility.Visible, "Folding event diagnostics must leave Preview available.");
             SetDiagnosticsVisible(true);
-            Require(ReferenceEquals(diagnostics.SelectedItem, previewTab),
+            Require(ReferenceEquals(diagnostics.SelectedItem, diagnosticsTab),
                 "Collapsing and restoring the diagnostics dock must preserve its active tab.");
             diagnostics.SelectedItem = events;
             DrainDispatcher();
@@ -128,16 +135,16 @@ internal static class WorkbenchEventsDockSmoke
             var frame = SystemParameters.WindowNonClientFrameThickness;
             var bounds = new Rect(0, 0, inspector.MinWidth - frame.Left - frame.Right,
                 inspector.MinHeight - frame.Top - frame.Bottom);
-            chrome.Measure(bounds.Size);
-            chrome.Arrange(bounds);
-            DrainDispatcher();
+            WorkbenchLayoutSmoke.Arrange(chrome, bounds);
 
             Require(filter.ActualWidth > 16 && filter.ActualHeight > 0
                     && maxEvents.ActualWidth > 0 && maxEvents.ActualHeight > 0
                     && maxEvents.TranslatePoint(new Point(maxEvents.ActualWidth, 0), eventsView).X <= eventsView.ActualWidth + 1
                     && eventTree.ActualHeight > 0
                     && eventTree.TranslatePoint(new Point(0, eventTree.ActualHeight), chrome).Y <= bounds.Height + 1,
-                "The Events dock must leave room for the search field and event list at minimum window size.");
+                "The Events dock must leave room for the search field and event list at minimum window size. "
+                + $"Client {bounds.Size}, Events {eventsView.RenderSize}, search {filter.RenderSize}, max events {maxEvents.RenderSize}, "
+                + $"list {eventTree.RenderSize}, list bottom {eventTree.TranslatePoint(new Point(0, eventTree.ActualHeight), chrome).Y:F1}.");
             if (eventTree.HasItems)
             {
                 var firstRow = eventTree.ItemContainerGenerator.ContainerFromIndex(0) as TreeViewItem;
