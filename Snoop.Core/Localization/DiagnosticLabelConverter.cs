@@ -79,9 +79,7 @@ public sealed class DiagnosticLabelConverter : IMultiValueConverter
     {
         return provider switch
         {
-#if USE_WPF_BINDING_DIAG
             BindingDiagnosticProvider => "Diagnostics.Provider.Binding",
-#endif
             BindingLeakDiagnosticProvider => "Diagnostics.Provider.BindingLeak",
             FreezeFreezablesDiagnosticProvider => "Diagnostics.Provider.FreezeFreezables",
             LocalResourceDefinitionsDiagnosticProvider => "Diagnostics.Provider.LocalResources",
