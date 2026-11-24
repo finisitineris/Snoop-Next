@@ -633,21 +633,6 @@
                     <powerShell:EmbeddedShellView IsSelected="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type TabItem}}}" />
                 </TabItem>
 
-                <TabItem>
-                    <TabItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Tab.DebugListener}">
-                            <TextBlock.ToolTip>
-                                <StackPanel MaxWidth="300">
-                                    <TextBlock Text="{localization:InspectorLoc Tab.DebugListener}" />
-                                    <TextBlock Text="{localization:InspectorLoc Tooltip.DebugListenerDescription}"
-                                               TextWrapping="Wrap" />
-                                </StackPanel>
-                            </TextBlock.ToolTip>
-                        </TextBlock>
-                    </TabItem.Header>
-
-                    <debugListenerTab:DebugListenerControl x:Name="debugListenerControl" />
-                </TabItem>
             </TabControl>
 
             <!-- Horizontal GridSplitter (between the tab control (with the property grid/events view) and the diagnostics/previewer) -->
@@ -717,6 +702,20 @@
                     </TabItem.Header>
 
                     <views:EventsView x:Name="eventsView" />
+                </TabItem>
+
+                <TabItem x:Name="WorkbenchOutputTab">
+                    <TabItem.Header>
+                        <TextBlock Text="{localization:InspectorLoc Tab.Output}">
+                            <TextBlock.ToolTip>
+                                <TextBlock MaxWidth="300"
+                                           Text="{localization:InspectorLoc Tooltip.DebugListenerDescription}"
+                                           TextWrapping="Wrap" />
+                            </TextBlock.ToolTip>
+                        </TextBlock>
+                    </TabItem.Header>
+
+                    <debugListenerTab:DebugListenerControl x:Name="debugListenerControl" />
                 </TabItem>
             </TabControl>
 

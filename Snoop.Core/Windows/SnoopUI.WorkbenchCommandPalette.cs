@@ -23,6 +23,7 @@ public sealed partial class SnoopUI
         new(WorkbenchDestination.Diagnostics, "Tab.Diagnostics"),
         new(WorkbenchDestination.Events, "Tab.Events"),
         new(WorkbenchDestination.Preview, "Tab.Preview"),
+        new(WorkbenchDestination.Output, "Tab.Output"),
     };
 
     private IInputElement? focusBeforeCommandPalette;
@@ -127,7 +128,8 @@ public sealed partial class SnoopUI
         Properties,
         Diagnostics,
         Events,
-        Preview
+        Preview,
+        Output
     }
 
     private sealed class WorkbenchCommandMatch
