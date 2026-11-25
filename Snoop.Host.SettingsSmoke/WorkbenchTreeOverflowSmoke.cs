@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Snoop.Controls;
 using Snoop.Data.Tree;
 using Snoop.Localization;
@@ -58,19 +59,23 @@ internal static class WorkbenchTreeOverflowSmoke
         {
             InspectorLocalization.Default.SetLanguage("zh-CN");
             inspector.CurrentSelection = leaf;
-            void Arrange() => WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, 1740, 720));
+            void Arrange()
+            {
+                inspector.UpdateLayout();
+                inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+            }
             Arrange();
             var viewer = (ScrollViewer)tree.Template.FindName("_tv_scrollviewer_", tree);
             var header = FindHeader(tree, leaf) ?? throw new InvalidOperationException("The expanded leaf was not rendered.");
             viewer.ScrollToLeftEnd();
             Arrange();
-            LauncherAppearanceSmoke.CaptureIfRequested(chrome, "expanded-visual-tree");
             double RightEdge() => header.TranslatePoint(new Point(header.ActualWidth, 0), viewer).X;
 
             if (leaf.Depth != 18 || viewer.ComputedHorizontalScrollBarVisibility != Visibility.Visible
                 || viewer.ScrollableWidth <= 0 || RightEdge() <= viewer.ActualWidth)
             {
-                throw new InvalidOperationException($"The full expanded header must contribute to the tree scroll extent. Depth {leaf.Depth}, extent {viewer.ExtentWidth}, viewport {viewer.ViewportWidth}.");
+                var rootRow = (FrameworkElement)tree.ItemContainerGenerator.ContainerFromItem(rootItem);
+                throw new InvalidOperationException($"The full expanded header must contribute to the tree scroll extent. Depth {leaf.Depth}, extent {viewer.ExtentWidth}x{viewer.ExtentHeight}, viewport {viewer.ViewportWidth}x{viewer.ViewportHeight}, bar {viewer.HorizontalScrollBarVisibility}/{viewer.ComputedHorizontalScrollBarVisibility}, leaf right {RightEdge()}, root desired {rootRow.DesiredSize}, root rendered {rootRow.RenderSize}.");
             }
 
             viewer.ScrollToRightEnd();
@@ -80,6 +85,9 @@ internal static class WorkbenchTreeOverflowSmoke
                 throw new InvalidOperationException($"The end of the deep node is clipped after scrolling. Header end {RightEdge()}, viewer {viewer.ActualWidth}, offset {viewer.HorizontalOffset}.");
             }
 
+            viewer.ScrollToLeftEnd();
+            Arrange();
+            LauncherAppearanceSmoke.CaptureIfRequested(chrome, "expanded-visual-tree");
             VerifyDeferredToolTip();
         }
         finally
@@ -97,7 +105,8 @@ internal static class WorkbenchTreeOverflowSmoke
             inspector.TreeItems.Add(node);
             try
             {
-                WorkbenchLayoutSmoke.Arrange(inspector, 1920, 790);
+                inspector.UpdateLayout();
+                inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
                 var row = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(node);
                 if (node.BrushReads != 0 || !ReferenceEquals(row.ToolTip, node))
                 {

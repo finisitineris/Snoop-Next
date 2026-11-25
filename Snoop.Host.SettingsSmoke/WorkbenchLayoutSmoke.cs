@@ -127,16 +127,18 @@ internal static class WorkbenchLayoutSmoke
             LoadLayout(new XElement("WorkbenchTreeWidth", "282"));
             WithInspector(edited =>
             {
-                Arrange(edited, 1920, ReferenceHeight);
                 var splitter = Find<GridSplitter>(edited, "GridSplitter");
                 ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(700, 0);
-                Arrange(edited, 1920, ReferenceHeight);
+                edited.UpdateLayout();
+                DrainDispatcher();
                 VerifyPaneSizes(edited, 982, 354, 210);
                 WorkbenchTreeOverflowSmoke.Verify(edited);
-                Arrange(edited, CompactWidth, CompactHeight);
+                edited.Width = edited.MinWidth;
+                edited.UpdateLayout();
+                DrainDispatcher();
                 Require(Find<ColumnDefinition>(edited, "CenterPaneColumn").ActualWidth >= 239,
                     "A wide tree preference must still leave the center usable on a small window.");
-            });
+            }, showWideWindow: true);
             RequireSavedSize(XDocument.Load(layoutPath).Root, "WorkbenchTreeWidth", 982);
             settings.Reload();
             WithInspector(reopened =>
@@ -186,14 +188,27 @@ internal static class WorkbenchLayoutSmoke
         }
     }
 
-    private static void WithInspector(Action<SnoopUI> action)
+    private static void WithInspector(Action<SnoopUI> action, bool showWideWindow = false)
     {
         var inspector = new SnoopUI();
-        // Hidden fixture windows do not run OnSourceInitialized, which normally increments the count.
-        CacheManager.Instance.IncreaseUsageCount();
         try
         {
-            Arrange(inspector);
+            if (showWideWindow)
+            {
+                inspector.Show();
+                inspector.WindowState = WindowState.Normal;
+                inspector.Width = 1740;
+                inspector.Height = 760;
+                inspector.UpdateLayout();
+                DrainDispatcher();
+            }
+            else
+            {
+                // Hidden fixture windows do not run OnSourceInitialized.
+                CacheManager.Instance.IncreaseUsageCount();
+                Arrange(inspector);
+            }
+
             action(inspector);
         }
         finally
