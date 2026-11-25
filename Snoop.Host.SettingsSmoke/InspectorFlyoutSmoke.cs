@@ -85,6 +85,8 @@ internal static class InspectorFlyoutSmoke
                 InspectorContextMenuSmoke.Verify(inspector);
                 TreeNodeMenuSmoke.Verify(inspector, mode);
             }
+
+            VerifyEditableFilterContrast(inspector, filter);
         }
         finally
         {
@@ -98,6 +100,52 @@ internal static class InspectorFlyoutSmoke
         }
 
         Console.WriteLine("PASS: live top menu, nested menu, selected theme list, editable filter, property context menu and grouped event picker use Fluent popups in both themes.");
+    }
+
+    private static void VerifyEditableFilterContrast(SnoopUI inspector, ComboBox filter)
+    {
+        ThemeManager.Current.ApplyTheme(ThemeMode.Light, inspector);
+        var palette = new ResourceDictionary
+        {
+            Source = new Uri("/Snoop.Core;component/Themes/Colors.HighContrast.xaml", UriKind.Relative)
+        };
+        palette[SystemColors.WindowColorKey] = Colors.Black;
+        palette[SystemColors.WindowTextColorKey] = Colors.White;
+        inspector.Resources.MergedDictionaries.Add(palette);
+        try
+        {
+            Drain();
+            filter.ApplyTemplate();
+            var edit = (TextBox)filter.Template.FindName("PART_EditableTextBox", filter);
+            var button = (ToggleButton)filter.Template.FindName("DropButton", filter);
+            button.ApplyTemplate();
+            var field = (Border)button.Template.FindName("Field", button);
+            if (edit.Visibility != Visibility.Visible || edit.Background is not SolidColorBrush transparent || transparent.Color.A != 0
+                || edit.Foreground is not SolidColorBrush text || text.Color != Colors.White
+                || field.Background is not SolidColorBrush background || background.Color != Colors.Black)
+            {
+                throw new InvalidOperationException($"Expected white editable filter text on a black field. Text {edit.Foreground}, editor {edit.Background}, field {field.Background}.");
+            }
+
+            foreach (var state in new[] { UIElement.IsMouseOverProperty, ButtonBase.IsPressedProperty })
+            {
+                var setter = button.Template.Triggers.OfType<Trigger>()
+                    .Single(trigger => trigger.Property == state && Equals(trigger.Value, true))
+                    .Setters.OfType<Setter>().Single(item => item.TargetName == "Field" && item.Property == Border.BackgroundProperty);
+                if (setter.Value is not DynamicResourceExtension reference
+                    || field.TryFindResource(reference.ResourceKey) is not SolidColorBrush fill || fill.Color != Colors.Black)
+                {
+                    throw new InvalidOperationException("The editable filter toggle must keep its contrast field color for " + state.Name);
+                }
+            }
+        }
+        finally
+        {
+            inspector.Resources.MergedDictionaries.Remove(palette);
+            ThemeManager.Current.ApplyTheme(Snoop.Core.Settings.Default.ThemeMode, inspector);
+        }
+
+        Console.WriteLine("PASS: editable tree filter uses contrast text and field colors across its idle, hover and pressed template states.");
     }
 
     internal static FrameworkElement VerifyPopup(Control owner, Window inspector)

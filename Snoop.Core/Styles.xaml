@@ -268,6 +268,7 @@
                             </MultiTrigger.Conditions>
                             <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
                             <Setter TargetName="PART_Header" Property="Background" Value="{DynamicResource SnoopNext.Brush.Pressed}" />
+                            <Setter TargetName="PART_Header" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />

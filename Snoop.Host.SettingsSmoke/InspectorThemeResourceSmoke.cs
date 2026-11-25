@@ -57,6 +57,7 @@ internal static class InspectorThemeResourceSmoke
             VerifyAppearance(ThemeMode.Light);
             VerifyAppearance(ThemeMode.Dark);
             VerifyAppearance(ThemeMode.Light);
+            VerifyInactiveTreeSelection(inspector);
 
             void VerifyAppearance(ThemeMode theme)
             {
@@ -120,6 +121,37 @@ internal static class InspectorThemeResourceSmoke
         {
             return inspector.TryFindResource("SnoopNext.Brush." + key) as SolidColorBrush
                 ?? throw new InvalidOperationException("Missing workbench palette brush " + key);
+        }
+    }
+
+    private static void VerifyInactiveTreeSelection(SnoopUI inspector)
+    {
+        // Load the real contrast palette on this row even on a desktop using the ordinary theme.
+        var row = new TreeViewItem { Header = "Selected node", Style = (Style)inspector.FindResource("ProperTreeViewItemStyle") };
+        row.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("/Snoop.Core;component/Themes/Colors.HighContrast.xaml", UriKind.Relative)
+        });
+        row.ApplyTemplate();
+        var header = (Border)row.Template.FindName("PART_Header", row);
+        var ordinaryBorder = header.BorderBrush;
+        row.IsSelected = true;
+        if (row.IsSelectionActive || row.IsKeyboardFocused || header.IsMouseOver || header.BorderThickness.Left < 1)
+        {
+            throw new InvalidOperationException("Expected an inactive selected header with a visible outline.");
+        }
+
+        RequireBrush(header.Background, SystemColors.WindowColor, "inactive contrast tree selection background");
+        RequireBrush(header.BorderBrush, SystemColors.WindowTextColor, "inactive contrast tree selection outline");
+        if (Equals(ordinaryBorder, header.BorderBrush))
+        {
+            throw new InvalidOperationException("Inactive selection must be distinguishable from an ordinary tree row.");
+        }
+
+        row.IsSelected = false;
+        if (!Equals(ordinaryBorder, header.BorderBrush))
+        {
+            throw new InvalidOperationException("Clearing the selection must restore the ordinary tree row border.");
         }
     }
 
