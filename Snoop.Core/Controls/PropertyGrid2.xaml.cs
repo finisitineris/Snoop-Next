@@ -171,7 +171,12 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
         var needsLiveFilter = this.Filter is { EditedOnly: true } or { OriginFilter: not PropertyOriginFilter.All };
         if (this.propertiesView is ICollectionViewLiveShaping { CanChangeLiveFiltering: true } live && live.IsLiveFiltering != needsLiveFilter)
         {
-            live.IsLiveFiltering = needsLiveFilter;
+            // Defer so WPF sends a view reset when it rebuilds the list for the new live-filter mode.
+            // Otherwise existing ListViewItem containers can keep displaying the previous rows.
+            using (this.propertiesView.DeferRefresh())
+            {
+                live.IsLiveFiltering = needsLiveFilter;
+            }
         }
         else
         {

@@ -63,12 +63,13 @@ internal static class PropertyOriginFilterSmoke
             var fixtureRows = new[] { bindingRow, localRow, styleRow, resourceRow };
             void ExpectRows(string action, params PropertyInformation[] expected)
             {
-                Await(() => fixtureRows.All(row => list.Items.Contains(row) == expected.Contains(row)),
+                Await(() => fixtureRows.All(row => list.Items.Contains(row) == expected.Contains(row)) && ViewportMatchesItems(list),
                     action + " must show these fixture rows: " + string.Join(", ", expected.Select(row => row.DisplayName)));
             }
 
             void SelectOrigin(PropertyOriginFilter origin) => origins.SetCurrentValue(Selector.SelectedValueProperty, origin);
-            bool OnlyHeight() => list.Items.Count == 1 && ((PropertyInformation)list.Items[0]).DependencyProperty == FrameworkElement.HeightProperty;
+            bool OnlyHeight() => list.Items.Count == 1 && ((PropertyInformation)list.Items[0]).DependencyProperty == FrameworkElement.HeightProperty
+                                 && ViewportMatchesItems(list);
 
             Require(Equals(origins.SelectedValue, PropertyOriginFilter.All) && edited.IsChecked == false,
                 "The inspector must initially show all origins and include unedited properties.");
@@ -81,6 +82,8 @@ internal static class PropertyOriginFilterSmoke
             ExpectRows("A new binding while Binding is selected", bindingRow, localRow);
             target.Height = 36;
             ExpectRows("Restoring the literal while Binding is selected", bindingRow);
+            Await(() => list.Items.Count == 1 && ReferenceEquals(list.Items[0], bindingRow) && ViewportMatchesItems(list),
+                "The English Binding screenshot must display a single realized MaxWidth row.");
             InspectorFlyoutSmoke.Capture(inspector, "property-filters-binding-en-US");
             SelectOrigin(PropertyOriginFilter.Style);
             ExpectRows("Style", styleRow);
@@ -145,7 +148,8 @@ internal static class PropertyOriginFilterSmoke
             toggle.Toggle();
             SelectOrigin(PropertyOriginFilter.All);
             Await(() => list.Items.Contains(Row(FrameworkElement.WidthProperty)) && list.Items.Contains(Row(FrameworkElement.MinWidthProperty))
-                    && list.Items.Contains(Row(FrameworkElement.MaxWidthProperty)) && list.Items.Contains(Row(FrameworkElement.HeightProperty)),
+                    && list.Items.Contains(Row(FrameworkElement.MaxWidthProperty)) && list.Items.Contains(Row(FrameworkElement.HeightProperty))
+                    && ViewportMatchesItems(list),
                 "Clearing both filters must restore all four origins.");
             var alignment = Row(FrameworkElement.HorizontalAlignmentProperty);
             var choices = InspectorTableSmoke.Descendants(SelectRow(list, alignment)).OfType<ComboBox>().Single();
@@ -156,7 +160,8 @@ internal static class PropertyOriginFilterSmoke
             ((IToggleProvider)UIElementAutomationPeer.CreatePeerForElement(check).GetPattern(PatternInterface.Toggle)).Toggle();
             toggle.Toggle();
             Await(() => target.HorizontalAlignment == HorizontalAlignment.Center && target.IsDefault && list.Items.Count == 3
-                        && list.Items.Contains(alignment) && list.Items.Contains(isDefault) && list.Items.Contains(Row(FrameworkElement.HeightProperty)),
+                        && list.Items.Contains(alignment) && list.Items.Contains(isDefault) && list.Items.Contains(Row(FrameworkElement.HeightProperty))
+                        && ViewportMatchesItems(list),
                 "Changing the enum choice and toggling the Boolean editor must commit both values and list exactly three edited properties.");
             Require(ReferenceEquals(binding, BindingOperations.GetBindingExpressionBase(target, FrameworkElement.MaxWidthProperty))
                     && target.MaxWidth == 290 && target.Width == 160 && target.MinWidth == 80 && target.Height == 48,
@@ -171,14 +176,36 @@ internal static class PropertyOriginFilterSmoke
         Console.WriteLine("PASS: property origin and edited-only controls filter real WPF rows, preserve bindings and isolate edits by target.");
     }
 
+    private static bool ViewportMatchesItems(ListView list)
+    {
+        // Check the rendered name cells: ListCollectionView can rebuild its internal
+        // list without telling the virtualized ListView to replace its row containers.
+        var viewport = new Rect(list.RenderSize);
+        var rendered = InspectorTableSmoke.Descendants(list).OfType<ListViewItem>()
+            .Where(item => item.IsVisible && item.TransformToAncestor(list).TransformBounds(new Rect(item.RenderSize)).IntersectsWith(viewport))
+            .ToArray();
+        if (rendered.Length < Math.Min(2, list.Items.Count))
+        {
+            return false;
+        }
+
+        return rendered.All(item =>
+        {
+            var index = list.ItemContainerGenerator.IndexFromContainer(item);
+            return index >= 0 && index < list.Items.Count && list.Items[index] is PropertyInformation row && ReferenceEquals(item.DataContext, row)
+                && InspectorTableSmoke.Descendants(item).OfType<TextBlock>().Any(cell => cell.IsVisible && cell.Text == row.DisplayName);
+        });
+    }
+
     private static ListViewItem SelectRow(ListView list, PropertyInformation row)
     {
+        Require(list.Items.Contains(row), "The property row must be present in the filtered view: " + row.DisplayName);
         list.SetCurrentValue(Selector.SelectedItemProperty, row);
         list.ScrollIntoView(row);
         list.UpdateLayout();
-        Drain();
-        return list.ItemContainerGenerator.ContainerFromItem(row) as ListViewItem
-            ?? throw new InvalidOperationException("The property row was not realized: " + row.DisplayName);
+        Await(() => list.ItemContainerGenerator.ContainerFromItem(row) is ListViewItem { IsSelected: true, IsVisible: true },
+            "The selected property row was not realized: " + row.DisplayName);
+        return (ListViewItem)list.ItemContainerGenerator.ContainerFromItem(row);
     }
 
     private static void CommitText(EditTextBox editor, string text)
