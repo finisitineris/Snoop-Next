@@ -20,8 +20,15 @@ public class VisualTree3DView : Viewport3D
     private readonly bool includeEmptyVisuals = false;
     private readonly TrackballBehavior? trackballBehavior;
     private readonly ScaleTransform3D zScaleTransform;
+    private readonly Rect3D modelBounds;
+    private const double FieldOfView = 45;
 
     public VisualTree3DView(Visual visual, int dpi)
+        : this(visual, dpi, 1)
+    {
+    }
+
+    internal VisualTree3DView(Visual visual, int dpi, double zScale)
     {
         var directionalLight1 = new DirectionalLight(Colors.White, new Vector3D(0, 0, 1));
         var directionalLight2 = new DirectionalLight(Colors.White, new Vector3D(0, 0, -1));
@@ -37,7 +44,7 @@ public class VisualTree3DView : Viewport3D
             group.Children.Add(model);
         }
 
-        this.zScaleTransform = new ScaleTransform3D();
+        this.zScaleTransform = new ScaleTransform3D(1, 1, zScale);
         group.Transform = this.zScaleTransform;
 
         var modelVisual = new ModelVisual3D
@@ -47,14 +54,13 @@ public class VisualTree3DView : Viewport3D
 
         if (model is not null && !model.Bounds.IsEmpty)
         {
-            var bounds = model.Bounds;
-            const double fieldOfView = 45;
+            this.modelBounds = model.Bounds;
+            var bounds = this.modelBounds;
             var lookAtPoint = new Point3D(bounds.X + (bounds.SizeX / 2), bounds.Y + (bounds.SizeY / 2), bounds.Z + (bounds.SizeZ / 2));
-            var cameraDistance = (0.56 * Math.Max(bounds.SizeX, bounds.SizeY) / Math.Tan(0.5 * fieldOfView * Math.PI / 180)) + (bounds.SizeZ / 2);
-            var position = lookAtPoint - new Vector3D(0, 0, cameraDistance);
-            Camera camera = new PerspectiveCamera(position, new Vector3D(0, 0, 1), new Vector3D(0, -1, 0), fieldOfView);
-
             this.zScaleTransform.CenterZ = lookAtPoint.Z;
+            var cameraDistance = this.FitViewport();
+            var position = lookAtPoint - new Vector3D(0, 0, cameraDistance);
+            var camera = new PerspectiveCamera(position, new Vector3D(0, 0, 1), new Vector3D(0, -1, 0), FieldOfView);
 
             this.Children.Add(modelVisual);
             this.Camera = camera;
@@ -62,8 +68,6 @@ public class VisualTree3DView : Viewport3D
         }
 
         this.ClipToBounds = false;
-        this.Width = 500;
-        this.Height = 500;
     }
 
     public double ZScale
@@ -74,8 +78,23 @@ public class VisualTree3DView : Viewport3D
 
     public void Reset()
     {
-        this.trackballBehavior?.Reset();
         this.ZScale = 1;
+        this.trackballBehavior?.Reset(this.FitViewport());
+    }
+
+    private double FitViewport()
+    {
+        // WPF defines PerspectiveCamera.FieldOfView horizontally. Fit the rotated
+        // layer volume to its own aspect instead of letterboxing it into a square.
+        var intoCameraAxes = Matrix3D.Identity;
+        intoCameraAxes.Rotate(TrackballBehavior.InitialOrientation);
+        intoCameraAxes.Invert();
+        var projected = new MatrixTransform3D(intoCameraAxes).TransformBounds(this.zScaleTransform.TransformBounds(this.modelBounds));
+        var aspect = Math.Max(0.2, Math.Min(5, projected.SizeX / projected.SizeY));
+        this.Width = 500 * aspect;
+        this.Height = 500;
+        var halfWidth = 0.52 * Math.Max(projected.SizeX, projected.SizeY * aspect);
+        return (halfWidth / Math.Tan(0.5 * FieldOfView * Math.PI / 180)) + (projected.SizeZ / 2);
     }
 
     private Model3D? ConvertVisualToModel3D(Visual? visual, int dpi, ref double z)

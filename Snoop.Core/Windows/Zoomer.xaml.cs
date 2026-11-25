@@ -249,7 +249,7 @@ public sealed partial class Zoomer
         if (!waiting && this.isThreeDimensional && this.targetVisual is not null)
         {
             var dpi = int.Parse((string)((ComboBoxItem)this.dpiBox.SelectedItem).Content, CultureInfo.InvariantCulture);
-            this.visualTree3DView = new VisualTree3DView(this.targetVisual, dpi) { ZScale = Math.Pow(10, this.ZScaleSlider.Value) };
+            this.visualTree3DView = new VisualTree3DView(this.targetVisual, dpi, Math.Pow(10, this.ZScaleSlider.Value));
             if (this.visualTree3DView.Camera is not null)
             {
                 projection = this.visualTree3DView;

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using Snoop.Controls;
 using Snoop.Core;
@@ -59,6 +60,7 @@ internal static class ZoomerPresentationSmoke
                 throw new InvalidOperationException("The 3D command must display the textured scene and its controls.");
             }
 
+            var initialCameraPosition = ((ProjectionCamera)scene.Camera).Position;
             var spacing = (Slider)viewer.FindName("ZScaleSlider");
             var dpi = (ComboBox)viewer.FindName("dpiBox");
             spacing.Value = 0.9;
@@ -72,6 +74,20 @@ internal static class ZoomerPresentationSmoke
             }
 
             Capture(surface, "zoomer-3D");
+            VerifyFit(revised, (Grid)viewer.FindName("DocumentRoot"), wide: true);
+            Zoomer.ResetCommand.Execute(null, viewer);
+            Drain();
+            if (revised.ZScale != 1 || (((ProjectionCamera)revised.Camera).Position - initialCameraPosition).Length > .1)
+            {
+                throw new InvalidOperationException("Fitting after a DPI change must restore the default camera and layer spacing.");
+            }
+
+            target.Width = 212;
+            target.Height = 460;
+            Drain();
+            viewer.Target = target;
+            Drain();
+            VerifyFit((VisualTree3DView)viewbox.Child, (Grid)viewer.FindName("DocumentRoot"), wide: false);
             Zoomer.SwitchTo2DCommand.Execute(null, viewer);
             if (mode2D.IsChecked != true || mode3D.IsChecked != false || options.IsVisible)
             {
@@ -99,6 +115,37 @@ internal static class ZoomerPresentationSmoke
         }
 
         Console.WriteLine("PASS: zoomer paints target pixels in 2D and textured 3D, syncs segments and sliders, handles empty targets.");
+    }
+
+    private static void VerifyFit(VisualTree3DView scene, Grid canvas, bool wide)
+    {
+        var model = (ModelVisual3D)scene.Children[0];
+        var bounds = model.Content.Bounds;
+        var projection = model.TransformToAncestor(canvas);
+        var projected = Rect.Empty;
+        foreach (var x in new[] { bounds.X, bounds.X + bounds.SizeX })
+        {
+            foreach (var y in new[] { bounds.Y, bounds.Y + bounds.SizeY })
+            {
+                foreach (var z in new[] { bounds.Z, bounds.Z + bounds.SizeZ })
+                {
+                    if (!projection.TryTransform(new Point3D(x, y, z), out var point))
+                    {
+                        throw new InvalidOperationException("The 3D bounds are behind the fit camera.");
+                    }
+
+                    projected.Union(point);
+                }
+            }
+        }
+
+        var available = new Rect(canvas.RenderSize);
+        if (!available.Contains(projected)
+            || (wide && projected.Width < available.Width * 0.55)
+            || (!wide && projected.Height < available.Height * 0.7))
+        {
+            throw new InvalidOperationException($"The 3D volume {projected} must fit and fill its canvas {available} (wide: {wide}).");
+        }
     }
 
     private static Grid MakeContent()
