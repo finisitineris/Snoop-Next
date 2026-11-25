@@ -13,8 +13,8 @@ using Snoop.Next.Localization;
 using Snoop.Windows;
 
 /// <summary>
-/// Tests host language preferences and WPF controls without displaying windows
-/// or attaching to another process. This can run on newer .NET Framework 4.x runtimes.
+/// Tests host language preferences, WPF controls and in-process target rendering
+/// without attaching to another process. This can run on newer .NET Framework 4.x runtimes.
 /// </summary>
 internal static class Program
 {
@@ -351,6 +351,7 @@ internal static class Program
                         InspectorAuxiliaryViewSmoke.Verify();
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();
+                        TargetWindowRenderingSmoke.Verify(app);
                     }
                     finally
                     {
