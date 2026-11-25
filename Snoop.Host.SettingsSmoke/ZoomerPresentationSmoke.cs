@@ -50,8 +50,11 @@ internal static class ZoomerPresentationSmoke
                 throw new InvalidOperationException("A newly opened WPF Window must acquire a live 2D client projection after layout.");
             }
 
+            VerifyToolbar(viewer, capture: false);
             Capture(surface, "zoomer-2D");
             Zoomer.SwitchTo3DCommand.Execute(null, viewer);
+            Drain();
+            VerifyToolbar(viewer, capture: true);
             ThemeManager.Current.ApplyTheme(ThemeMode.Dark, viewer);
             Drain();
             if (viewbox.Child is not VisualTree3DView { Camera: not null } scene || scene.Children.Count == 0
@@ -115,6 +118,102 @@ internal static class ZoomerPresentationSmoke
         }
 
         Console.WriteLine("PASS: zoomer paints target pixels in 2D and textured 3D, syncs segments and sliders, handles empty targets.");
+    }
+
+    private static void VerifyToolbar(Zoomer viewer, bool capture)
+    {
+        var toolbar = (Border)viewer.FindName("ToolbarBorder");
+        var group = (Border)viewer.FindName("ModeGroup");
+        var mode2D = (RadioButton)viewer.FindName("Mode2D");
+        var mode3D = (RadioButton)viewer.FindName("Mode3D");
+        var zoomOut = (Button)viewer.FindName("ZoomOutButton");
+        var zoomIn = (Button)viewer.FindName("ZoomInButton");
+        var fit = (Button)viewer.FindName("FitButton");
+        var label = (Label)viewer.FindName("BackdropLabel");
+        var slider = (Slider)viewer.FindName("ColorSlider");
+        var width = viewer.Width;
+        var language = InspectorLocalization.Default.LanguageTag;
+        try
+        {
+            Check(wrapped: false);
+            InspectorLocalization.Default.SetLanguage("en-US");
+            viewer.Width = viewer.MinWidth;
+            Drain();
+            Check(wrapped: true);
+        }
+        finally
+        {
+            viewer.Width = width;
+            InspectorLocalization.Default.SetLanguage(language);
+            Drain();
+        }
+
+        void Check(bool wrapped)
+        {
+            var frame = new Rect(toolbar.RenderSize);
+            var controls = new FrameworkElement[] { group, zoomOut, zoomIn, fit, label, slider };
+            for (var i = 0; i < controls.Length; i++)
+            {
+                var bounds = Bounds(controls[i]);
+                if (!frame.Contains(bounds) || bounds.Width <= 0 || bounds.Height <= 0)
+                {
+                    throw new InvalidOperationException($"Clipped or empty zoom toolbar control {controls[i].Name} at {bounds} in {frame}.");
+                }
+
+                for (var j = 0; j < i; j++)
+                {
+                    if (Rect.Intersect(bounds, Bounds(controls[j])) is { Width: > 0, Height: > 0 })
+                    {
+                        throw new InvalidOperationException($"Zoom toolbar controls {controls[j].Name} and {controls[i].Name} overlap.");
+                    }
+                }
+            }
+
+            foreach (var control in new FrameworkElement[] { group, zoomOut, zoomIn, fit })
+            {
+                Close(control.ActualHeight, 32, control.Name + " height");
+                Close(Bounds(control).Top, Bounds(group).Top, control.Name + " top edge");
+            }
+
+            Close(zoomOut.ActualWidth, 32, "zoom-out width");
+            Close(zoomIn.ActualWidth, 32, "zoom-in width");
+            Close(mode2D.ActualWidth, mode3D.ActualWidth, "segment widths");
+            Close(mode2D.ActualHeight, mode3D.ActualHeight, "segment heights");
+            Close(mode2D.FontSize, fit.FontSize, "mode and fit font sizes");
+            Close(label.FontSize, fit.FontSize, "label and fit font sizes");
+
+            // The Label's template contains a Border and a content presenter. Inspect the
+            // presenter itself so a top-aligned caption in a centered label is caught.
+            var caption = (FrameworkElement)VisualTreeHelper.GetChild(VisualTreeHelper.GetChild(label, 0), 0);
+            var sliderMidpoint = Bounds(slider).Top + (slider.ActualHeight / 2);
+            Close(Bounds(caption).Top + (caption.ActualHeight / 2), sliderMidpoint, "backdrop caption and slider center");
+            if (wrapped)
+            {
+                if (Bounds(slider).Top < Bounds(group).Bottom)
+                {
+                    throw new InvalidOperationException("The backdrop group must wrap below the mode group in a narrow window.");
+                }
+            }
+            else
+            {
+                Close(sliderMidpoint, Bounds(group).Top + (group.ActualHeight / 2), "backdrop and command row center");
+            }
+
+            if (capture)
+            {
+                LauncherAppearanceSmoke.CaptureIfRequested(toolbar, wrapped ? "zoomer-toolbar-narrow" : "zoomer-toolbar");
+            }
+        }
+
+        Rect Bounds(FrameworkElement control) => control.TransformToAncestor(toolbar).TransformBounds(new Rect(control.RenderSize));
+
+        void Close(double actual, double expected, string measurement)
+        {
+            if (Math.Abs(actual - expected) > 1)
+            {
+                throw new InvalidOperationException($"Unexpected zoom toolbar {measurement}: expected {expected} DIP, got {actual} DIP.");
+            }
+        }
     }
 
     private static void VerifyFit(VisualTree3DView scene, Grid canvas, bool wide)
