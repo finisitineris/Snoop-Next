@@ -189,7 +189,7 @@ internal static class LauncherAppearanceSmoke
         }
     }
 
-    internal static void CaptureIfRequested(FrameworkElement surface, string name)
+    internal static void CaptureIfRequested(FrameworkElement surface, string name, FrameworkElement? region = null)
     {
         var directory = Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR");
         if (string.IsNullOrEmpty(directory))
@@ -201,8 +201,18 @@ internal static class LauncherAppearanceSmoke
         var image = new RenderTargetBitmap((int)Math.Ceiling(surface.ActualWidth),
             (int)Math.Ceiling(surface.ActualHeight), 96, 96, PixelFormats.Pbgra32);
         image.Render(surface);
+        BitmapSource capture = image;
+        if (region is not null)
+        {
+            var bounds = region.TransformToAncestor(surface).TransformBounds(new Rect(region.RenderSize));
+            var left = (int)Math.Floor(bounds.Left);
+            var top = (int)Math.Floor(bounds.Top);
+            capture = new CroppedBitmap(image, new Int32Rect(left, top,
+                (int)Math.Ceiling(bounds.Right) - left, (int)Math.Ceiling(bounds.Bottom) - top));
+        }
+
         var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(image));
+        encoder.Frames.Add(BitmapFrame.Create(capture));
         using var file = File.Create(Path.Combine(directory, name + ".png"));
         encoder.Save(file);
     }

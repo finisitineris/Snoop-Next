@@ -157,7 +157,7 @@ internal static class InspectorTableSmoke
 
                 if (language == "zh-CN" && width != 590)
                 {
-                    LauncherAppearanceSmoke.CaptureIfRequested(toolbar, width == 354 ? "property-filter-toolbar" : "property-filter-toolbar-narrow");
+                    LauncherAppearanceSmoke.CaptureIfRequested(inspector, width == 354 ? "property-filter-toolbar" : "property-filter-toolbar-narrow", toolbar);
                 }
             }
         }
