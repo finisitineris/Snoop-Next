@@ -28,6 +28,8 @@ public partial class ScreenshotDialog
     public ScreenshotDialog()
     {
         this.InitializeComponent();
+        this.PhotoFrame.DataContext = VisualCaptureUtil.GetCaptureVisual(this.DataContext as Visual);
+        this.DataContextChanged += (_, e) => this.PhotoFrame.DataContext = VisualCaptureUtil.GetCaptureVisual(e.NewValue as Visual);
 
         this.CommandBindings.Add(new CommandBinding(SaveCommand, this.HandleSave, this.HandleCanSave));
         this.CommandBindings.Add(new CommandBinding(CancelCommand, this.HandleCancel, (_, y) => y.CanExecute = true));
@@ -35,7 +37,7 @@ public partial class ScreenshotDialog
 
     private void HandleCanSave(object sender, CanExecuteRoutedEventArgs e)
     {
-        e.CanExecute = this.DataContext is Visual;
+        e.CanExecute = VisualCaptureUtil.IsSafeToVisualize(this.DataContext as Visual);
     }
 
     private void HandleSave(object sender, ExecutedRoutedEventArgs e)

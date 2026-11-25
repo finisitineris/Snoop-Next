@@ -14,10 +14,9 @@ public static class ZoomerUtilities
 {
     public static UIElement? CreateIfPossible(object? item)
     {
-        if (item is Window window
-            && VisualTreeHelper.GetChildrenCount(window) == 1)
+        if (item is Window window)
         {
-            item = VisualTreeHelper.GetChild(window, 0);
+            item = VisualCaptureUtil.GetCaptureVisual(window);
         }
 
         switch (item)

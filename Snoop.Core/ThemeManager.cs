@@ -11,6 +11,7 @@ using System.Windows.Threading;
 using JetBrains.Annotations;
 using Microsoft.Win32;
 using Snoop.Infrastructure;
+using Snoop.Windows;
 
 public class ThemeManager
 {
@@ -109,6 +110,11 @@ public class ThemeManager
         {
             dictionaries.Remove(resources.HighContrast);
             dictionaries.Add(resources.HighContrast);
+        }
+
+        if (window is SnoopBaseWindow snoopWindow)
+        {
+            snoopWindow.UpdateNativeFrame();
         }
     }
 

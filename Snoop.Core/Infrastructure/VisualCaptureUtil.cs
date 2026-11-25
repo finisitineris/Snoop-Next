@@ -25,40 +25,37 @@ public static class VisualCaptureUtil
         // where he wraps the Visual inside of a VisualBrush and then renders it.
         // http://blogs.msdn.com/b/jaimer/archive/2009/07/03/rendertargetbitmap-tips.aspx
 
-        var visualBrush = CreateVisualBrushSafe(visual);
-
-        if (visual is null
-            || visualBrush is null)
+        if (GetCaptureVisual(visual) is not { } source)
         {
             return;
         }
 
-        var renderTargetBitmap = RenderVisualWithHighQuality(visual, dpi, dpi);
+        var renderTargetBitmap = RenderVisualWithHighQuality(source, dpi, dpi);
 
         SaveAsPng(renderTargetBitmap, filename);
     }
 
     public static VisualBrush? CreateVisualBrushSafe(Visual? visual)
     {
-        return IsSafeToVisualize(visual)
-            ? new VisualBrush(visual)
-            : null;
+        return GetCaptureVisual(visual) is { } source ? new VisualBrush(source) : null;
     }
 
-    public static bool IsSafeToVisualize(Visual? visual)
+    public static bool IsSafeToVisualize(Visual? visual) => GetCaptureVisual(visual) is not null;
+
+    internal static Visual? GetCaptureVisual(Visual? visual)
     {
-        if (visual is null)
+        if (visual is not Window window)
         {
-            return false;
+            return visual;
         }
 
-        if (visual is Window)
-        {
-            var source = PresentationSource.FromVisual(visual) as HwndSource;
-            return source?.CompositionTarget is not null;
-        }
-
-        return true;
+        // A top-level Window has no framework parent. WPF can give it the inspector's
+        // inheritance context through VisualBrush.Visual, invalidating the host's bindings
+        // and styles. Its existing client visual already has a parent in the target tree.
+        return PresentationSource.FromVisual(window) is HwndSource { CompositionTarget: not null }
+            && VisualTreeHelper.GetChildrenCount(window) > 0
+            ? VisualTreeHelper.GetChild(window, 0) as Visual
+            : null;
     }
 
     private static void SaveAsPng(RenderTargetBitmap bitmap, string filename)
@@ -80,6 +77,7 @@ public static class VisualCaptureUtil
     /// </remarks>
     public static RenderTargetBitmap RenderVisualWithHighQuality(Visual visual, int dpiX, int dpiY, PixelFormat? pixelFormat = null, Viewport3D? viewport3D = null)
     {
+        visual = GetCaptureVisual(visual) ?? throw new InvalidOperationException("The window has no attached client visual.");
         var size = GetSize(visual);
 
         var drawingVisual = new DrawingVisual();

@@ -25,7 +25,7 @@
                              xmlns:triggersTab="clr-namespace:Snoop.Views.TriggersTab"
                              xmlns:views="clr-namespace:Snoop.Views"
                              xmlns:windows="clr-namespace:Snoop.Windows"
-                             Title="Snoop"
+                             Title="Snoop Next"
                              MinWidth="480"
                              MinHeight="360"
                              d:DesignHeight="480"
@@ -126,6 +126,31 @@
                 </Setter>
             </Style>
 
+            <Style x:Key="WorkbenchCommandIcon" TargetType="Path">
+                <Setter Property="Width" Value="14" />
+                <Setter Property="Height" Value="14" />
+                <Setter Property="Margin" Value="0 0 7 0" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                <Setter Property="StrokeThickness" Value="1.4" />
+                <Setter Property="StrokeStartLineCap" Value="Round" />
+                <Setter Property="StrokeEndLineCap" Value="Round" />
+                <Setter Property="StrokeLineJoin" Value="Round" />
+            </Style>
+            <DataTemplate x:Key="RefreshCommandContent">
+                <StackPanel Orientation="Horizontal">
+                    <Path Style="{StaticResource WorkbenchCommandIcon}" Data="M14,7 A6,6 0 1 0 14,11 M14,2 V7 H9" />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="PaletteCommandContent">
+                <StackPanel Orientation="Horizontal">
+                    <Path Style="{StaticResource WorkbenchCommandIcon}"
+                          Data="M1,2 H15 V14 H1 Z M4,5 L7,8 L4,11 M9,11 H12" />
+                    <TextBlock VerticalAlignment="Center" Text="{Binding}" />
+                </StackPanel>
+            </DataTemplate>
+
             <DataTemplate x:Key="stylelessTextBlockDataTemplate">
                 <TextBlock Text="{Binding}" />
             </DataTemplate>
@@ -134,7 +159,7 @@
 
     <DockPanel x:Name="WorkbenchChrome" Background="{DynamicResource SnoopNext.Brush.Background}">
         <StackPanel x:Name="WorkbenchHeader" DockPanel.Dock="Top">
-            <Menu x:Name="WorkbenchMenuBar"
+            <Menu x:Name="WorkbenchMenuBar" Padding="4 2" FontSize="13"
                   Background="{DynamicResource SnoopNext.Brush.Background}"
                   BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                   BorderThickness="0 0 0 1">
@@ -159,7 +184,7 @@
                               IsChecked="True"
                               Click="HandleToggleWorkbenchPane_OnClick" />
                 </MenuItem>
-                <MenuItem Header="{localization:InspectorLoc Menu.Settings}">
+                <MenuItem x:Name="WorkbenchSettingsMenu" Header="{localization:InspectorLoc Menu.Settings}">
                     <MenuItem Header="{Binding Path=SettingsFile, Source={x:Static core:Settings.Default}}" />
                     <MenuItem Header="{localization:InspectorLoc Menu.MakeSettingsApplicationSpecific}"
                               Click="HandleMakeSettingsApplicationsSpecific_OnClick" />
@@ -273,20 +298,20 @@
             </Menu>
             <Border x:Name="WorkbenchCommandBar"
                     Padding="8 4"
-                    Background="{DynamicResource SnoopNext.Brush.Background}"
+                    Background="{DynamicResource SnoopNext.Brush.Panel}"
                     BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                     BorderThickness="0 0 0 1">
                 <WrapPanel>
-                    <Button x:Name="RefreshTreeButton"
-                            MinHeight="28"
+                    <Button x:Name="RefreshTreeButton" ContentTemplate="{StaticResource RefreshCommandContent}"
+                            MinHeight="32"
                             Margin="0 2 8 2"
                             Padding="8 2"
                             Content="{localization:InspectorLoc Workbench.RefreshTree}"
                             ToolTip="{localization:InspectorLoc Tooltip.RefreshTree}"
                             FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                             Command="{x:Static windows:SnoopUI.RefreshCommand}" />
-                    <Button x:Name="CommandPaletteButton"
-                            MinHeight="28"
+                    <Button x:Name="CommandPaletteButton" ContentTemplate="{StaticResource PaletteCommandContent}"
+                            MinHeight="32"
                             Margin="0 2 8 2"
                             Padding="8 2"
                             Content="{localization:InspectorLoc CommandPalette.Title}"

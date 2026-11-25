@@ -6,6 +6,7 @@
 namespace Snoop.Controls;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -121,13 +122,15 @@ public partial class ZoomerControl
 
     private void RefreshPreview(bool replaceFallback = false)
     {
-        if (this.Target is UIElement selected && this.GetPreviewContext(selected) is { } context)
+        if (this.Target is UIElement selected && this.TryGetPreviewContext(selected, out var scene, out var context))
         {
             var toBrush = GetContextTransform(context);
             var crop = Rect.Transform(new Rect(context.RenderSize), toBrush);
             if (HasArea(crop))
             {
-                this.UpdateContextImage(selected, context, crop, toBrush);
+                // A selected Window occupies the whole projected client. It remains the
+                // logical selection and scope for commands and hit testing.
+                this.UpdateContextImage(ReferenceEquals(selected, scene) ? context : selected, context, crop, toBrush);
                 return;
             }
         }
@@ -149,23 +152,26 @@ public partial class ZoomerControl
         return transform;
     }
 
-    private UIElement? GetPreviewContext(UIElement selected)
+    private bool TryGetPreviewContext(UIElement selected, [NotNullWhen(true)] out UIElement? scene, [NotNullWhen(true)] out UIElement? client)
     {
+        scene = null;
+        client = null;
         if (!this.CanPreview(selected)
             || PresentationSource.FromVisual(selected) is not { CompositionTarget: not null, RootVisual: UIElement root }
             || root is SnoopBaseWindow)
         {
-            return null;
+            return false;
         }
 
-        var context = this.scopeTarget is null ? root : this.scopeTarget as UIElement;
-        if (context is null || !this.CanPreview(context) || !context.IsVisible
-            || (!ReferenceEquals(context, selected) && !selected.IsDescendantOf(context)))
+        scene = this.scopeTarget is null ? root : this.scopeTarget as UIElement;
+        if (scene is null || !this.CanPreview(scene) || !scene.IsVisible)
         {
-            return null;
+            return false;
         }
 
-        return context;
+        client = VisualCaptureUtil.GetCaptureVisual(scene) as UIElement;
+        return client is not null
+            && (ReferenceEquals(scene, selected) || ReferenceEquals(client, selected) || selected.IsDescendantOf(client));
     }
 
     private bool CanPreview(Visual visual)
@@ -433,7 +439,8 @@ public partial class ZoomerControl
         if (this.contextImage is not { IsArrangeValid: true, Fill: VisualBrush { Visual: UIElement context } brush } image
             || !ReferenceEquals(this.Viewbox.Child, image)
             || this.Target is not UIElement selected
-            || !ReferenceEquals(this.GetPreviewContext(selected), context)
+            || !this.TryGetPreviewContext(selected, out var scene, out var client)
+            || !ReferenceEquals(client, context)
             || !new Rect(this.DocumentRoot.RenderSize).Contains(position))
         {
             return;
@@ -475,7 +482,7 @@ public partial class ZoomerControl
         // Updating selection can change adorners, so it must happen after the hit test.
         if (hit is not null)
         {
-            this.ElementPicked?.Invoke(hit, context);
+            this.ElementPicked?.Invoke(hit, scene);
         }
     }
 

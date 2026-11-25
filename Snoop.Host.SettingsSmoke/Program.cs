@@ -352,6 +352,7 @@ internal static class Program
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
+                        InspectorFlyoutSmoke.Verify(inspector);
                     }
                     finally
                     {

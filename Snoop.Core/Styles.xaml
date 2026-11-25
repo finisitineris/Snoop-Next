@@ -15,6 +15,7 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Icons.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/BaseStyles.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Themes/FluentFlyouts.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/MouseWheelValueEditorTemplates.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/EditorTemplates.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -103,118 +104,37 @@
            TargetType="TreeView"
            BasedOn="{StaticResource Snoop.Styles.TreeView}" />
 
-    <!-- This is the area which contains the selected item in the ComboBox -->
-
-    <ControlTemplate x:Key="ComboBoxTextBox"
-                     TargetType="{x:Type TextBox}">
-        <!-- This must be named as PART_ContentHost -->
-        <Border x:Name="PART_ContentHost"
-                Background="{TemplateBinding Background}"
-                Focusable="False" />
-    </ControlTemplate>
-
-    <ControlTemplate x:Key="Snoop.Templates.NoSelectionComboBox"
-                     TargetType="{x:Type controls:NoSelectionComboBox}">
-        <Grid x:Name="Grid">
-            <Border x:Name="Border"
-                    Background="{TemplateBinding Background}"
-                    BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}">
-                <ToggleButton x:Name="ToggleButton"
-                              ClickMode="Press"
-                              Focusable="False"
-                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                    <ToggleButton.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{TemplateBinding Header}" />
-                            <Image Width="8"
-                                   Height="6"
-                                   Margin="3 0 0 0"
-                                   Source="{DynamicResource downDrawingImage}" />
-                        </StackPanel>
-                    </ToggleButton.Content>
-                </ToggleButton>
-            </Border>
-
-            <Popup x:Name="PART_Popup"
-                   AllowsTransparency="True"
-                   Focusable="False"
-                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource Mode=TemplatedParent, AncestorType={x:Null}}}"
-                   Placement="Bottom"
-                   PopupAnimation="Slide">
-                <Grid x:Name="DropDown"
-                      MinWidth="{TemplateBinding ActualWidth}"
-                      MaxHeight="{TemplateBinding MaxDropDownHeight}">
-                    <Border x:Name="DropDownBorder"
-                            Background="{DynamicResource Snoop.Brushes.Default.Background}"
-                            BorderBrush="{DynamicResource Snoop.Brushes.Window.Frame}"
-                            BorderThickness="1 1 1 1" />
-                    <Grid Margin="1 1 1 1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Button Grid.Row="0"
-                                Command="{TemplateBinding ResetSettingsCommand}">
-                            <TextBlock Text="{localization:InspectorLoc Common.ResetDefaults}" />
-                            <Button.ToolTip>
-                                <TextBlock Text="{TemplateBinding ResetSettingsToolTip}" />
-                            </Button.ToolTip>
-                        </Button>
-
-                        <ScrollViewer x:Name="ScrollViewer"
-                                      Grid.Row="1"
-                                      Margin="0 2 0 0">
-                            <ItemsControl x:Name="PART_ItemsControl"
-                                          ItemsPanel="{TemplateBinding ItemsPanel}"
-                                          ItemsSource="{Binding ItemsSource, RelativeSource={RelativeSource TemplatedParent}}"
-                                          KeyboardNavigation.DirectionalNavigation="Contained">
-                                <!--<ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <WrapPanel />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>-->
-                            </ItemsControl>
+    <ControlTemplate x:Key="Snoop.Templates.NoSelectionComboBox" TargetType="{x:Type controls:NoSelectionComboBox}">
+        <Grid>
+            <ToggleButton x:Name="DropButton" Style="{StaticResource SnoopNext.ComboToggle}"
+                          Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}"
+                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" />
+            <TextBlock Margin="8,3,26,3" VerticalAlignment="Center" Text="{TemplateBinding Header}" IsHitTestVisible="False" />
+            <Popup x:Name="PART_Popup" Placement="Bottom" VerticalOffset="3" PlacementTarget="{Binding ElementName=DropButton}"
+                   AllowsTransparency="True" Focusable="False"
+                   IsOpen="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}">
+                <Border x:Name="FlyoutSurface" Style="{StaticResource SnoopNext.FlyoutSurface}"
+                        MinWidth="{TemplateBinding ActualWidth}" MaxHeight="{TemplateBinding MaxDropDownHeight}">
+                    <DockPanel>
+                        <Button DockPanel.Dock="Top" Margin="0,0,0,4" Padding="8,4"
+                                Command="{TemplateBinding ResetSettingsCommand}" ToolTip="{TemplateBinding ResetSettingsToolTip}"
+                                Content="{localization:InspectorLoc Common.ResetDefaults}" />
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                            <ItemsControl x:Name="PART_ItemsControl" ItemsPanel="{TemplateBinding ItemsPanel}"
+                                          ItemsSource="{TemplateBinding ItemsSource}" KeyboardNavigation.DirectionalNavigation="Contained" />
                         </ScrollViewer>
-                    </Grid>
-                </Grid>
+                    </DockPanel>
+                </Border>
             </Popup>
         </Grid>
-
         <ControlTemplate.Triggers>
-            <MultiTrigger>
-                <MultiTrigger.Conditions>
-                    <Condition Property="IsKeyboardFocusWithin" Value="True" />
-                    <Condition Property="IsDropDownOpen" Value="False" />
-                </MultiTrigger.Conditions>
-                <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.HighlightForeground}" />
-            </MultiTrigger>
-            <Trigger SourceName="PART_Popup" Property="Popup.HasDropShadow" Value="True">
-                <Setter TargetName="DropDown" Property="Margin" Value="0 0 3 3" />
-                <Setter TargetName="DropDown" Property="SnapsToDevicePixels" Value="True" />
-                <Setter TargetName="DropDownBorder" Property="BitmapEffect">
-                    <Setter.Value>
-                        <DropShadowBitmapEffect ShadowDepth="1.5"
-                                                Softness="0.15" />
-                    </Setter.Value>
-                </Setter>
+            <Trigger Property="IsDropDownOpen" Value="True">
+                <Setter TargetName="DropButton" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
             </Trigger>
-            <Trigger Property="HasItems" Value="False">
-                <Setter TargetName="DropDownBorder" Property="MinHeight" Value="95" />
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.Default.Control}" />
-                <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
-            </Trigger>
-            <Trigger Property="IsGrouping" Value="True">
-                <Setter Property="ScrollViewer.CanContentScroll" Value="False" />
-            </Trigger>
-            <Trigger Property="Width" Value="Auto">
-                <Setter Property="MinWidth" Value="150" />
-            </Trigger>
-            <Trigger Property="Height" Value="Auto">
-                <Setter Property="MinHeight" Value="20" />
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                <Setter TargetName="DropButton" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
