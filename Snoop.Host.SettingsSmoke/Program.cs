@@ -1,6 +1,7 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -334,7 +335,8 @@ internal static class Program
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
-                        WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
+                        var surfaceFailures = new List<Exception>();
+                        CheckSurface(() => WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!));
                         WorkbenchPaneSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutPresetSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchNavigationSmoke.Verify(inspector);
@@ -353,8 +355,25 @@ internal static class Program
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
                         InspectorFlyoutSmoke.Verify(inspector);
-                        InspectorTableSmoke.Verify();
-                        ZoomerPresentationSmoke.Verify();
+                        CheckSurface(InspectorTableSmoke.Verify);
+                        CheckSurface(ZoomerPresentationSmoke.Verify);
+                        if (surfaceFailures.Count > 0)
+                        {
+                            throw new AggregateException("Inspector surface checks failed.", surfaceFailures);
+                        }
+
+                        void CheckSurface(Action check)
+                        {
+                            try
+                            {
+                                check();
+                            }
+                            catch (Exception exception)
+                            {
+                                Console.Error.WriteLine(exception);
+                                surfaceFailures.Add(exception);
+                            }
+                        }
                     }
                     finally
                     {
