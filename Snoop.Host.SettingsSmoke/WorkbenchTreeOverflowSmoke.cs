@@ -64,6 +64,7 @@ internal static class WorkbenchTreeOverflowSmoke
                 inspector.UpdateLayout();
                 inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
             }
+
             Arrange();
             var viewer = (ScrollViewer)tree.Template.FindName("_tv_scrollviewer_", tree);
             var header = FindHeader(tree, leaf) ?? throw new InvalidOperationException("The expanded leaf was not rendered.");
