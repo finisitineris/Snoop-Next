@@ -54,6 +54,18 @@
   <data name="zh-CN.Tree.Label" xml:space="preserve"><value>可视化树：</value></data>
   <data name="en-US.Theme.Label" xml:space="preserve"><value>Theme:</value></data>
   <data name="zh-CN.Theme.Label" xml:space="preserve"><value>主题：</value></data>
+  <data name="en-US.Theme.Auto" xml:space="preserve"><value>System</value></data>
+  <data name="zh-CN.Theme.Auto" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="en-US.Theme.Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="zh-CN.Theme.Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="en-US.Theme.Light" xml:space="preserve"><value>Light</value></data>
+  <data name="zh-CN.Theme.Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="en-US.Tree.Visual" xml:space="preserve"><value>Visual</value></data>
+  <data name="zh-CN.Tree.Visual" xml:space="preserve"><value>可视</value></data>
+  <data name="en-US.Tree.Logical" xml:space="preserve"><value>Logical</value></data>
+  <data name="zh-CN.Tree.Logical" xml:space="preserve"><value>逻辑</value></data>
+  <data name="en-US.Tree.Automation" xml:space="preserve"><value>Automation</value></data>
+  <data name="zh-CN.Tree.Automation" xml:space="preserve"><value>自动化</value></data>
   <data name="en-US.Density.Label" xml:space="preserve"><value>Density</value></data>
   <data name="zh-CN.Density.Label" xml:space="preserve"><value>界面密度</value></data>
   <data name="en-US.Density.Comfortable" xml:space="preserve"><value>Comfortable</value></data>

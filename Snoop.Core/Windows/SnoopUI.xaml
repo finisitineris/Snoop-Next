@@ -137,6 +137,34 @@
                 <Setter Property="StrokeEndLineCap" Value="Round" />
                 <Setter Property="StrokeLineJoin" Value="Round" />
             </Style>
+            <DataTemplate x:Key="WorkbenchThemeOption">
+                <TextBlock x:Name="Caption" Text="{Binding}" />
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static core:ThemeMode.Auto}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Theme.Auto}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static core:ThemeMode.Dark}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Theme.Dark}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static core:ThemeMode.Light}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Theme.Light}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
+            <DataTemplate x:Key="WorkbenchTreeOption">
+                <TextBlock x:Name="Caption" Text="{Binding}" />
+                <DataTemplate.Triggers>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Visual}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Visual}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Logical}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Logical}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Automation}">
+                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Automation}" />
+                    </DataTrigger>
+                </DataTemplate.Triggers>
+            </DataTemplate>
             <DataTemplate x:Key="RefreshCommandContent">
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{StaticResource WorkbenchCommandIcon}" Data="M14,7 A6,6 0 1 0 14,11 M14,2 V7 H9" />
@@ -389,9 +417,10 @@
                                Content="{localization:InspectorLoc Tree.Label}"
                                Target="{Binding ElementName=TreeTypeComboBox}" />
                         <ComboBox x:Name="TreeTypeComboBox"
-                                  MinHeight="28"
+                                  MinWidth="100" MinHeight="28"
+                                  ItemTemplate="{StaticResource WorkbenchTreeOption}"
                                   Margin="0 2 8 2"
-                                  Padding="4 2"
+                                  Padding="8 2"
                                   FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                                   ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type tree:TreeType}}}"
                                   SelectedItem="{Binding CurrentTreeType, Mode=TwoWay}" />
@@ -402,9 +431,10 @@
                                Content="{localization:InspectorLoc Theme.Label}"
                                Target="{Binding ElementName=ThemeComboBox}" />
                         <ComboBox x:Name="ThemeComboBox"
-                                  MinHeight="28"
+                                  MinWidth="96" MinHeight="28"
+                                  ItemTemplate="{StaticResource WorkbenchThemeOption}"
                                   Margin="0 2"
-                                  Padding="4 2"
+                                  Padding="8 2"
                                   FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                                   ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type core:ThemeMode}}}"
                                   SelectedItem="{Binding ThemeMode, Source={x:Static core:Settings.Default}, Mode=TwoWay}" />

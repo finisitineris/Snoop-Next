@@ -59,9 +59,12 @@ internal static class InspectorFlyoutSmoke
 
                 themePicker.IsDropDownOpen = true;
                 var list = VerifyPopup(themePicker, inspector);
-                if (themePicker.ItemContainerGenerator.ContainerFromItem(mode) is not ComboBoxItem selection || !selection.IsSelected)
+                if (themePicker.ItemContainerGenerator.ContainerFromItem(mode) is not ComboBoxItem selection || !selection.IsSelected
+                    || themePicker.Template.FindName("Selection", themePicker) is not ContentPresenter selectedText
+                    || VisualTreeHelper.GetChild(selectedText, 0) is not TextBlock caption
+                    || caption.Text != InspectorLocalization.Default["Theme." + mode] || list.ActualWidth < 96)
                 {
-                    throw new InvalidOperationException("The open theme picker lost its current selection.");
+                    throw new InvalidOperationException("The theme picker must show a localized selection and a full-width list.");
                 }
 
                 Capture(surface, "dropdown-" + mode, list);
