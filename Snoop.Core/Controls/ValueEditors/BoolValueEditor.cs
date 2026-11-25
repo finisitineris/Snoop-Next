@@ -5,26 +5,21 @@
 
 namespace Snoop.Controls.ValueEditors;
 
-using System.Windows;
-using System.Windows.Controls;
+using System.ComponentModel;
 
-public class BoolValueEditor : ValueEditor
+public class BoolValueEditor : ValueEditor, INotifyPropertyChanged
 {
-    public override void OnApplyTemplate()
-    {
-        base.OnApplyTemplate();
+    public event PropertyChangedEventHandler? PropertyChanged;
 
-        if (this.Template.FindName("PART_CheckBox", this) is CheckBox checkBox)
-        {
-            checkBox.Click += this.CheckBoxClickedHandler;
-        }
+    public bool? CheckedValue
+    {
+        get => this.Value as bool?;
+        set => CommitUserValue(this.PropertyInfo, value);
     }
 
-    private void CheckBoxClickedHandler(object sender, RoutedEventArgs e)
+    protected override void OnValueChanged(object? newValue)
     {
-        if (this.PropertyInfo is not null)
-        {
-            this.PropertyInfo.IsValueChangedByUser = true;
-        }
+        base.OnValueChanged(newValue);
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.CheckedValue)));
     }
 }

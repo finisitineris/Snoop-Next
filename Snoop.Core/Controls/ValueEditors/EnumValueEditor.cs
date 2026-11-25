@@ -8,12 +8,29 @@ namespace Snoop.Controls.ValueEditors;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using JetBrains.Annotations;
 
-public class EnumValueEditor : ValueEditor
+public class EnumValueEditor : ValueEditor, INotifyPropertyChanged
 {
     public ObservableCollection<EnumValueWrapper> Values { get; } = new();
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public EnumValueWrapper? SelectedChoice
+    {
+        get => this.Values.FirstOrDefault(choice => Equals(choice.Value, this.Value));
+        set
+        {
+            // A recycled ComboBox temporarily has no selection. The nullable
+            // enum choice is a real wrapper whose Value is null.
+            if (value is not null && this.Values.Contains(value))
+            {
+                CommitUserValue(this.PropertyInfo, value.Value);
+            }
+        }
+    }
 
     protected override void OnPropertyInfoChanged(DependencyPropertyChangedEventArgs e)
     {
@@ -23,16 +40,14 @@ public class EnumValueEditor : ValueEditor
 
         var enumType = this.PropertyInfo?.PropertyType.Type;
 
-        if (enumType is not null)
+        if (enumType is not null && Nullable.GetUnderlyingType(enumType) is { IsEnum: true } underlyingType)
         {
-            if (enumType.IsEnum == false
-                && Nullable.GetUnderlyingType(enumType) is { IsEnum: true } underlyingType)
-            {
-                enumType = underlyingType;
+            enumType = underlyingType;
+            this.Values.Add(new EnumValueWrapper(null, "<NULL>"));
+        }
 
-                this.Values.Add(new EnumValueWrapper(null, "<NULL>"));
-            }
-
+        if (enumType?.IsEnum == true)
+        {
             var values = Enum.GetValues(enumType);
             var names = Enum.GetNames(enumType);
 
@@ -42,18 +57,15 @@ public class EnumValueEditor : ValueEditor
                 this.Values.Add(new EnumValueWrapper(value, names[i]));
             }
         }
+
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedChoice)));
     }
 
     protected override void OnValueChanged(object? newValue)
     {
         base.OnValueChanged(newValue);
 
-        // sneaky trick here. only if both are non-null is this a change
-        // caused by the user. If so, set the bool to track it.
-        if (this.PropertyInfo is not null)
-        {
-            this.PropertyInfo.IsValueChangedByUser = true;
-        }
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.SelectedChoice)));
     }
 }
 

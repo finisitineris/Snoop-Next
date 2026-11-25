@@ -33,19 +33,11 @@ public class StandardValueEditor : ValueEditor
 
     protected virtual void OnStringValueChanged(string? newValue)
     {
-        if (this.isUpdatingValue)
+        if (!this.isUpdatingValue && this.IsEditable
+            && StringValueConverter.TryConvertFromString(this.PropertyInfo?.PropertyType.Type, newValue, out var converted))
         {
-            return;
+            CommitUserValue(this.PropertyInfo, converted);
         }
-
-        if (this.PropertyInfo is not null)
-        {
-            this.PropertyInfo.IsValueChangedByUser = true;
-        }
-
-        var targetType = this.PropertyInfo?.PropertyType.Type;
-
-        this.Value = StringValueConverter.ConvertFromString(targetType, newValue);
     }
 
     protected override void OnValueChanged(object? newValue)

@@ -10,6 +10,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Snoop.Converters;
 using Snoop.Infrastructure;
 
 /// <summary>
@@ -55,54 +56,27 @@ public partial class MouseWheelValueEditor
             tinyIncrement = true;
         }
 
-        var tb = fe as TextBlock;
-        if (tb is not null
-            && tb.Tag is not null
-            && this.PropertyInfo?.Property is not null)
+        if (fe is TextBlock { Tag: not null } field && this.PropertyInfo is { CanEdit: true, Property: not null } property)
         {
-            var fieldNum = int.Parse(tb.Tag.ToString()!);
-
-            switch (this.PropertyInfo.PropertyType.Name)
+            var fieldNum = int.Parse(field.Tag.ToString()!);
+            var nextValue = property.PropertyType.Name switch
             {
-                case "Double":
-                    this.PropertyInfo.StringValue = ChangeDoubleValue(tb.Text, increment, largeIncrement, tinyIncrement);
-                    break;
+                "Double" => ChangeDoubleValue(field.Text, increment, largeIncrement, tinyIncrement),
+                "Int32" or "Int16" => ChangeIntValue(field.Text, increment, largeIncrement),
+                "Boolean" => ChangeBooleanValue(field.Text),
+                "Visibility" => ChangeEnumValue<Visibility>(field.Text, increment),
+                "HorizontalAlignment" => ChangeEnumValue<HorizontalAlignment>(field.Text, increment),
+                "VerticalAlignment" => ChangeEnumValue<VerticalAlignment>(field.Text, increment),
+                "Thickness" => ChangeThicknessValuePart(property.StringValue, fieldNum, field.Text, increment, largeIncrement),
+                "Brush" or "Color" => ChangeBrushValuePart(property.StringValue, fieldNum, field.Text, increment, largeIncrement),
+                _ => null
+            };
 
-                case "Int32":
-                case "Int16":
-                    this.PropertyInfo.StringValue = ChangeIntValue(tb.Text, increment, largeIncrement);
-                    break;
-
-                case "Boolean":
-                    this.PropertyInfo.StringValue = ChangeBooleanValue(tb.Text);
-                    break;
-
-                case "Visibility":
-                    this.PropertyInfo.StringValue = ChangeEnumValue<Visibility>(tb.Text, increment);
-                    break;
-
-                case "HorizontalAlignment":
-                    this.PropertyInfo.StringValue = ChangeEnumValue<HorizontalAlignment>(tb.Text, increment);
-                    break;
-
-                case "VerticalAlignment":
-                    this.PropertyInfo.StringValue = ChangeEnumValue<VerticalAlignment>(tb.Text, increment);
-                    break;
-
-                case "Thickness":
-                    this.ChangeThicknessValuePart(fieldNum, tb.Text, increment, largeIncrement);
-                    break;
-
-                case "Brush":
-                    this.ChangeBrushValuePart(fieldNum, tb.Text, increment, largeIncrement);
-                    break;
-
-                case "Color":
-                    this.ChangeBrushValuePart(fieldNum, tb.Text, increment, largeIncrement);
-                    break;
+            if (nextValue is not null && nextValue != property.StringValue
+                && StringValueConverter.TryConvertFromString(property.PropertyType.Type, nextValue, out var converted))
+            {
+                ValueEditor.CommitUserValue(property, converted);
             }
-
-            this.PropertyInfo.IsValueChangedByUser = true;
         }
 
         e.Handled = true;
@@ -185,7 +159,7 @@ public partial class MouseWheelValueEditor
     ///     Increments or decrements the field part in the Thickness value.
     ///     Replaces that field in the underlying VALUE
     /// </summary>
-    private void ChangeThicknessValuePart(int fieldNum, string current, bool increase, bool largeIncrement)
+    private static string ChangeThicknessValuePart(string currentValue, int fieldNum, string current, bool increase, bool largeIncrement)
     {
         var change = 1;
         if (!increase)
@@ -202,7 +176,6 @@ public partial class MouseWheelValueEditor
         newVal += change;
 
         var partValue = newVal.ToString();
-        var currentValue = this.PropertyInfo!.StringValue;
 
         // chop the current value up into its parts
         var fields = currentValue.Split(',');
@@ -211,16 +184,14 @@ public partial class MouseWheelValueEditor
         fields[fieldNum - 1] = partValue;
 
         // re-assemble back to Brush value
-        var newValue = string.Format(@"{0},{1},{2},{3}", fields[0], fields[1], fields[2], fields[3]);
-
-        this.PropertyInfo.StringValue = newValue;
+        return string.Format(@"{0},{1},{2},{3}", fields[0], fields[1], fields[2], fields[3]);
     }
 
     /// <summary>
     ///     Increments or decrements the field part in the Brush value.
     ///     Replaces that field in the underlying VALUE
     /// </summary>
-    private void ChangeBrushValuePart(int fieldNum, string current, bool increase, bool largeIncrement)
+    private static string ChangeBrushValuePart(string currentValue, int fieldNum, string current, bool increase, bool largeIncrement)
     {
         var change = 1;
         if (!increase)
@@ -237,7 +208,6 @@ public partial class MouseWheelValueEditor
         ret = Math.Min(255, Math.Max(0, ret + change));
 
         var partValue = ret.ToString("X2");
-        var currentValue = this.PropertyInfo!.StringValue;
 
         // chop the current value up into its parts
         var fields = new string[4];
@@ -250,8 +220,6 @@ public partial class MouseWheelValueEditor
         fields[fieldNum - 1] = partValue;
 
         // re-assemble back to Brush value
-        var newValue = string.Format(@"#{0}{1}{2}{3}", fields[0], fields[1], fields[2], fields[3]);
-
-        this.PropertyInfo.StringValue = newValue;
+        return string.Format(@"#{0}{1}{2}{3}", fields[0], fields[1], fields[2], fields[3]);
     }
 }

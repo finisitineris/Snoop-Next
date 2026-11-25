@@ -90,6 +90,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -190,6 +191,28 @@
                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" />
             </Button>
         </StackPanel>
+        <Grid Grid.Row="3" Grid.ColumnSpan="2" Height="{StaticResource FilterControlHeight}" Margin="0 4 0 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="PropertyOriginFilterCombo" MinWidth="0" MinHeight="0" Padding="8 0 0 0"
+                      infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
+                      AutomationProperties.Name="{localization:InspectorLoc PropertyInspector.FilterByOrigin}"
+                      ToolTip="{localization:InspectorLoc PropertyInspector.FilterByOrigin}"
+                      SelectedValuePath="Tag"
+                      SelectedValue="{Binding ElementName=propertyInspector, Path=OriginFilter, Mode=TwoWay}">
+                <ComboBoxItem Tag="{x:Static infrastructure:PropertyOriginFilter.All}" Content="{localization:InspectorLoc PropertyInspector.AllOrigins}" />
+                <ComboBoxItem Tag="{x:Static infrastructure:PropertyOriginFilter.Binding}" Content="{localization:InspectorLoc PropertyInspector.BindingOrigin}" />
+                <ComboBoxItem Tag="{x:Static infrastructure:PropertyOriginFilter.Local}" Content="{localization:InspectorLoc PropertyInspector.LocalOrigin}" />
+                <ComboBoxItem Tag="{x:Static infrastructure:PropertyOriginFilter.Style}" Content="{localization:InspectorLoc PropertyInspector.StyleOrigin}" />
+            </ComboBox>
+            <ToggleButton x:Name="EditedOnlyToggle" Grid.Column="1" Margin="4 0 0 0" Padding="8 0"
+                          Content="{localization:InspectorLoc PropertyInspector.EditedOnly}"
+                          IsChecked="{Binding ElementName=propertyInspector, Path=EditedOnly, Mode=TwoWay}"
+                          AutomationProperties.Name="{localization:InspectorLoc PropertyInspector.EditedOnly}"
+                          ToolTip="{localization:InspectorLoc PropertyInspector.EditedOnlyTip}" />
+        </Grid>
     </Grid>
 
     <controls:PropertyGrid2 x:Name="PropertyGrid"

@@ -135,7 +135,7 @@
                                                                 IsDesignTimeCreatable=False}"
                                LastChildFill="True">
                         <CheckBox x:Name="PART_CheckBox"
-                                  IsChecked="{Binding Value, Mode=TwoWay}"
+                                  IsChecked="{Binding CheckedValue, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
                                   IsEnabled="{TemplateBinding IsEditable}"
                                   IsThreeState="{Binding IsNullableValueType}" />
                         <TextBlock Margin="3 0"
@@ -348,7 +348,7 @@
                           IsReadOnly="{Binding IsEditable, Converter={x:Static converters:InvertBoolConverter.DefaultInstance}}"
                           IsSynchronizedWithCurrentItem="False"
                           ItemsSource="{Binding Values}"
-                          SelectedValue="{Binding Value}"
+                          SelectedItem="{Binding SelectedChoice, Mode=TwoWay}"
                           SelectedValuePath="Value" />
             </DataTemplate>
         </Style.Resources>
@@ -485,10 +485,10 @@
         <valueEditors:ValueEditorTemplateSelector.WithResourceKeyTemplate>
             <DataTemplate DataType="infrastructure:PropertyInformation">
                 <DockPanel>
+                    <!-- The displayed key can be copied. It has no property edit target. -->
                     <valueEditors:StandardValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
                                                       IsEditable="False"
                                                       IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
-                                                      PropertyInfo="{Binding}"
                                                       Value="{Binding ResourceKey, Mode=OneWay}" />
 
                     <!-- to allow ValueEditor to live on the left and not stretch -->

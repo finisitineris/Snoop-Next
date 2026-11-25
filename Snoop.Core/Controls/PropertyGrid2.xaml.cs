@@ -33,10 +33,16 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
     {
         this.propertiesView = CollectionViewSource.GetDefaultView(this.Properties);
         this.propertiesView.Filter = item => ((PropertyInformation)item).IsVisible;
+        if (this.propertiesView is ICollectionViewLiveShaping live)
+        {
+            live.LiveFilteringProperties.Add(nameof(PropertyInformation.IsVisible));
+            live.LiveSortingProperties.Add(nameof(PropertyInformation.OriginSortKey));
+        }
+
         this.Sort(".", ListSortDirection.Ascending);
 
         this.processIncrementalCall = new DelayedCall(this.ProcessIncrementalPropertyAdd, DispatcherPriority.Background);
-        this.filterCall = new DelayedCall(this.propertiesView.Refresh, DispatcherPriority.Background);
+        this.filterCall = new DelayedCall(this.RefreshFilterView, DispatcherPriority.Background);
 
         this.InitializeComponent();
 
@@ -157,6 +163,19 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
             }
 
             return null;
+        }
+    }
+
+    private void RefreshFilterView()
+    {
+        var needsLiveFilter = this.Filter is { EditedOnly: true } or { OriginFilter: not PropertyOriginFilter.All };
+        if (this.propertiesView is ICollectionViewLiveShaping { CanChangeLiveFiltering: true } live && live.IsLiveFiltering != needsLiveFilter)
+        {
+            live.IsLiveFiltering = needsLiveFilter;
+        }
+        else
+        {
+            this.propertiesView.Refresh();
         }
     }
 
@@ -401,6 +420,9 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
     {
         using (this.propertiesView.DeferRefresh())
         {
+            // DisplayName is an implicit tie-breaker. The name header itself sorts by ".".
+            var tie = new SortDescription(nameof(PropertyInformation.DisplayName), ListSortDirection.Ascending);
+            this.propertiesView.SortDescriptions.Remove(tie);
             var doesSortExist = this.propertiesView.SortDescriptions.Any(x => x.PropertyName == propertyPath);
             var existingSort = this.propertiesView.SortDescriptions.FirstOrDefault(x => x.PropertyName == propertyPath);
 
@@ -421,6 +443,16 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
             }
 
             this.propertiesView.SortDescriptions.Add(new SortDescription(propertyPath, newDirection.Value));
+            var sortingByOrigin = this.propertiesView.SortDescriptions.Any(x => x.PropertyName == nameof(PropertyInformation.OriginSortKey));
+            if (sortingByOrigin && !this.propertiesView.SortDescriptions.Any(x => x.PropertyName == "."))
+            {
+                this.propertiesView.SortDescriptions.Add(tie);
+            }
+
+            if (this.propertiesView is ICollectionViewLiveShaping { CanChangeLiveSorting: true } live && live.IsLiveSorting != sortingByOrigin)
+            {
+                live.IsLiveSorting = sortingByOrigin;
+            }
         }
     }
 

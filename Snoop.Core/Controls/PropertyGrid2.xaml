@@ -235,7 +235,7 @@
                 </GridViewColumn>
 
                 <GridViewColumn Width="140"
-                                infrastructure:GridViewSort.PropertyName="ValueSourceText"
+                                infrastructure:GridViewSort.PropertyName="OriginSortKey"
                                 CellTemplate="{StaticResource ValueSourceTemplate}">
                     <GridViewColumn.Header>
                         <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueSource}">

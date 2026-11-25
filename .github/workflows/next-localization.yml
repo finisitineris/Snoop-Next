@@ -27,6 +27,7 @@ on:
       - 'Snoop.Core/Infrastructure/SnoopPartsRegistry.cs'
       - 'Snoop.Core/Infrastructure/Helpers/ClipboardHelper.cs'
       - 'Snoop.Core/Infrastructure/Diagnostics/**'
+      - 'Snoop.Core/Infrastructure/PropertyFilter.cs'
       - 'Snoop.Core/Infrastructure/PropertyInformation.cs'
       - 'Snoop.Core/Infrastructure/Helpers/PropertyOriginFormatter.cs'
       - 'Snoop.Core/Localization/**'

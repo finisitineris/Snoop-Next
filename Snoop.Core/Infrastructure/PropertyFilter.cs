@@ -21,6 +21,14 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Navigation;
 
+public enum PropertyOriginFilter
+{
+    All,
+    Binding,
+    Local,
+    Style
+}
+
 public class PropertyFilter : INotifyPropertyChanged
 {
     private static readonly List<Type> uncommonTypes = new()
@@ -61,6 +69,8 @@ public class PropertyFilter : INotifyPropertyChanged
         "Binding.XmlNamespaceManager"
     };
 
+    // The inspector owns its edit history. Targets remain collectible after the user navigates away.
+    private readonly ConditionalWeakTable<object, HashSet<object>> editedProperties = new();
     private MatcherBase? matcher;
     private string filterString = string.Empty;
     private bool useRegex;
@@ -97,6 +107,10 @@ public class PropertyFilter : INotifyPropertyChanged
         }
     }
 
+    public PropertyOriginFilter OriginFilter { get; set; }
+
+    public bool EditedOnly { get; set; }
+
     public bool ShowDefaults { get; set; }
 
     public bool ShowUncommonProperties { get; set; }
@@ -124,6 +138,16 @@ public class PropertyFilter : INotifyPropertyChanged
             return false;
         }
 
+        if (this.EditedOnly && !property.IsValueChangedByUser && !this.WasEdited(property))
+        {
+            return false;
+        }
+
+        if (this.OriginFilter != PropertyOriginFilter.All && property.GetOriginGroup(out _) != this.OriginFilter)
+        {
+            return false;
+        }
+
         if (this.matcher is not null)
         {
             return this.matcher.Matches(property);
@@ -144,6 +168,30 @@ public class PropertyFilter : INotifyPropertyChanged
         }
 
         return true;
+    }
+
+    private static object? GetEditKey(PropertyInformation row)
+        => (object?)row.DependencyProperty ?? row.Property?.Name;
+
+    internal bool WasEdited(PropertyInformation row)
+        => row.Target is { } target && this.editedProperties.TryGetValue(target, out var keys)
+           && GetEditKey(row) is { } key && keys.Contains(key);
+
+    internal void SetEdited(PropertyInformation row, bool edited)
+    {
+        if (row.Target is not { } target || GetEditKey(row) is not { } key)
+        {
+            return;
+        }
+
+        if (edited)
+        {
+            this.editedProperties.GetOrCreateValue(target).Add(key);
+        }
+        else if (this.editedProperties.TryGetValue(target, out var keys))
+        {
+            keys.Remove(key);
+        }
     }
 
     private void UpdateMatcher()

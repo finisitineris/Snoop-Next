@@ -344,8 +344,22 @@
   <data name="zh-CN.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>显示 WPF 应用程序中不常用的属性。</value></data>
   <data name="en-US.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>Filter properties</value></data>
   <data name="zh-CN.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>筛选属性</value></data>
-  <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name or type name. Press Esc to clear.</value></data>
-  <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称或属性类型名称筛选。按 Esc 清空。</value></data>
+  <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name, type, or value. Press Esc to clear.</value></data>
+  <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称、类型或值筛选。按 Esc 清空。</value></data>
+  <data name="en-US.PropertyInspector.FilterByOrigin" xml:space="preserve"><value>Filter by value source</value></data>
+  <data name="zh-CN.PropertyInspector.FilterByOrigin" xml:space="preserve"><value>按值来源筛选</value></data>
+  <data name="en-US.PropertyInspector.AllOrigins" xml:space="preserve"><value>All sources</value></data>
+  <data name="zh-CN.PropertyInspector.AllOrigins" xml:space="preserve"><value>全部来源</value></data>
+  <data name="en-US.PropertyInspector.BindingOrigin" xml:space="preserve"><value>Binding</value></data>
+  <data name="zh-CN.PropertyInspector.BindingOrigin" xml:space="preserve"><value>绑定</value></data>
+  <data name="en-US.PropertyInspector.LocalOrigin" xml:space="preserve"><value>Local</value></data>
+  <data name="zh-CN.PropertyInspector.LocalOrigin" xml:space="preserve"><value>本地值</value></data>
+  <data name="en-US.PropertyInspector.StyleOrigin" xml:space="preserve"><value>Style</value></data>
+  <data name="zh-CN.PropertyInspector.StyleOrigin" xml:space="preserve"><value>样式</value></data>
+  <data name="en-US.PropertyInspector.EditedOnly" xml:space="preserve"><value>Edited only</value></data>
+  <data name="zh-CN.PropertyInspector.EditedOnly" xml:space="preserve"><value>仅已编辑</value></data>
+  <data name="en-US.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>Show only properties edited in Snoop.</value></data>
+  <data name="zh-CN.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>仅显示在 Snoop 中编辑过的属性。</value></data>
   <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>
   <data name="zh-CN.PropertyInspector.NullTarget" xml:space="preserve"><value>目标对象为 NULL</value></data>
   <data name="en-US.PropertyInspector.FilterDefault" xml:space="preserve"><value>(Default)</value></data>

@@ -130,7 +130,12 @@ internal static class InspectorTableSmoke
         var clear = (CheckBox)inspector.FindName("checkBoxClearAfterDelve");
         var back = (Button)inspector.FindName("PopTargetButton");
         var preset = (ComboBox)inspector.FindName("FilterSetCombo");
-        var controls = new Control[] { search, regex, clear, back, preset, (ToggleButton)inspector.FindName("defaultsToggle"), (ToggleButton)inspector.FindName("uncommonToggle") };
+        var controls = new Control[]
+        {
+            search, regex, clear, back, preset,
+            (ToggleButton)inspector.FindName("defaultsToggle"), (ToggleButton)inspector.FindName("uncommonToggle"),
+            (ComboBox)inspector.FindName("PropertyOriginFilterCombo"), (ToggleButton)inspector.FindName("EditedOnlyToggle")
+        };
         foreach (var language in new[] { "zh-CN", "en-US" })
         {
             InspectorLocalization.Default.SetLanguage(language);

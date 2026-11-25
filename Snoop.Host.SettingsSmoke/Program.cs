@@ -357,6 +357,7 @@ internal static class Program
                         InspectorFlyoutSmoke.Verify(inspector);
                         CheckSurface(InspectorTableSmoke.Verify);
                         CheckSurface(PropertyOriginSmoke.Verify);
+                        CheckSurface(PropertyOriginFilterSmoke.Verify);
                         CheckSurface(ZoomerPresentationSmoke.Verify);
                         if (surfaceFailures.Count > 0)
                         {

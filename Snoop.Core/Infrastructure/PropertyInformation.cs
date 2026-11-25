@@ -508,7 +508,28 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
     public bool IsLocallySet => this.isLocallySet;
 
-    public bool IsValueChangedByUser { get; set; }
+    private bool isValueChangedByUser;
+
+    public bool IsValueChangedByUser
+    {
+        get => this.isValueChangedByUser;
+
+        set
+        {
+            if (this.isValueChangedByUser == value)
+            {
+                return;
+            }
+
+            this.isValueChangedByUser = value;
+            this.filter?.SetEdited(this, value);
+            this.OnPropertyChanged(nameof(this.IsValueChangedByUser));
+            if (this.filter?.EditedOnly == true)
+            {
+                this.OnPropertyChanged(nameof(this.IsVisible));
+            }
+        }
+    }
 
     public bool CanEdit
     {
@@ -573,6 +594,18 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         set
         {
             this.filter = value;
+            if (value is not null)
+            {
+                if (this.isValueChangedByUser)
+                {
+                    value.SetEdited(this, true);
+                }
+                else if (value.WasEdited(this))
+                {
+                    this.isValueChangedByUser = true;
+                    this.OnPropertyChanged(nameof(this.IsValueChangedByUser));
+                }
+            }
 
             this.OnPropertyChanged(nameof(this.IsVisible));
         }
@@ -609,6 +642,12 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
             this.OnPropertyChanged(nameof(this.ValueSource));
             this.OnPropertyChanged(nameof(this.ValueSourceText));
+            this.OnPropertyChanged(nameof(this.OriginSortKey));
+            if (this.filter is { OriginFilter: not PropertyOriginFilter.All })
+            {
+                this.OnPropertyChanged(nameof(this.IsVisible));
+            }
+
             this.OnPropertyChanged(nameof(this.PropertyOriginDetails));
             this.OnPropertyChanged(nameof(this.IsExpression));
             this.OnPropertyChanged(nameof(this.IsAnimated));
@@ -633,6 +672,40 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
             return text;
         }
+    }
+
+    public string OriginSortKey
+    {
+        get
+        {
+            var group = this.GetOriginGroup(out var source);
+            return group?.ToString() ?? source.ToString();
+        }
+    }
+
+    // A binding may get its base value from either a local value or a style setter.
+    // Consult WPF at filter/sort time, including when a rebind kept the same effective value.
+    internal PropertyOriginFilter? GetOriginGroup(out BaseValueSource source)
+    {
+        source = BaseValueSource.Unknown;
+        if (this.Target is not DependencyObject target || !target.CheckAccess() || this.DependencyProperty is not { } dp)
+        {
+            return null;
+        }
+
+        source = DependencyPropertyHelper.GetValueSource(target, dp).BaseValueSource;
+        if (BindingOperations.GetBindingExpressionBase(target, dp) is not null)
+        {
+            return PropertyOriginFilter.Binding;
+        }
+
+        return source switch
+        {
+            BaseValueSource.Local => PropertyOriginFilter.Local,
+            BaseValueSource.Style or BaseValueSource.StyleTrigger or BaseValueSource.DefaultStyle or BaseValueSource.DefaultStyleTrigger
+                or BaseValueSource.ImplicitStyleReference => PropertyOriginFilter.Style,
+            _ => null
+        };
     }
 
     // Query the target when details are requested: WPF can change the origin
@@ -666,7 +739,12 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         if (dp is not null
             && this.Target is DependencyObject d)
         {
-            d.ClearValue(dp);
+            if (d.ReadLocalValue(dp) != DependencyProperty.UnsetValue)
+            {
+                d.ClearValue(dp);
+                this.IsValueChangedByUser = true;
+                this.RefreshValueSource();
+            }
         }
     }
 
