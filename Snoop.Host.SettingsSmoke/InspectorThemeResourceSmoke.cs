@@ -15,12 +15,17 @@ internal static class InspectorThemeResourceSmoke
     {
         var palette = new[]
         {
-            new { Key = "Text", Light = "#273447", Dark = "#E8EDF6" },
-            new { Key = "Panel", Light = "#FFFFFF", Dark = "#293548" },
-            new { Key = "Border", Light = "#DCE5F0", Dark = "#3B4A60" },
-            new { Key = "Accent", Light = "#3979D5", Dark = "#78ADFF" },
-            new { Key = "Background", Light = "#E7EDF7", Dark = "#141C28" },
-            new { Key = "Error", Light = "#CE5151", Dark = "#FF9494" },
+            new { Key = "Text", Light = "#1A1A1A", Dark = "#FFFFFF", Contrast = SystemColors.WindowTextColor },
+            new { Key = "TextSecondary", Light = "#5D5D5D", Dark = "#C8C8C8", Contrast = SystemColors.WindowTextColor },
+            new { Key = "Panel", Light = "#FFFFFF", Dark = "#2C2C2C", Contrast = SystemColors.WindowColor },
+            new { Key = "Background", Light = "#F3F3F3", Dark = "#202020", Contrast = SystemColors.WindowColor },
+            new { Key = "Border", Light = "#D1D1D1", Dark = "#505050", Contrast = SystemColors.WindowTextColor },
+            new { Key = "Control", Light = "#FBFBFB", Dark = "#373737", Contrast = SystemColors.WindowColor },
+            new { Key = "Hover", Light = "#F0F0F0", Dark = "#414141", Contrast = SystemColors.WindowColor },
+            new { Key = "Pressed", Light = "#E5E5E5", Dark = "#343434", Contrast = SystemColors.WindowColor },
+            new { Key = "Accent", Light = "#005FB8", Dark = "#60CDFF", Contrast = SystemColors.HighlightColor },
+            new { Key = "OnAccent", Light = "#FFFFFF", Dark = "#00354A", Contrast = SystemColors.HighlightTextColor },
+            new { Key = "Error", Light = "#C42B1C", Dark = "#FF99A4", Contrast = SystemColors.WindowTextColor },
         };
         var originalTheme = Snoop.Core.Settings.Default.ThemeMode;
         ThemeManager.Current.ApplyTheme(ThemeMode.Light, inspector);
@@ -52,11 +57,18 @@ internal static class InspectorThemeResourceSmoke
             VerifyAppearance(ThemeMode.Light);
             VerifyAppearance(ThemeMode.Dark);
             VerifyAppearance(ThemeMode.Light);
+            VerifyInactiveTreeSelection(inspector);
 
             void VerifyAppearance(ThemeMode theme)
             {
                 ThemeManager.Current.ApplyTheme(theme, inspector);
                 VerifyPalette(theme);
+                foreach (var key in new[] { "Snoop.Brushes.Default.Foreground", "Menu.Static.Foreground", "ComboBox.Static.Glyph" })
+                {
+                    RequireBrush(inspector.FindResource(key) as Brush, BrushFor("Text").Color, key);
+                }
+
+                RequireBrush(inspector.FindResource("GridViewColumnHeaderBackground") as Brush, BrushFor("Control").Color, "column header surface");
                 RequireBrush(chrome.Background, BrushFor("Background").Color, "workbench background");
                 RequireBrush(status.Background, BrushFor("Panel").Color, "status panel");
                 RequireBrush(status.Foreground, BrushFor("Text").Color, "status text");
@@ -76,8 +88,11 @@ internal static class InspectorThemeResourceSmoke
                 foreach (var color in palette)
                 {
                     var brush = BrushFor(color.Key);
-                    RequireBrush(brush, (Color)ColorConverter.ConvertFromString(theme == ThemeMode.Dark ? color.Dark : color.Light), color.Key);
-                    if (!brush.IsFrozen)
+                    var expected = SystemParameters.HighContrast
+                        ? color.Contrast
+                        : (Color)ColorConverter.ConvertFromString(theme == ThemeMode.Dark ? color.Dark : color.Light);
+                    RequireBrush(brush, expected, color.Key);
+                    if (!SystemParameters.HighContrast && !brush.IsFrozen)
                     {
                         throw new InvalidOperationException("Workbench palette brush is mutable: " + color.Key);
                     }
@@ -106,6 +121,37 @@ internal static class InspectorThemeResourceSmoke
         {
             return inspector.TryFindResource("SnoopNext.Brush." + key) as SolidColorBrush
                 ?? throw new InvalidOperationException("Missing workbench palette brush " + key);
+        }
+    }
+
+    private static void VerifyInactiveTreeSelection(SnoopUI inspector)
+    {
+        // Load the real contrast palette on this row even on a desktop using the ordinary theme.
+        var row = new TreeViewItem { Header = "Selected node", Style = (Style)inspector.FindResource("ProperTreeViewItemStyle") };
+        row.Resources.MergedDictionaries.Add(new ResourceDictionary
+        {
+            Source = new Uri("/Snoop.Core;component/Themes/Colors.HighContrast.xaml", UriKind.Relative)
+        });
+        row.ApplyTemplate();
+        var header = (Border)row.Template.FindName("PART_Header", row);
+        var ordinaryBorder = header.BorderBrush;
+        row.IsSelected = true;
+        if (row.IsSelectionActive || row.IsKeyboardFocused || header.IsMouseOver || header.BorderThickness.Left < 1)
+        {
+            throw new InvalidOperationException("Expected an inactive selected header with a visible outline.");
+        }
+
+        RequireBrush(header.Background, SystemColors.WindowColor, "inactive contrast tree selection background");
+        RequireBrush(header.BorderBrush, SystemColors.WindowTextColor, "inactive contrast tree selection outline");
+        if (Equals(ordinaryBorder, header.BorderBrush))
+        {
+            throw new InvalidOperationException("Inactive selection must be distinguishable from an ordinary tree row.");
+        }
+
+        row.IsSelected = false;
+        if (!Equals(ordinaryBorder, header.BorderBrush))
+        {
+            throw new InvalidOperationException("Clearing the selection must restore the ordinary tree row border.");
         }
     }
 

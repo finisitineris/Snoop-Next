@@ -66,8 +66,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <ContentControl Style="{StaticResource PhotoFrameStyle}"
-                        DataContext="{Binding}" />
+        <ContentControl x:Name="PhotoFrame" Style="{StaticResource PhotoFrameStyle}" />
 
         <Grid Grid.Row="1"
               Margin="0 15 0 0">

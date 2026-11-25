@@ -9,7 +9,7 @@
 - Workspace：左侧树、中间预览+底部诊断、右侧属性；左/右列宽及底部高度可调。
 - 默认逻辑尺寸（DIP，不是物理像素）：Tree=282，Property=354，Bottom=210；范围 Tree=165–500、Property=240–590、Bottom=110–440。
 - 布局：`default=[282,354,210]`、`focus=[210,285,160]`、`inspect=[270,460,240]`；持久化大小与折叠状态；主屏 DPI 改变后重新 clamp。
-- 视觉 Token 原型原始值保存在 `contracts/design-tokens.json`，颜色建议使用 SolidColorBrush/冻结并由主题字典引用；颜色语义不等于业务状态。
+- 原型 v1.1 保留其历史配色。当前 WPF 窗口使用第 7 节的 Windows 11 Fluent 色板，资源限定在 Snoop 窗口内。
 - 允许按钮文字随本地化变长，显示 Ellipsis/Tooltip；重要的「附加 / 断开 / 授权」不能仅用图标且无 ToolTip。
 
 ## 2. 控件与 ViewModel 映射
@@ -117,11 +117,23 @@ var effective = element.GetValue(dependencyProperty);
 
 | 名称 | Light | Dark | WPF ResourceKey |
 |---|---|---|---|
-| 文字 | `#273447` | `#E8EDF6` | `SnoopNext.Brush.Text` |
-| 中性面板 | `#FFFFFF` | `#293548` | `SnoopNext.Brush.Panel` |
-| 边界 | `#DCE5F0` | `#3B4A60` | `SnoopNext.Brush.Border` |
-| 强调 | `#3979D5` | `#78ADFF` | `SnoopNext.Brush.Accent` |
-| 背景 | `#E7EDF7` | `#141C28` | `SnoopNext.Brush.Background` |
-| 危险/错误 | `#CE5151` | `#FF9494` | `SnoopNext.Brush.Error` |
+| 主文字 | `#1A1A1A` | `#FFFFFF` | `SnoopNext.Brush.Text` |
+| 辅助文字 | `#5D5D5D` | `#C8C8C8` | `SnoopNext.Brush.TextSecondary` |
+| 面板 | `#FFFFFF` | `#2C2C2C` | `SnoopNext.Brush.Panel` |
+| 窗口背景 | `#F3F3F3` | `#202020` | `SnoopNext.Brush.Background` |
+| 边界 | `#D1D1D1` | `#505050` | `SnoopNext.Brush.Border` |
+| 输入表面 | `#FBFBFB` | `#373737` | `SnoopNext.Brush.Control` |
+| 悬停 | `#F0F0F0` | `#414141` | `SnoopNext.Brush.Hover` |
+| 按下 | `#E5E5E5` | `#343434` | `SnoopNext.Brush.Pressed` |
+| 强调 | `#005FB8` | `#60CDFF` | `SnoopNext.Brush.Accent` |
+| 强调底色上的文字 | `#FFFFFF` | `#00354A` | `SnoopNext.Brush.OnAccent` |
+| 错误 | `#C42B1C` | `#FF99A4` | `SnoopNext.Brush.Error` |
 
-明确语义 ResourceKey，不在大型 XAML 中硬编码颜色；Snoop 内部分层资源字典独立于目标应用资源词典。
+高对比度取 Windows 的窗口、文字、选中背景和选中文字色。焦点使用可见轮廓，关闭操作的通常状态与其他窗口命令一致。
+
+## 8. 等待挂载浮条与设置
+
+- 独立启动器保留单行置顶。左侧品牌区用于移动浮条，中部目标列表显示进程、PID 和窗口标题；F5 刷新列表。
+- “挂载”和放大镜分别作用于下拉框中的目标。各自旁边的准星可直接拖到窗口，Esc 取消拾取。两个准星和列表命令分别提供操作说明。
+- 进程选择、设置、主检查器共用语义色。工具按钮使用轻量悬停面和键盘焦点，检查器保留分栏、可拖动的分隔线以及紧凑密度。
+- 设置把语言选择、属性编辑和提交操作分区。保存、放弃及恢复默认的行为沿用原设置模型。

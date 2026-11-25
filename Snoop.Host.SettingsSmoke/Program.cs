@@ -1,6 +1,7 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -13,8 +14,8 @@ using Snoop.Next.Localization;
 using Snoop.Windows;
 
 /// <summary>
-/// Tests host language preferences and WPF controls without displaying windows
-/// or attaching to another process. This can run on newer .NET Framework 4.x runtimes.
+/// Tests host language preferences, WPF controls and in-process target rendering
+/// without attaching to another process. This can run on newer .NET Framework 4.x runtimes.
 /// </summary>
 internal static class Program
 {
@@ -330,10 +331,12 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
+                        LauncherAppearanceSmoke.Verify(inspector);
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
-                        WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
+                        var surfaceFailures = new List<Exception>();
+                        CheckSurface(() => WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!));
                         WorkbenchPaneSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutPresetSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchNavigationSmoke.Verify(inspector);
@@ -350,6 +353,27 @@ internal static class Program
                         InspectorAuxiliaryViewSmoke.Verify();
                         InspectorPropertyAndDebugSmoke.Verify();
                         InspectorRemainingViewSmoke.Verify();
+                        TargetWindowRenderingSmoke.Verify(app);
+                        InspectorFlyoutSmoke.Verify(inspector);
+                        CheckSurface(InspectorTableSmoke.Verify);
+                        CheckSurface(ZoomerPresentationSmoke.Verify);
+                        if (surfaceFailures.Count > 0)
+                        {
+                            throw new AggregateException("Inspector surface checks failed.", surfaceFailures);
+                        }
+
+                        void CheckSurface(Action check)
+                        {
+                            try
+                            {
+                                check();
+                            }
+                            catch (Exception exception)
+                            {
+                                Console.Error.WriteLine(exception);
+                                surfaceFailures.Add(exception);
+                            }
+                        }
                     }
                     finally
                     {

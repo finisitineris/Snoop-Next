@@ -10,24 +10,38 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:snoop="clr-namespace:Snoop"
+             x:Name="Viewport"
              xmlns:windows="clr-namespace:Snoop.Windows"
              d:DesignHeight="300"
              d:DesignWidth="300"
              Focusable="True"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary Source="/Snoop.Core;component/Themes/FluentZoomSlider.xaml" />
+    </UserControl.Resources>
     <Grid x:Name="DocumentRoot"
           ClipToBounds="True"
+          FocusVisualStyle="{x:Null}"
           Focusable="True"
           LostMouseCapture="Content_LostMouseCapture"
           Mouse.MouseDown="Content_MouseDown"
           Mouse.MouseMove="Content_MouseMove"
           Mouse.MouseUp="Content_MouseUp">
-        <Grid.Background>
-            <Binding Converter="{x:Static windows:DoubleToWhitenessConverter.Default}"
-                     ElementName="ColorSlider"
-                     Path="Value" />
-        </Grid.Background>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="{Binding Background, ElementName=Viewport}" />
+                <Style.Triggers>
+                    <!-- A real preview keeps its user-adjustable inspection backdrop. -->
+                    <DataTrigger Binding="{Binding Background, ElementName=Viewport}" Value="{x:Null}">
+                        <Setter Property="Background"
+                                Value="{Binding Value, ElementName=ColorSlider, Converter={x:Static windows:DoubleToWhitenessConverter.Default}}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Target, ElementName=Viewport}" Value="{x:Null}">
+                        <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
 
         <Viewbox x:Name="Viewbox" />
 
@@ -40,6 +54,8 @@
         </Canvas>
 
         <Slider x:Name="ColorSlider"
+                Style="{StaticResource SnoopNext.ZoomSlider}"
+                AutomationProperties.Name="{localization:InspectorLoc Zoomer.Backdrop}"
                 Width="100"
                 Margin="0 2 2 0"
                 HorizontalAlignment="Right"
@@ -48,7 +64,6 @@
                 Focusable="False"
                 Maximum="1"
                 Minimum="0"
-                Opacity=".5"
                 Value=".75">
             <Slider.ToolTip>
                 <TextBlock Text="{localization:InspectorLoc Zoomer.BackgroundTooltip}" />

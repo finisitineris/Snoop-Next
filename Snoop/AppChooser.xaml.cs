@@ -17,8 +17,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using Snoop.Core;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 using Snoop.Views;
 using Snoop.Windows;
 
@@ -30,7 +32,14 @@ public partial class AppChooser
     public static readonly RoutedCommand SettingsCommand = new(nameof(SettingsCommand), typeof(AppChooser));
     public static readonly RoutedCommand MinimizeCommand = new(nameof(MinimizeCommand), typeof(AppChooser));
 
+    private static readonly DependencyPropertyKey SortColumnPropertyKey =
+        DependencyProperty.RegisterReadOnly(nameof(SortColumn), typeof(int), typeof(AppChooser), new PropertyMetadata(1));
+
+    public static readonly DependencyProperty SortColumnProperty = SortColumnPropertyKey.DependencyProperty;
+
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
+    private readonly double singleRowMinimumWidth;
+    private double preferredWidth;
 
     private LowLevelKeyboardHook? keyboardHook;
 
@@ -43,11 +52,13 @@ public partial class AppChooser
     {
         this.WindowInfos = CollectionViewSource.GetDefaultView(this.windowInfos);
         this.WindowInfos.SortDescriptions.Add(new SortDescription(nameof(WindowInfo.OwningProcessId), ListSortDirection.Ascending));
-        this.SortColumn = 1;
 
         this.InitializeComponent();
+        this.singleRowMinimumWidth = this.MinWidth;
+        this.preferredWidth = this.Width;
+        this.Loaded += this.HandleChooserLoaded;
 
-        ThemeManager.Current.ApplyTheme(ThemeMode.Light, this);
+        ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this);
 
         this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefreshCommand));
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspectCommand, this.HandleCanInspectOrMagnifyCommand));
@@ -64,7 +75,70 @@ public partial class AppChooser
 
     public ICollectionView WindowInfos { get; }
 
-    public int SortColumn { get; private set; }
+    public int SortColumn => (int)this.GetValue(SortColumnProperty);
+
+    private void HandleChooserLoaded(object sender, RoutedEventArgs e)
+    {
+        this.Loaded -= this.HandleChooserLoaded;
+        SystemEvents.UserPreferenceChanged += this.HandleSystemPreferenceChanged;
+        if (this.WindowState == WindowState.Minimized)
+        {
+            this.StateChanged += this.HandleFirstRestore;
+            return;
+        }
+
+        this.FitChooserToWorkArea();
+    }
+
+    private void HandleSystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        // SystemEvents can run on another thread. Resolve the current system palette on the UI Dispatcher.
+        if (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.Color or UserPreferenceCategory.VisualStyle
+            && !this.Dispatcher.HasShutdownStarted)
+        {
+            this.Dispatcher.InvokeAsync(() => ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this));
+        }
+    }
+
+    private void HandleFirstRestore(object? sender, EventArgs e)
+    {
+        if (this.WindowState != WindowState.Minimized)
+        {
+            this.StateChanged -= this.HandleFirstRestore;
+            this.FitChooserToWorkArea();
+        }
+    }
+
+    private void FitChooserToWorkArea()
+    {
+        var target = PresentationSource.FromVisual(this)?.CompositionTarget;
+        if (target is null)
+        {
+            return;
+        }
+
+        // Loaded windows with automatic startup placement can still have NaN Left/Top.
+        // Translate their actual desktop origin using the HWND's current DPI.
+        var origin = this.PointToScreen(default);
+        this.ApplyWorkArea(SnoopWindowUtils.GetWindowWorkArea(this), target.TransformFromDevice.Transform(origin));
+    }
+
+    private void ApplyWorkArea(Rect work, Point origin)
+    {
+        var compact = work.Width < this.singleRowMinimumWidth;
+        this.BrandLabel.Visibility = this.WindowActionsDivider.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
+        Grid.SetRow(this.TargetActions, compact ? 1 : 0);
+        Grid.SetColumn(this.TargetActions, compact ? 0 : 2);
+        Grid.SetColumnSpan(this.TargetActions, compact ? 4 : 1);
+        this.TargetActions.Margin = compact ? new Thickness(0, 0, 0, 6) : new Thickness(3, 0, 0, 0);
+
+        this.MinWidth = Math.Min(this.singleRowMinimumWidth, work.Width);
+        this.Width = Math.Min(this.preferredWidth, work.Width);
+        this.ChooserSurface.Measure(new Size(this.Width, double.PositiveInfinity));
+        this.Height = this.ChooserSurface.DesiredSize.Height;
+        this.Left = Math.Max(work.Left, Math.Min(origin.X, work.Right - this.Width));
+        this.Top = Math.Max(work.Top, Math.Min(origin.Y, work.Bottom - this.Height));
+    }
 
     public void Refresh()
     {
@@ -136,6 +210,10 @@ public partial class AppChooser
 
         // load the window placement details from the user settings.
         SnoopWindowUtils.LoadWindowPlacement(this, Settings.Default.AppChooserWindowPlacement);
+        if (this.Width >= this.singleRowMinimumWidth)
+        {
+            this.preferredWidth = this.Width;
+        }
     }
 
     private static void KeyboardHook_LowLevelKeyUp(object sender, KeyEventArgs e)
@@ -176,6 +254,7 @@ public partial class AppChooser
 
     protected override void OnClosed(EventArgs e)
     {
+        SystemEvents.UserPreferenceChanged -= this.HandleSystemPreferenceChanged;
         this.keyboardHook?.Stop();
 
         base.OnClosed(e);
@@ -204,7 +283,8 @@ public partial class AppChooser
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{window.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
         }
     }
 
@@ -221,7 +301,8 @@ public partial class AppChooser
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{window.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
         }
     }
 
@@ -237,12 +318,12 @@ public partial class AppChooser
         var window = new SnoopBaseWindow
         {
             Content = new SettingsView(),
-            Title = "Settings",
+            Title = LocalizationManager.Default["Chooser.Settings"],
             Owner = this,
             MinWidth = 480,
             MinHeight = 360,
-            Width = 480,
-            Height = 360,
+            Width = 560,
+            Height = 440,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             WindowStyle = WindowStyle.ToolWindow
         };
@@ -267,6 +348,7 @@ public partial class AppChooser
     private void HandleMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         this.DragMove();
+        this.FitChooserToWorkArea();
     }
 
     private void HandleWindowsComboBox_OnDropDownOpened(object sender, EventArgs e)
@@ -292,7 +374,7 @@ public partial class AppChooser
         }
 
         var gridColumn = (int)textBlock.GetValue(Grid.ColumnProperty);
-        this.SortColumn = gridColumn;
+        this.SetValue(SortColumnPropertyKey, gridColumn);
 
         var propertyName = string.Empty;
         switch (gridColumn)

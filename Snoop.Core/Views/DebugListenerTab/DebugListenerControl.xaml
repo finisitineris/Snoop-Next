@@ -92,7 +92,7 @@
                      Padding="3 1"
                      FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
                      TextChanged="HandleOutputSearchTextChanged" />
-            <Menu x:Name="OutputFiltersMenu"
+            <Menu x:Name="OutputFiltersMenu" Padding="0"
                   Grid.Column="2"
                   Margin="4 0 0 0"
                   Background="Transparent"

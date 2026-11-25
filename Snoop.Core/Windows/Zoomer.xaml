@@ -9,154 +9,155 @@
                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                              xmlns:converters="clr-namespace:Snoop.Converters"
                              xmlns:localization="clr-namespace:Snoop.Localization"
-                             xmlns:snoop="clr-namespace:Snoop"
+                             xmlns:system="clr-namespace:System;assembly=mscorlib"
                              xmlns:windows="clr-namespace:Snoop.Windows"
                              Title="{localization:InspectorLoc Zoomer.Title}"
-                             Width="640"
-                             Height="480"
+                             Width="720" Height="510" MinWidth="360" MinHeight="270"
                              FocusManager.FocusedElement="{Binding ElementName=DocumentRoot}">
-    <Grid x:Name="DocumentRoot"
-          Cursor="SizeAll"
-          Focusable="True"
-          Mouse.MouseDown="Content_MouseDown"
-          Mouse.MouseMove="Content_MouseMove"
-          Mouse.MouseUp="Content_MouseUp"
-          Mouse.MouseWheel="Content_MouseWheel">
-        <Grid.Background>
-            <Binding Converter="{x:Static windows:DoubleToWhitenessConverter.Default}"
-                     ElementName="ColorSlider"
-                     Path="Value" />
-        </Grid.Background>
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Snoop.Core;component/Themes/FluentZoomSlider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <system:Double x:Key="ZoomCommandSize">32</system:Double>
+            <Style x:Key="ZoomGlyph" TargetType="Path">
+                <Setter Property="Width" Value="12" />
+                <Setter Property="Height" Value="12" />
+                <Setter Property="Stretch" Value="None" />
+                <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+                <Setter Property="StrokeThickness" Value="1.5" />
+                <Setter Property="StrokeStartLineCap" Value="Round" />
+                <Setter Property="StrokeEndLineCap" Value="Round" />
+            </Style>
+            <Style x:Key="ModeSegment" TargetType="RadioButton">
+                <Setter Property="MinWidth" Value="44" />
+                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+                <Setter Property="FocusVisualStyle" Value="{DynamicResource SnoopNext.FocusVisual}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="RadioButton">
+                            <Grid Background="Transparent">
+                                <Border x:Name="Surface" Background="Transparent" CornerRadius="3" />
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <Border x:Name="Indicator" Width="16" Height="2" VerticalAlignment="Bottom"
+                                        CornerRadius="1" Background="{DynamicResource SnoopNext.Brush.Accent}" Visibility="Collapsed" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Hover}" />
+                                </Trigger>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
+                                    <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
 
-        <Grid.ContextMenu>
-            <ContextMenu>
-                <MenuItem Command="{x:Static windows:Zoomer.SwitchTo2DCommand}">
-                    <MenuItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Zoomer.View2D}" />
-                    </MenuItem.Header>
-                </MenuItem>
-                <MenuItem Command="{x:Static windows:Zoomer.SwitchTo3DCommand}">
-                    <MenuItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Zoomer.View3D}" />
-                    </MenuItem.Header>
-                </MenuItem>
-                <Separator />
-                <MenuItem Command="{x:Static windows:Zoomer.ResetCommand}">
-                    <MenuItem.Header>
-                        <TextBlock Text="{localization:InspectorLoc Common.Reset}" />
-                    </MenuItem.Header>
-                </MenuItem>
-            </ContextMenu>
-        </Grid.ContextMenu>
-
-        <Viewbox x:Name="Viewbox" />
-
-        <StackPanel Margin="2 2 0 0"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Top"
-                    Orientation="Horizontal"
-                    Opacity="0.5">
-            <RadioButton Style="{DynamicResource {x:Type ToggleButton}}"
-                         MinWidth="0"
-                         MinHeight="0"
-                         Command="{x:Static windows:Zoomer.SwitchTo2DCommand}"
-                         Cursor="Arrow"
-                         Focusable="False"
-                         IsChecked="True">
-                <TextBlock Text="2D" />
-                <RadioButton.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Zoomer.View2DShortcut}" />
-                </RadioButton.ToolTip>
-            </RadioButton>
-            <RadioButton Style="{DynamicResource {x:Type ToggleButton}}"
-                         MinWidth="0"
-                         MinHeight="0"
-                         Margin="2 0 0 0"
-                         Command="{x:Static windows:Zoomer.SwitchTo3DCommand}"
-                         Cursor="Arrow"
-                         Focusable="False">
-                <TextBlock Text="3D" />
-                <RadioButton.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Zoomer.View3DShortcut}" />
-                </RadioButton.ToolTip>
-            </RadioButton>
-        </StackPanel>
-
-        <StackPanel VerticalAlignment="Bottom"
-                    Orientation="Horizontal"
+    <Grid x:Name="ViewerSurface" Background="{DynamicResource SnoopNext.Brush.Background}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Border x:Name="ToolbarBorder" Padding="10 5" Background="{DynamicResource SnoopNext.Brush.Panel}"
+                UseLayoutRounding="True" TextElement.FontSize="13" TextElement.FontFamily="Segoe UI Variable Text, Segoe UI, Global User Interface"
+                BorderBrush="{DynamicResource SnoopNext.Brush.Border}" BorderThickness="0 0 0 1">
+            <WrapPanel>
+                <Border x:Name="ModeGroup" Height="{StaticResource ZoomCommandSize}" Margin="0 2 12 2" Padding="1" CornerRadius="4" BorderThickness="1"
+                        BorderBrush="{DynamicResource SnoopNext.Brush.Border}" Background="{DynamicResource SnoopNext.Brush.Background}">
+                    <UniformGrid Rows="1" Columns="2">
+                        <RadioButton x:Name="Mode2D" Style="{StaticResource ModeSegment}" GroupName="PreviewMode"
+                                     Command="{x:Static windows:Zoomer.SwitchTo2DCommand}" Content="2D" IsChecked="True"
+                                     AutomationProperties.Name="{localization:InspectorLoc Zoomer.View2D}"
+                                     ToolTip="{localization:InspectorLoc Zoomer.View2DShortcut}" />
+                        <RadioButton x:Name="Mode3D" Style="{StaticResource ModeSegment}" GroupName="PreviewMode"
+                                     Command="{x:Static windows:Zoomer.SwitchTo3DCommand}" Content="3D"
+                                     AutomationProperties.Name="{localization:InspectorLoc Zoomer.View3D}"
+                                     ToolTip="{localization:InspectorLoc Zoomer.View3DShortcut}" />
+                    </UniformGrid>
+                </Border>
+                <StackPanel Height="{StaticResource ZoomCommandSize}" Orientation="Horizontal" Margin="0 2 12 2">
+                    <Button x:Name="ZoomOutButton" Width="{StaticResource ZoomCommandSize}" Padding="0" Command="{x:Static windows:Zoomer.ZoomOutCommand}"
+                            AutomationProperties.Name="{localization:InspectorLoc Zoomer.ZoomOut}" ToolTip="{localization:InspectorLoc Zoomer.ZoomOut}">
+                        <Path Style="{StaticResource ZoomGlyph}" Data="M1,6 H11" />
+                    </Button>
+                    <Button x:Name="ZoomInButton" Width="{StaticResource ZoomCommandSize}" Margin="4 0 8 0" Padding="0" Command="{x:Static windows:Zoomer.ZoomInCommand}"
+                            AutomationProperties.Name="{localization:InspectorLoc Zoomer.ZoomIn}" ToolTip="{localization:InspectorLoc Zoomer.ZoomIn}">
+                        <Path Style="{StaticResource ZoomGlyph}" Data="M1,6 H11 M6,1 V11" />
+                    </Button>
+                    <Button x:Name="FitButton" Padding="10 0" Content="{localization:InspectorLoc Zoomer.Fit}"
+                            Command="{x:Static windows:Zoomer.ResetCommand}" />
+                </StackPanel>
+                <StackPanel Height="{StaticResource ZoomCommandSize}" Orientation="Horizontal" Margin="0 2">
+                    <Label x:Name="BackdropLabel" Target="{Binding ElementName=ColorSlider}" Content="{localization:InspectorLoc Zoomer.Backdrop}"
+                           VerticalContentAlignment="Center" Padding="0 0 6 0" />
+                    <Slider x:Name="ColorSlider" Height="{StaticResource ZoomCommandSize}" Style="{StaticResource SnoopNext.ZoomSlider}" Width="76" Minimum="0" Maximum="1" Value="1" SmallChange=".05" LargeChange=".2"
+                            VerticalAlignment="Center" ToolTip="{localization:InspectorLoc Zoomer.BackgroundTooltip}"
+                            AutomationProperties.Name="{localization:InspectorLoc Zoomer.Backdrop}" />
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+        <Border Grid.Row="1" Margin="10" Padding="1" BorderThickness="1" CornerRadius="6"
+                BorderBrush="{DynamicResource SnoopNext.Brush.Border}" Background="{DynamicResource SnoopNext.Brush.Panel}">
+            <Grid x:Name="DocumentRoot" ClipToBounds="True" Focusable="True" FocusVisualStyle="{x:Null}"
+                  Mouse.MouseDown="Content_MouseDown" Mouse.MouseMove="Content_MouseMove"
+                  Mouse.MouseUp="Content_MouseUp" Mouse.MouseWheel="Content_MouseWheel">
+                <Grid.Background>
+                    <Binding ElementName="ColorSlider" Path="Value" Converter="{x:Static windows:DoubleToWhitenessConverter.Default}" />
+                </Grid.Background>
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{localization:InspectorLoc Zoomer.View2D}" Command="{x:Static windows:Zoomer.SwitchTo2DCommand}" />
+                        <MenuItem Header="{localization:InspectorLoc Zoomer.View3D}" Command="{x:Static windows:Zoomer.SwitchTo3DCommand}" />
+                        <Separator />
+                        <MenuItem Header="{localization:InspectorLoc Zoomer.Fit}" Command="{x:Static windows:Zoomer.ResetCommand}" />
+                    </ContextMenu>
+                </Grid.ContextMenu>
+                <Viewbox x:Name="Viewbox" Margin="10" />
+                <Grid x:Name="EmptyState" Background="{DynamicResource SnoopNext.Brush.Panel}" IsHitTestVisible="False">
+                    <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Margin="14"
+                               Text="{localization:InspectorLoc Zoomer.Empty}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}" />
+                </Grid>
+            </Grid>
+        </Border>
+        <Border x:Name="ThreeDViewControls" Grid.Row="2" Visibility="Collapsed" Padding="12 5"
+                BorderThickness="0 1 0 0" BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
+                Background="{DynamicResource SnoopNext.Brush.Panel}">
+            <WrapPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 2 20 2">
+                    <Label Content="DPI" Target="{Binding ElementName=dpiBox}" Padding="0 0 6 0" VerticalAlignment="Center" />
+                    <ComboBox x:Name="dpiBox" Width="76" MinHeight="28" SelectedIndex="0" SelectionChanged="DpiBox_OnSelectionChanged">
+                        <ComboBoxItem Content="96" />
+                        <ComboBoxItem Content="150" />
+                        <ComboBoxItem Content="300" />
+                        <ComboBoxItem Content="600" />
+                    </ComboBox>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="{localization:InspectorLoc Zoomer.SeparationTooltip}" Target="{Binding ElementName=ZScaleSlider}"
+                           VerticalAlignment="Center" Padding="0 0 6 0" />
+                    <Slider x:Name="ZScaleSlider" Style="{StaticResource SnoopNext.ZoomSlider}" Width="100" Minimum="-1.2" Maximum="1.2" Value="0" SmallChange=".1" LargeChange=".3"
+                            VerticalAlignment="Center" ValueChanged="ZScaleSlider_ValueChanged"
+                            AutomationProperties.Name="{localization:InspectorLoc Zoomer.SeparationTooltip}" />
+                </StackPanel>
+            </WrapPanel>
+        </Border>
+        <StackPanel Grid.Row="3" Margin="10 0 10 6" Orientation="Horizontal"
                     Visibility="{Binding Path=Target.(TextOptions.TextFormattingMode), RelativeSource={RelativeSource AncestorType=windows:Zoomer}, Converter={x:Static converters:EqualsToVisibilityConverter.DefaultInstance}, ConverterParameter=Display}">
-            <Image Height="14"
-                   Source="{DynamicResource warningDrawingImage}" />
-            <TextBlock VerticalAlignment="Center"
-                       Foreground="DarkOrange"
-                       Text="{localization:InspectorLoc Zoomer.TextFormattingWarning}" />
-            <Button x:Name="fixTextFormattingModeButton"
-                    Margin="2 0 0 0"
-                    Padding="2"
-                    Click="FixTextFormattingModeButton_OnClick"
-                    Content="{localization:InspectorLoc Zoomer.Fix}"
-                    Cursor="Arrow" />
-        </StackPanel>
-
-        <Slider x:Name="ColorSlider"
-                Width="100"
-                Margin="0 2 2 0"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Top"
-                Cursor="Arrow"
-                Focusable="False"
-                Maximum="1"
-                Minimum="0"
-                Opacity=".5"
-                Value="1">
-            <Slider.ToolTip>
-                <TextBlock Text="{localization:InspectorLoc Zoomer.BackgroundTooltip}" />
-            </Slider.ToolTip>
-        </Slider>
-
-        <StackPanel x:Name="ThreeDViewControls"
-                    Margin="0 0 2 2"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Bottom"
-                    Orientation="Horizontal"
-                    Visibility="Collapsed">
-            <ComboBox x:Name="dpiBox"
-                      Grid.Column="1"
-                      Width="75"
-                      Margin="0 0 5 0"
-                      IsEditable="False"
-                      SelectionChanged="DpiBox_OnSelectionChanged">
-                <ComboBoxItem>
-                    <TextBlock Text="96" />
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="150" />
-                </ComboBoxItem>
-                <ComboBoxItem IsSelected="True">
-                    <TextBlock Text="300" />
-                </ComboBoxItem>
-                <ComboBoxItem>
-                    <TextBlock Text="600" />
-                </ComboBoxItem>
-            </ComboBox>
-            <TextBlock Margin="0 0 5 0"
-                       VerticalAlignment="Center"
-                       Foreground="Black"
-                       Text="DPI" />
-
-            <Slider x:Name="ZScaleSlider"
-                    Width="100"
-                    Cursor="Arrow"
-                    Focusable="False"
-                    Maximum="1.2"
-                    Minimum="-1.2"
-                    ValueChanged="ZScaleSlider_ValueChanged"
-                    Opacity=".5"
-                    Value="0">
-                <Slider.ToolTip>
-                    <TextBlock Text="{localization:InspectorLoc Zoomer.SeparationTooltip}" />
-                </Slider.ToolTip>
-            </Slider>
+            <Image Width="16" Height="16" Source="{DynamicResource warningDrawingImage}" />
+            <TextBlock Margin="6 0" VerticalAlignment="Center" Text="{localization:InspectorLoc Zoomer.TextFormattingWarning}" />
+            <Button x:Name="fixTextFormattingModeButton" Padding="8 2" Click="FixTextFormattingModeButton_OnClick"
+                    Content="{localization:InspectorLoc Zoomer.Fix}" />
         </StackPanel>
     </Grid>
 </windows:SnoopMainBaseWindow>

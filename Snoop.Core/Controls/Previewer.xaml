@@ -12,7 +12,6 @@
              xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
-             xmlns:snoop="clr-namespace:Snoop"
              mc:Ignorable="options d">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -29,291 +28,42 @@
                 </DrawingBrush.Drawing>
             </DrawingBrush>
 
-            <ControlTemplate x:Key="ButtonRight"
-                             TargetType="{x:Type ButtonBase}">
-                <Border x:Name="Border"
-                        BorderThickness="0 1 1 1"
-                        CornerRadius="0,7,7,0">
-                    <Border.BorderBrush>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.BorderBrush>
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border x:Name="Border1"
-                            BorderThickness="1 1 1 1"
-                            CornerRadius="0,6,6,0">
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                <GradientStop Color="sc#1, 0.366845042, 0.318384647, 0.9851835" Offset="0" />
-                                <GradientStop Color="sc#1, 0.280645251, 0.3073139, 0.4595425" Offset="0.51923076923076927" />
-                                <GradientStop Color="#FFC6C5D7" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
-                        <ContentPresenter x:Name="ContentPresenter"
-                                          Margin="1 1 1 1"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
-                    </Border>
-                </Border>
-                <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.856244, 0.283094436, 0.221971929" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.664019346, 0.3326727, 0" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFADAABD" Offset="0" />
-                                    <GradientStop Color="#FFDEDBE7" Offset="0.5" />
-                                    <GradientStop Color="#FFFFFFFF" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="Border" Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFFFFFFF" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.299671352, 0.299671352, 0.299671352" Offset="0.84615384615384615" />
-                                    <GradientStop Color="#FFC6C5D7" Offset="0" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="ToggleButton.IsChecked" Value="True">
-                        <Setter TargetName="Border" Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFFFFFFF" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.299671352, 0.299671352, 0.299671352" Offset="0.84615384615384615" />
-                                    <GradientStop Color="#FFC6C5D7" Offset="0" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="#77FFFFFF" />
-                        <Setter Property="BorderBrush" Value="#44000000" />
-                        <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.8917268, 0.8832413, 1" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.817024231, 0.768234, 0.768234" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.5" />
-                    </Trigger>
-                </ControlTemplate.Triggers>
-            </ControlTemplate>
-            <ControlTemplate x:Key="ButtonMiddle"
-                             TargetType="{x:Type ButtonBase}">
-                <Border x:Name="Border"
-                        BorderThickness="0 1">
-                    <Border.BorderBrush>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.BorderBrush>
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border x:Name="Border1"
-                            BorderThickness="1 1 1 1">
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                <GradientStop Color="sc#1, 0.366845042, 0.318384647, 0.9851835" Offset="0" />
-                                <GradientStop Color="sc#1, 0.280645251, 0.3073139, 0.4595425" Offset="0.51923076923076927" />
-                                <GradientStop Color="#FFC6C5D7" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
-                        <ContentPresenter x:Name="ContentPresenter"
-                                          Margin="1 1 1 1"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
-                    </Border>
-                </Border>
-                <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.856244, 0.283094436, 0.221971929" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.664019346, 0.3326727, 0" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFADAABD" Offset="0" />
-                                    <GradientStop Color="#FFDEDBE7" Offset="0.5" />
-                                    <GradientStop Color="#FFFFFFFF" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="Border" Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFFFFFFF" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.299671352, 0.299671352, 0.299671352" Offset="0.84615384615384615" />
-                                    <GradientStop Color="#FFC6C5D7" Offset="0" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="ToggleButton.IsChecked" Value="True">
-                        <Setter TargetName="Border" Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFFFFFFF" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.299671352, 0.299671352, 0.299671352" Offset="0.84615384615384615" />
-                                    <GradientStop Color="#FFC6C5D7" Offset="0" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="#77FFFFFF" />
-                        <Setter Property="BorderBrush" Value="#44000000" />
-                        <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.8917268, 0.8832413, 1" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.817024231, 0.768234, 0.768234" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.5" />
-                    </Trigger>
-                </ControlTemplate.Triggers>
-            </ControlTemplate>
-            <ControlTemplate x:Key="ButtonLeft"
-                             TargetType="{x:Type ButtonBase}">
-                <Border x:Name="Border"
-                        BorderThickness="1 1 0 1"
-                        CornerRadius="7,0,0,7">
-                    <Border.BorderBrush>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.BorderBrush>
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                            <GradientStop Color="#FFFFFFFF" Offset="0" />
-                            <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                            <GradientStop Color="#FFC6C5D7" Offset="1" />
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Border x:Name="Border1"
-                            BorderThickness="1 1 1 1"
-                            CornerRadius="6,0,0,6">
-                        <Border.BorderBrush>
-                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                <GradientStop Color="sc#1, 0.366845042, 0.318384647, 0.9851835" Offset="0" />
-                                <GradientStop Color="sc#1, 0.280645251, 0.3073139, 0.4595425" Offset="0.51923076923076927" />
-                                <GradientStop Color="#FFC6C5D7" Offset="1" />
-                            </LinearGradientBrush>
-                        </Border.BorderBrush>
-                        <ContentPresenter x:Name="ContentPresenter"
-                                          Margin="1 1 1 1"
-                                          Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                                          ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
-                    </Border>
-                </Border>
-                <ControlTemplate.Triggers>
-                    <Trigger Property="IsMouseOver" Value="True">
-                        <Setter TargetName="Border" Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.52502346, 0.52502346, 0.52502346" Offset="0" />
-                                    <GradientStop Color="#FFE3E5F0" Offset="0.5" />
-                                    <GradientStop Color="#FFC6C5D7" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.856244, 0.283094436, 0.221971929" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.664019346, 0.3326727, 0" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="IsPressed" Value="True">
-                        <Setter Property="Background">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="#FFADAABD" Offset="0" />
-                                    <GradientStop Color="#FFDEDBE7" Offset="0.5" />
-                                    <GradientStop Color="#FFFFFFFF" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                    </Trigger>
-                    <Trigger Property="ToggleButton.IsChecked" Value="True" />
-                    <Trigger Property="IsEnabled" Value="False">
-                        <Setter Property="Background" Value="#77FFFFFF" />
-                        <Setter Property="BorderBrush" Value="#44000000" />
-                        <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
-                        <Setter TargetName="Border1" Property="BorderBrush">
-                            <Setter.Value>
-                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                    <GradientStop Color="sc#1, 0.8917268, 0.8832413, 1" Offset="0" />
-                                    <GradientStop Color="sc#1, 0.817024231, 0.768234, 0.768234" Offset="1" />
-                                </LinearGradientBrush>
-                            </Setter.Value>
-                        </Setter>
-                        <Setter TargetName="ContentPresenter" Property="Opacity" Value="0.5" />
-                    </Trigger>
-                </ControlTemplate.Triggers>
-            </ControlTemplate>
+            <Style x:Key="PreviewGlyph" TargetType="{x:Type Path}">
+                <Setter Property="Width" Value="14" />
+                <Setter Property="Height" Value="14" />
+                <Setter Property="Stretch" Value="Uniform" />
+                <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type ButtonBase}}}" />
+                <Setter Property="StrokeThickness" Value="1.5" />
+                <Setter Property="StrokeLineJoin" Value="Round" />
+                <Setter Property="StrokeStartLineCap" Value="Round" />
+                <Setter Property="StrokeEndLineCap" Value="Round" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
-        <controls:ZoomerControl x:Name="Zoomer" />
+        <controls:ZoomerControl x:Name="Zoomer">
+            <controls:ZoomerControl.Style>
+                <Style TargetType="{x:Type controls:ZoomerControl}">
+                    <Style.Triggers>
+                        <!-- The previewer supplies this brush as its idle or paused artwork. -->
+                        <DataTrigger Binding="{Binding Target, RelativeSource={RelativeSource Self}}"
+                                     Value="{StaticResource previewerSnoopDogDrawingBrush}">
+                            <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </controls:ZoomerControl.Style>
+        </controls:ZoomerControl>
 
-        <Button Width="22"
-                Height="20"
-                Margin="0 0 44 0"
+        <Button Width="28"
+                Height="28"
+                Margin="0 0 68 4"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Command="{x:Static controls:Previewer.MagnifyCommand}"
-                Template="{DynamicResource ButtonLeft}">
-            <Image x:Name="Image"
-                   Source="{DynamicResource magnifyingGlassDrawingImage}" />
+                AutomationProperties.Name="{localization:InspectorLoc Previewer.MagnifyTip}"
+                Command="{x:Static controls:Previewer.MagnifyCommand}">
+            <Path Style="{StaticResource PreviewGlyph}" Data="M10,6 A4,4 0 1 1 2,6 A4,4 0 1 1 10,6 M9,9 L14,14" />
             <Button.ToolTip>
                 <TextBlock MaxWidth="260"
                            Text="{localization:InspectorLoc Previewer.MagnifyTip}"
@@ -321,14 +71,14 @@
             </Button.ToolTip>
         </Button>
 
-        <ToggleButton Width="22"
-                      Height="20"
-                      Margin="0 0 22 0"
+        <ToggleButton Width="28"
+                      Height="28"
+                      Margin="0 0 36 4"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Bottom"
-                      IsChecked="{Binding IsActive}"
-                      Template="{DynamicResource ButtonMiddle}">
-            <Image Source="{DynamicResource powerDrawingImage}" />
+                      AutomationProperties.Name="{localization:InspectorLoc Previewer.ToggleTip}"
+                      IsChecked="{Binding IsActive}">
+            <Path Style="{StaticResource PreviewGlyph}" Data="M8,1 V7 M4.5,3.5 A6,6 0 1 0 11.5,3.5" />
             <ToggleButton.ToolTip>
                 <TextBlock MaxWidth="260"
                            Text="{localization:InspectorLoc Previewer.ToggleTip}"
@@ -336,14 +86,14 @@
             </ToggleButton.ToolTip>
         </ToggleButton>
 
-        <Button Width="22"
-                Height="20"
+        <Button Width="28"
+                Height="28"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Command="{x:Static controls:Previewer.ScreenshotCommand}"
-                Template="{DynamicResource ButtonRight}">
-            <Image Margin="1"
-                   Source="{DynamicResource cameraDrawingImage}" />
+                Margin="0 0 4 4"
+                AutomationProperties.Name="{localization:InspectorLoc Previewer.ScreenshotTip}"
+                Command="{x:Static controls:Previewer.ScreenshotCommand}">
+            <Path Style="{StaticResource PreviewGlyph}" Data="M1,5 H4 L6,2.5 H10 L12,5 H15 V13 H1 Z M11,8.5 A3,3 0 1 1 5,8.5 A3,3 0 1 1 11,8.5" />
             <Button.ToolTip>
                 <TextBlock Text="{localization:InspectorLoc Previewer.ScreenshotTip}" />
             </Button.ToolTip>

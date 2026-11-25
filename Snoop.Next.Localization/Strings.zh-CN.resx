@@ -31,4 +31,22 @@
   <data name="Property.Value" xml:space="preserve"><value>值</value></data>
   <data name="Property.NameDescription" xml:space="preserve"><value>属性名称</value></data>
   <data name="Property.ValueDescription" xml:space="preserve"><value>属性值</value></data>
+  <data name="Chooser.AttachLabel" xml:space="preserve"><value>挂载</value></data>
+  <data name="Chooser.MagnifyLabel" xml:space="preserve"><value>放大</value></data>
+  <data name="Chooser.SelectTarget" xml:space="preserve"><value>选择要挂载的窗口</value></data>
+  <data name="Chooser.Empty" xml:space="preserve"><value>未找到 WPF 窗口</value></data>
+  <data name="Chooser.Refresh" xml:space="preserve"><value>刷新目标窗口（F5）</value></data>
+  <data name="Chooser.Inspect" xml:space="preserve"><value>挂载到选中的窗口</value></data>
+  <data name="Chooser.PickInspect" xml:space="preserve"><value>拖到窗口上以挂载（Esc 取消）</value></data>
+  <data name="Chooser.Magnify" xml:space="preserve"><value>放大查看选中的窗口</value></data>
+  <data name="Chooser.PickMagnify" xml:space="preserve"><value>拖到窗口上以放大查看（Esc 取消）</value></data>
+  <data name="Chooser.SortPid" xml:space="preserve"><value>右键按进程 ID 排序</value></data>
+  <data name="Chooser.SortProcess" xml:space="preserve"><value>右键按进程名排序</value></data>
+  <data name="Chooser.SortTitle" xml:space="preserve"><value>右键按窗口标题排序</value></data>
+  <data name="Chooser.Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="Chooser.Minimize" xml:space="preserve"><value>最小化</value></data>
+  <data name="Chooser.Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Chooser.InspectFailed" xml:space="preserve"><value>无法挂载到窗口</value></data>
+  <data name="Chooser.MagnifyFailed" xml:space="preserve"><value>无法放大查看窗口</value></data>
+  <data name="Chooser.AttachFailureDetail" xml:space="preserve"><value>挂载到“{0}”失败。</value></data>
 </root>

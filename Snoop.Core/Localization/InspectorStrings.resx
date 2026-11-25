@@ -50,10 +50,60 @@
   <data name="zh-CN.Menu.SnoopSnoop" xml:space="preserve"><value>检查 Snoop</value></data>
   <data name="en-US.Menu.Version" xml:space="preserve"><value>Version</value></data>
   <data name="zh-CN.Menu.Version" xml:space="preserve"><value>版本</value></data>
+  <data name="en-US.TreeMenu.Export" xml:space="preserve"><value>Export</value></data>
+  <data name="zh-CN.TreeMenu.Export" xml:space="preserve"><value>导出</value></data>
+  <data name="en-US.TreeMenu.TreeWithFilter" xml:space="preserve"><value>Subtree with property filter</value></data>
+  <data name="zh-CN.TreeMenu.TreeWithFilter" xml:space="preserve"><value>导出子树（使用属性筛选）</value></data>
+  <data name="en-US.TreeMenu.TreeWithoutFilter" xml:space="preserve"><value>Subtree with all properties</value></data>
+  <data name="zh-CN.TreeMenu.TreeWithoutFilter" xml:space="preserve"><value>导出子树（全部属性）</value></data>
+  <data name="en-US.TreeMenu.ElementWithFilter" xml:space="preserve"><value>Element with property filter</value></data>
+  <data name="zh-CN.TreeMenu.ElementWithFilter" xml:space="preserve"><value>导出当前元素（使用属性筛选）</value></data>
+  <data name="en-US.TreeMenu.ElementWithoutFilter" xml:space="preserve"><value>Element with all properties</value></data>
+  <data name="zh-CN.TreeMenu.ElementWithoutFilter" xml:space="preserve"><value>导出当前元素（全部属性）</value></data>
+  <data name="en-US.TreeMenu.ExportOptions" xml:space="preserve"><value>Export options</value></data>
+  <data name="zh-CN.TreeMenu.ExportOptions" xml:space="preserve"><value>导出选项</value></data>
+  <data name="en-US.TreeMenu.Scope" xml:space="preserve"><value>Scope to this subtree</value></data>
+  <data name="zh-CN.TreeMenu.Scope" xml:space="preserve"><value>仅查看此子树</value></data>
+  <data name="en-US.TreeMenu.ClearScope" xml:space="preserve"><value>Show full tree</value></data>
+  <data name="zh-CN.TreeMenu.ClearScope" xml:space="preserve"><value>显示完整树</value></data>
+  <data name="en-US.TreeMenu.WebDeveloperTools" xml:space="preserve"><value>Open developer tools</value></data>
+  <data name="zh-CN.TreeMenu.WebDeveloperTools" xml:space="preserve"><value>打开开发者工具</value></data>
+  <data name="en-US.TreeMenu.ExportXamlStyle" xml:space="preserve"><value>Use XAML-style output</value></data>
+  <data name="zh-CN.TreeMenu.ExportXamlStyle" xml:space="preserve"><value>使用 XAML 格式</value></data>
+  <data name="en-US.TreeMenu.ExportXamlStyleTip" xml:space="preserve"><value>Use control types as element names and write properties as attributes where possible.</value></data>
+  <data name="zh-CN.TreeMenu.ExportXamlStyleTip" xml:space="preserve"><value>以控件类型作为元素名，尽可能将属性写为 XML 特性。</value></data>
+  <data name="en-US.TreeMenu.IncludeDefaultEmptyValues" xml:space="preserve"><value>Include default and empty values</value></data>
+  <data name="zh-CN.TreeMenu.IncludeDefaultEmptyValues" xml:space="preserve"><value>包含默认值和空值</value></data>
+  <data name="en-US.TreeMenu.IncludeDefaultEmptyValuesTip" xml:space="preserve"><value>Include values such as null, false and zero, using the type’s default rather than the dependency property’s metadata.</value></data>
+  <data name="zh-CN.TreeMenu.IncludeDefaultEmptyValuesTip" xml:space="preserve"><value>包含 null、false、0 等类型默认值。判断依据为类型自身的默认值。</value></data>
+  <data name="en-US.TreeMenu.IncludeTypenameOnlyValues" xml:space="preserve"><value>Include type-name-only values</value></data>
+  <data name="zh-CN.TreeMenu.IncludeTypenameOnlyValues" xml:space="preserve"><value>包含仅显示类型名的值</value></data>
+  <data name="en-US.TreeMenu.IncludeTypenameOnlyValuesTip" xml:space="preserve"><value>Include values whose text representation is the type name. Complex generic types may remain in the output.</value></data>
+  <data name="zh-CN.TreeMenu.IncludeTypenameOnlyValuesTip" xml:space="preserve"><value>包含转换成文本后仅显示类型名的值。复杂泛型可能始终保留。</value></data>
+  <data name="en-US.TreeMenu.IncludeSystemCollectionNamespaceValues" xml:space="preserve"><value>Include System.Collections values</value></data>
+  <data name="zh-CN.TreeMenu.IncludeSystemCollectionNamespaceValues" xml:space="preserve"><value>包含 System.Collections 集合值</value></data>
+  <data name="en-US.TreeMenu.IncludeSystemCollectionNamespaceValuesTip" xml:space="preserve"><value>Include System.Collections values that typically display only the collection type name.</value></data>
+  <data name="zh-CN.TreeMenu.IncludeSystemCollectionNamespaceValuesTip" xml:space="preserve"><value>包含通常只显示集合类型名的 System.Collections 值。</value></data>
+  <data name="en-US.TreeMenu.RoundDecimals" xml:space="preserve"><value>Round numbers to one decimal place</value></data>
+  <data name="zh-CN.TreeMenu.RoundDecimals" xml:space="preserve"><value>数值保留一位小数</value></data>
+  <data name="en-US.TreeMenu.RoundDecimalsTip" xml:space="preserve"><value>Round exported numeric values to one decimal place.</value></data>
+  <data name="zh-CN.TreeMenu.RoundDecimalsTip" xml:space="preserve"><value>将导出的数值四舍五入到小数点后一位。</value></data>
   <data name="en-US.Tree.Label" xml:space="preserve"><value>Tree:</value></data>
   <data name="zh-CN.Tree.Label" xml:space="preserve"><value>可视化树：</value></data>
   <data name="en-US.Theme.Label" xml:space="preserve"><value>Theme:</value></data>
   <data name="zh-CN.Theme.Label" xml:space="preserve"><value>主题：</value></data>
+  <data name="en-US.Theme.Auto" xml:space="preserve"><value>System</value></data>
+  <data name="zh-CN.Theme.Auto" xml:space="preserve"><value>跟随系统</value></data>
+  <data name="en-US.Theme.Dark" xml:space="preserve"><value>Dark</value></data>
+  <data name="zh-CN.Theme.Dark" xml:space="preserve"><value>深色</value></data>
+  <data name="en-US.Theme.Light" xml:space="preserve"><value>Light</value></data>
+  <data name="zh-CN.Theme.Light" xml:space="preserve"><value>浅色</value></data>
+  <data name="en-US.Tree.Visual" xml:space="preserve"><value>Visual</value></data>
+  <data name="zh-CN.Tree.Visual" xml:space="preserve"><value>可视</value></data>
+  <data name="en-US.Tree.Logical" xml:space="preserve"><value>Logical</value></data>
+  <data name="zh-CN.Tree.Logical" xml:space="preserve"><value>逻辑</value></data>
+  <data name="en-US.Tree.Automation" xml:space="preserve"><value>Automation</value></data>
+  <data name="zh-CN.Tree.Automation" xml:space="preserve"><value>自动化</value></data>
   <data name="en-US.Density.Label" xml:space="preserve"><value>Density</value></data>
   <data name="zh-CN.Density.Label" xml:space="preserve"><value>界面密度</value></data>
   <data name="en-US.Density.Comfortable" xml:space="preserve"><value>Comfortable</value></data>
@@ -182,6 +232,16 @@
   <data name="zh-CN.Screenshot.Title" xml:space="preserve"><value>保存截图</value></data>
   <data name="en-US.Screenshot.PngFilterLabel" xml:space="preserve"><value>Image File (*.png)</value></data>
   <data name="zh-CN.Screenshot.PngFilterLabel" xml:space="preserve"><value>PNG 图像文件 (*.png)</value></data>
+  <data name="en-US.Zoomer.Empty" xml:space="preserve"><value>Select a visible element with drawing content to preview it.</value></data>
+  <data name="zh-CN.Zoomer.Empty" xml:space="preserve"><value>请选择有绘制内容的可见元素进行预览。</value></data>
+  <data name="en-US.Zoomer.ZoomIn" xml:space="preserve"><value>Zoom in</value></data>
+  <data name="zh-CN.Zoomer.ZoomIn" xml:space="preserve"><value>放大</value></data>
+  <data name="en-US.Zoomer.ZoomOut" xml:space="preserve"><value>Zoom out</value></data>
+  <data name="zh-CN.Zoomer.ZoomOut" xml:space="preserve"><value>缩小</value></data>
+  <data name="en-US.Zoomer.Fit" xml:space="preserve"><value>Fit to view</value></data>
+  <data name="zh-CN.Zoomer.Fit" xml:space="preserve"><value>适应窗口</value></data>
+  <data name="en-US.Zoomer.Backdrop" xml:space="preserve"><value>Background</value></data>
+  <data name="zh-CN.Zoomer.Backdrop" xml:space="preserve"><value>背景</value></data>
   <data name="en-US.Zoomer.Title" xml:space="preserve"><value>Zoomer</value></data>
   <data name="zh-CN.Zoomer.Title" xml:space="preserve"><value>缩放查看器</value></data>
   <data name="en-US.Zoomer.Fix" xml:space="preserve"><value>Fix</value></data>
@@ -282,6 +342,8 @@
   <data name="zh-CN.PropertyInspector.ShowDefaultsTip" xml:space="preserve"><value>显示仍为默认值的属性。</value></data>
   <data name="en-US.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>Show properties that are not commonly used in WPF applications.</value></data>
   <data name="zh-CN.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>显示 WPF 应用程序中不常用的属性。</value></data>
+  <data name="en-US.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>Filter properties</value></data>
+  <data name="zh-CN.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>筛选属性</value></data>
   <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name or type name. Press Esc to clear.</value></data>
   <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称或属性类型名称筛选。按 Esc 清空。</value></data>
   <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>

@@ -42,7 +42,7 @@
             </DataTemplate>
 
             <DataTemplate DataType="{x:Type infrastructure:EventTracker}">
-                <CheckBox IsChecked="{Binding IsEnabled}">
+                <CheckBox Style="{StaticResource SnoopNext.ChecklistItem}" IsChecked="{Binding IsEnabled, Mode=TwoWay}">
                     <TextBlock Text="{Binding RoutedEvent.Name}" />
                 </CheckBox>
             </DataTemplate>

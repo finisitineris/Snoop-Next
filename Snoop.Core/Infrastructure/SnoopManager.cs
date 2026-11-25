@@ -260,16 +260,8 @@ public class SnoopManager
 
         var targetWindowOnSameDispatcher = WindowHelper.GetVisibleWindow(settingsData.TargetWindowHandle, dispatcherRootObjectPair.Dispatcher);
 
-        snoopWindow.Title = TryGetWindowOrMainWindowTitle(targetWindowOnSameDispatcher);
-
-        if (string.IsNullOrEmpty(snoopWindow.Title))
-        {
-            snoopWindow.Title = "Snoop";
-        }
-        else
-        {
-            snoopWindow.Title += " - Snoop";
-        }
+        var targetTitle = TryGetWindowOrMainWindowTitle(targetWindowOnSameDispatcher);
+        snoopWindow.Title = string.IsNullOrEmpty(targetTitle) ? "Snoop Next" : $"{targetTitle} — Snoop Next";
 
         snoopWindow.Inspect(dispatcherRootObjectPair.RootObject);
 

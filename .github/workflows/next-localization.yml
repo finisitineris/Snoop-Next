@@ -14,6 +14,10 @@ on:
       - 'Snoop.Host.SettingsSmoke/**'
       - 'Snoop/Snoop.csproj'
       - 'Snoop/Settings.cs'
+      - 'Snoop/AppChooser.*'
+      - 'Snoop/LauncherStyles.xaml'
+      - 'Snoop/WindowFinder.*'
+      - 'Snoop/WindowInfoControl.xaml'
       - 'Snoop/App.xaml.cs'
       - 'Snoop/Views/SettingsView.xaml'
       - 'Snoop/Views/SettingsView.xaml.cs'
@@ -83,6 +87,8 @@ jobs:
           dotnet build Snoop.Next.Localization.Demo/Snoop.Next.Localization.Demo.csproj -c Release --nologo
           if ($LASTEXITCODE -ne 0) { throw 'WPF localization demo compilation failed' }
       - name: Build and run host/inspector UI smoke (CLR4, no external injection)
+        env:
+          SNOOP_UI_PREVIEW_DIR: output/next-ui-previews
         shell: pwsh
         run: |
           $project = 'Snoop.Host.SettingsSmoke/Snoop.Host.SettingsSmoke.csproj'
@@ -92,6 +98,12 @@ jobs:
           if (-not (Test-Path $smoke)) { throw "Missing CLR4 smoke executable: $smoke" }
           & $smoke
           if ($LASTEXITCODE -ne 0) { throw 'Snoop host/inspector UI smoke failed' }
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: fluent-ui-previews
+          path: output/next-ui-previews/*.png
+          if-no-files-found: warn
       - name: Check host-side DLL and explicit install manifests
         shell: pwsh
         run: |
