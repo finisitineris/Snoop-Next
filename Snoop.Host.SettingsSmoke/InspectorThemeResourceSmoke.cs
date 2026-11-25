@@ -62,6 +62,12 @@ internal static class InspectorThemeResourceSmoke
             {
                 ThemeManager.Current.ApplyTheme(theme, inspector);
                 VerifyPalette(theme);
+                foreach (var key in new[] { "Snoop.Brushes.Default.Foreground", "Menu.Static.Foreground", "ComboBox.Static.Glyph" })
+                {
+                    RequireBrush(inspector.FindResource(key) as Brush, BrushFor("Text").Color, key);
+                }
+
+                RequireBrush(inspector.FindResource("GridViewColumnHeaderBackground") as Brush, BrushFor("Control").Color, "column header surface");
                 RequireBrush(chrome.Background, BrushFor("Background").Color, "workbench background");
                 RequireBrush(status.Background, BrushFor("Panel").Color, "status panel");
                 RequireBrush(status.Foreground, BrushFor("Text").Color, "status text");

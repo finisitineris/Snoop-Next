@@ -127,7 +127,7 @@ public class ThemeManager
             {
                 Source = new Uri("/Snoop.Core;component/Themes/Colors.Light.xaml", UriKind.Relative)
             };
-            this.Dark = Invert(this.Light, new ResourceDictionary
+            this.Dark = WithInvertedFallbacks(this.Light, new ResourceDictionary
             {
                 Source = new Uri("/Snoop.Core;component/Themes/Colors.Dark.xaml", UriKind.Relative)
             });
@@ -165,8 +165,9 @@ public class ThemeManager
         return true;
     }
 
-    private static ResourceDictionary Invert(ResourceDictionary original, ResourceDictionary target)
+    private static ResourceDictionary WithInvertedFallbacks(ResourceDictionary original, ResourceDictionary target)
     {
+        var fallback = new ResourceDictionary();
 #pragma warning disable CS8605
         foreach (DictionaryEntry entry in original)
 #pragma warning restore CS8605
@@ -189,9 +190,11 @@ public class ThemeManager
                 value = Invert(color);
             }
 
-            target.Add(key, value);
+            fallback.Add(key, value);
         }
 
+        // An explicit, possibly deferred BAML entry must always win over a derived color.
+        target.MergedDictionaries.Add(fallback);
         return target;
     }
 

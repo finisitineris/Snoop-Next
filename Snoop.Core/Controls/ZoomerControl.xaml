@@ -10,7 +10,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:localization="clr-namespace:Snoop.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:snoop="clr-namespace:Snoop"
+             x:Name="Viewport"
              xmlns:windows="clr-namespace:Snoop.Windows"
              d:DesignHeight="300"
              d:DesignWidth="300"
@@ -23,11 +23,21 @@
           Mouse.MouseDown="Content_MouseDown"
           Mouse.MouseMove="Content_MouseMove"
           Mouse.MouseUp="Content_MouseUp">
-        <Grid.Background>
-            <Binding Converter="{x:Static windows:DoubleToWhitenessConverter.Default}"
-                     ElementName="ColorSlider"
-                     Path="Value" />
-        </Grid.Background>
+        <Grid.Style>
+            <Style TargetType="Grid">
+                <Setter Property="Background" Value="{Binding Background, ElementName=Viewport}" />
+                <Style.Triggers>
+                    <!-- A real preview keeps its user-adjustable inspection backdrop. -->
+                    <DataTrigger Binding="{Binding Background, ElementName=Viewport}" Value="{x:Null}">
+                        <Setter Property="Background"
+                                Value="{Binding Value, ElementName=ColorSlider, Converter={x:Static windows:DoubleToWhitenessConverter.Default}}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Target, ElementName=Viewport}" Value="{x:Null}">
+                        <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Style>
 
         <Viewbox x:Name="Viewbox" />
 

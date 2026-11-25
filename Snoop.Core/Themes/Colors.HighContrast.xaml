@@ -13,43 +13,43 @@
     <SolidColorBrush x:Key="SnoopNext.Brush.OnAccent" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
     <SolidColorBrush x:Key="SnoopNext.Brush.Error" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
 
-    <StaticResource x:Key="Snoop.Brushes.Default.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Foreground" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="Menu.Static.Foreground" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="ComboBox.Static.Glyph" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="ComboBox.MouseOver.Glyph" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="ComboBox.Pressed.Glyph" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="Snoop.Brushes.Default.GrayForeground" ResourceKey="SnoopNext.Brush.TextSecondary" />
-    <StaticResource x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" ResourceKey="SnoopNext.Brush.TextSecondary" />
-    <StaticResource x:Key="GridViewColumnHeaderBackground" ResourceKey="SnoopNext.Brush.Control" />
-    <StaticResource x:Key="ComboBox.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
-    <StaticResource x:Key="TabItem.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
-    <StaticResource x:Key="Menu.Static.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="TabItem.Selected.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="ComboBox.Static.Editable.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="GridViewColumnHeaderBorderBackground" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="ComboBox.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="ComboBox.Static.Editable.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="TabItem.Selected.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="TabItem.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="Menu.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="GridViewColumnHeaderHoverBackground" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="ComboBox.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="ComboBox.MouseOver.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="MenuItem.Highlight.Background" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="MenuItem.Selected.Background" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="TabItem.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="ListItemHoverFill" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="GridViewColumnHeaderPressBackground" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ComboBox.Pressed.Background" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ComboBox.Pressed.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ListItemSelectedFill" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ListItemSelectedHoverFill" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ListItemSelectedInactiveFill" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Highlight" ResourceKey="SnoopNext.Brush.Accent" />
-    <StaticResource x:Key="Snoop.Brushes.Default.HotTrack" ResourceKey="SnoopNext.Brush.Accent" />
-    <StaticResource x:Key="TextBox.Focus.Border" ResourceKey="SnoopNext.Brush.Accent" />
-    <StaticResource x:Key="Snoop.Brushes.Default.HighlightForeground" ResourceKey="SnoopNext.Brush.OnAccent" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Foreground" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="Menu.Static.Foreground" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Glyph" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.GrayForeground" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderBackground" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Static.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="TabItem.Static.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Menu.Static.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="TabItem.Selected.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderBorderBackground" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Static.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="TabItem.Selected.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="TabItem.Static.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="Menu.Static.Border" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderHoverBackground" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="MenuItem.Selected.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="TabItem.MouseOver.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ListItemHoverFill" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderPressBackground" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Background" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ListItemSelectedFill" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ListItemSelectedHoverFill" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="ListItemSelectedInactiveFill" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Highlight" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.HotTrack" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.HighlightForeground" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
 </ResourceDictionary>

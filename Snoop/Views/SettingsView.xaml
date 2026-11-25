@@ -19,6 +19,11 @@
                 <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- ComboBox projects the selected item's content template into a second presenter. -->
+            <DataTemplate x:Key="SettingsLanguageName">
+                <TextBlock Foreground="{DynamicResource SnoopNext.Brush.Text}" Text="{Binding}" />
+            </DataTemplate>
+
             <Style x:Key="SettingsSection" TargetType="Border">
                 <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
@@ -91,11 +96,12 @@
                           MinHeight="32"
                           AutomationProperties.LabeledBy="{Binding ElementName=LanguageLabel}"
                           FocusVisualStyle="{StaticResource SnoopNext.FocusVisual}"
+                          Foreground="{DynamicResource SnoopNext.Brush.Text}"
                           SelectedValuePath="Tag"
                           VerticalContentAlignment="Center">
-                    <ComboBoxItem Tag="zh-CN" Content="{local:Loc Settings.Chinese}" />
-                    <ComboBoxItem Tag="en-US" Content="{local:Loc Settings.English}" />
-                    <ComboBoxItem Tag="system" Content="{local:Loc Settings.FollowSystem}" />
+                    <ComboBoxItem Tag="zh-CN" Content="{local:Loc Settings.Chinese}" ContentTemplate="{StaticResource SettingsLanguageName}" />
+                    <ComboBoxItem Tag="en-US" Content="{local:Loc Settings.English}" ContentTemplate="{StaticResource SettingsLanguageName}" />
+                    <ComboBoxItem Tag="system" Content="{local:Loc Settings.FollowSystem}" ContentTemplate="{StaticResource SettingsLanguageName}" />
                 </ComboBox>
             </Grid>
         </Border>

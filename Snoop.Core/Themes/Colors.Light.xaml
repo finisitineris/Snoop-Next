@@ -1,17 +1,29 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
-    <SolidColorBrush x:Key="SnoopNext.Brush.Text" Color="#1A1A1A" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.TextSecondary" Color="#5D5D5D" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Panel" Color="#FFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Background" Color="#F3F3F3" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Control" Color="#FBFBFB" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Border" Color="#D1D1D1" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Hover" Color="#F0F0F0" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Pressed" Color="#E5E5E5" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Accent" Color="#005FB8" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.OnAccent" Color="#FFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Error" Color="#C42B1C" options:Freeze="True" />
+    <Color x:Key="SnoopNext.Color.Text">#1A1A1A</Color>
+    <Color x:Key="SnoopNext.Color.TextSecondary">#5D5D5D</Color>
+    <Color x:Key="SnoopNext.Color.Panel">#FFFFFF</Color>
+    <Color x:Key="SnoopNext.Color.Background">#F3F3F3</Color>
+    <Color x:Key="SnoopNext.Color.Control">#FBFBFB</Color>
+    <Color x:Key="SnoopNext.Color.Border">#D1D1D1</Color>
+    <Color x:Key="SnoopNext.Color.Hover">#F0F0F0</Color>
+    <Color x:Key="SnoopNext.Color.Pressed">#E5E5E5</Color>
+    <Color x:Key="SnoopNext.Color.Accent">#005FB8</Color>
+    <Color x:Key="SnoopNext.Color.OnAccent">#FFFFFF</Color>
+    <Color x:Key="SnoopNext.Color.Error">#C42B1C</Color>
+
+    <SolidColorBrush x:Key="SnoopNext.Brush.Text" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.TextSecondary" Color="{StaticResource SnoopNext.Color.TextSecondary}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Panel" Color="{StaticResource SnoopNext.Color.Panel}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Background" Color="{StaticResource SnoopNext.Color.Background}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Control" Color="{StaticResource SnoopNext.Color.Control}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Hover" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Pressed" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Accent" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.OnAccent" Color="{StaticResource SnoopNext.Color.OnAccent}" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Error" Color="{StaticResource SnoopNext.Color.Error}" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Expander.Static.Circle.Stroke" Color="#FF333333" options:Freeze="True" />
     <SolidColorBrush x:Key="Expander.Static.Circle.Fill" Color="#FFFFFFFF" options:Freeze="True" />
@@ -45,24 +57,24 @@
     <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA" options:Freeze="True" />
     <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA" options:Freeze="True" />
 
-    <StaticResource x:Key="GridViewColumnHeaderBorderBackground" ResourceKey="SnoopNext.Brush.Border" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderBorderBackground" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
 
-    <StaticResource x:Key="GridViewColumnHeaderBackground" ResourceKey="SnoopNext.Brush.Control" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderBackground" Color="{StaticResource SnoopNext.Color.Control}" options:Freeze="True" />
 
-    <StaticResource x:Key="GridViewColumnHeaderHoverBackground" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderHoverBackground" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
 
-    <StaticResource x:Key="GridViewColumnHeaderPressBackground" ResourceKey="SnoopNext.Brush.Pressed" />
+    <SolidColorBrush x:Key="GridViewColumnHeaderPressBackground" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
 
-    <StaticResource x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" ResourceKey="SnoopNext.Brush.TextSecondary" />
+    <SolidColorBrush x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" Color="{StaticResource SnoopNext.Color.TextSecondary}" options:Freeze="True" />
 
-    <StaticResource x:Key="ListItemHoverFill" ResourceKey="SnoopNext.Brush.Hover" />
-    <StaticResource x:Key="ListItemSelectedFill" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ListItemSelectedHoverFill" ResourceKey="SnoopNext.Brush.Pressed" />
-    <StaticResource x:Key="ListItemSelectedInactiveFill" ResourceKey="SnoopNext.Brush.Pressed" />
+    <SolidColorBrush x:Key="ListItemHoverFill" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ListItemSelectedFill" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ListItemSelectedHoverFill" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ListItemSelectedInactiveFill" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
 
-    <StaticResource x:Key="Menu.Static.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="Menu.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="Menu.Static.Foreground" ResourceKey="SnoopNext.Brush.Text" />
+    <SolidColorBrush x:Key="Menu.Static.Background" Color="{StaticResource SnoopNext.Color.Panel}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Menu.Static.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Menu.Static.Foreground" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Menu.Static.Separator" Color="#FFD7D7D7" options:Freeze="True" />
 
@@ -70,10 +82,10 @@
     <SolidColorBrush x:Key="Menu.Disabled.Border" Color="#FFDADADA" options:Freeze="True" />
     <SolidColorBrush x:Key="Menu.Disabled.Foreground" Color="#FF707070" options:Freeze="True" />
 
-    <StaticResource x:Key="MenuItem.Selected.Background" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="MenuItem.Selected.Background" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
     <SolidColorBrush x:Key="MenuItem.Selected.Border" Color="#FF26A0DA" options:Freeze="True" />
 
-    <StaticResource x:Key="MenuItem.Highlight.Background" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
     <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="#FF26A0DA" options:Freeze="True" />
 
     <SolidColorBrush x:Key="MenuItem.Highlight.Disabled.Background" Color="#0A000000" options:Freeze="True" />
@@ -133,19 +145,19 @@
     <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="#FFE7EAEA" options:Freeze="True" />
     <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="#FFD6D6D6" options:Freeze="True" />
 
-    <StaticResource x:Key="TabItem.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
-    <StaticResource x:Key="TabItem.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="TabItem.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="TabItem.Static.Background" Color="{StaticResource SnoopNext.Color.Control}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TabItem.Static.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TabItem.MouseOver.Background" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
     <SolidColorBrush x:Key="TabItem.MouseOver.Border" Color="#7EB4EA" options:Freeze="True" />
-    <StaticResource x:Key="TabItem.Selected.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="TabItem.Selected.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <SolidColorBrush x:Key="TabItem.Selected.Background" Color="{StaticResource SnoopNext.Color.Panel}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TabItem.Selected.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
     <SolidColorBrush x:Key="TabItem.Disabled.Background" Color="#F0F0F0" options:Freeze="True" />
     <SolidColorBrush x:Key="TabItem.Disabled.Border" Color="#D9D9D9" options:Freeze="True" />
 
     <SolidColorBrush x:Key="TextBox.Static.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3" options:Freeze="True" />
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <StaticResource x:Key="TextBox.Focus.Border" ResourceKey="SnoopNext.Brush.Accent" />
+    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
 
     <SolidColorBrush x:Key="ToolTip.Background" Color="#FFF1F2F7" options:Freeze="True" />
     <SolidColorBrush x:Key="ToolTip.Border" Color="#FF767676" options:Freeze="True" />
@@ -185,28 +197,28 @@
     <SolidColorBrush x:Key="OptionMark.Disabled.Border" Color="#FFBCBCBC" options:Freeze="True" />
     <SolidColorBrush x:Key="OptionMark.Disabled.Glyph" Color="#FF707070" options:Freeze="True" />
 
-    <StaticResource x:Key="ComboBox.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
-    <StaticResource x:Key="ComboBox.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="ComboBox.Static.Glyph" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="ComboBox.Static.Editable.Background" ResourceKey="SnoopNext.Brush.Panel" />
-    <StaticResource x:Key="ComboBox.Static.Editable.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <SolidColorBrush x:Key="ComboBox.Static.Background" Color="{StaticResource SnoopNext.Color.Control}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ComboBox.Static.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="{StaticResource SnoopNext.Color.Panel}" options:Freeze="True" />
+    <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Background" Color="Transparent" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Border" Color="Transparent" options:Freeze="True" />
 
-    <StaticResource x:Key="ComboBox.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Background" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <StaticResource x:Key="ComboBox.MouseOver.Glyph" ResourceKey="SnoopNext.Brush.Text" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <StaticResource x:Key="ComboBox.MouseOver.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Hover" />
+    <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Border" Color="#FF7EB4EA" options:Freeze="True" />
 
-    <StaticResource x:Key="ComboBox.Pressed.Background" ResourceKey="SnoopNext.Brush.Pressed" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Background" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Border" Color="#FF569DE5" options:Freeze="True" />
-    <StaticResource x:Key="ComboBox.Pressed.Glyph" ResourceKey="SnoopNext.Brush.Text" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Glyph" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Border" Color="#FF569DE5" options:Freeze="True" />
-    <StaticResource x:Key="ComboBox.Pressed.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Pressed" />
+    <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Background" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Border" Color="#FF569DE5" options:Freeze="True" />
 
     <SolidColorBrush x:Key="ComboBox.Disabled.Background" Color="#FFF0F0F0" options:Freeze="True" />
@@ -232,16 +244,16 @@
     <!-- Used for background of ScrollViewer, TreeView, ListBox, Expander, TextBox, Tab Control -->
     <SolidColorBrush x:Key="Snoop.Brushes.Default.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.LightDarkBackground" Color="#FFF1EDED" options:Freeze="True" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Foreground" ResourceKey="SnoopNext.Brush.Text" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Border" ResourceKey="SnoopNext.Brush.Border" />
-    <StaticResource x:Key="Snoop.Brushes.Default.GrayForeground" ResourceKey="SnoopNext.Brush.TextSecondary" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Foreground" Color="{StaticResource SnoopNext.Color.Text}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Border" Color="{StaticResource SnoopNext.Color.Border}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.GrayForeground" Color="{StaticResource SnoopNext.Color.TextSecondary}" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.Control" Color="#FFF0F0F0" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.ControlDark" Color="#FFA0A0A0" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.ControlDarkDark" Color="#FF696969" options:Freeze="True" />
-    <StaticResource x:Key="Snoop.Brushes.Default.Highlight" ResourceKey="SnoopNext.Brush.Accent" />
-    <StaticResource x:Key="Snoop.Brushes.Default.HighlightForeground" ResourceKey="SnoopNext.Brush.OnAccent" />
-    <StaticResource x:Key="Snoop.Brushes.Default.HotTrack" ResourceKey="SnoopNext.Brush.Accent" />
-    <StaticResource x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" ResourceKey="SnoopNext.Brush.Pressed" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.Highlight" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.HighlightForeground" Color="{StaticResource SnoopNext.Color.OnAccent}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.HotTrack" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" Color="{StaticResource SnoopNext.Color.Pressed}" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.InactiveSelectionHighlightForeground" Color="#FF000000" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Snoop.Brushes.Window.Frame" Color="#FF646464" options:Freeze="True" />

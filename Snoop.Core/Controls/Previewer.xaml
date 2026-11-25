@@ -42,7 +42,19 @@
     </UserControl.Resources>
 
     <Grid DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
-        <controls:ZoomerControl x:Name="Zoomer" />
+        <controls:ZoomerControl x:Name="Zoomer">
+            <controls:ZoomerControl.Style>
+                <Style TargetType="{x:Type controls:ZoomerControl}">
+                    <Style.Triggers>
+                        <!-- The previewer supplies this brush as its idle or paused artwork. -->
+                        <DataTrigger Binding="{Binding Target, RelativeSource={RelativeSource Self}}"
+                                     Value="{StaticResource previewerSnoopDogDrawingBrush}">
+                            <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </controls:ZoomerControl.Style>
+        </controls:ZoomerControl>
 
         <Button Width="28"
                 Height="28"
