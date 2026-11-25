@@ -185,7 +185,14 @@
                               Click="HandleToggleWorkbenchPane_OnClick" />
                 </MenuItem>
                 <MenuItem x:Name="WorkbenchSettingsMenu" Header="{localization:InspectorLoc Menu.Settings}">
-                    <MenuItem Header="{Binding Path=SettingsFile, Source={x:Static core:Settings.Default}}" />
+                    <MenuItem Header="{Binding Path=SettingsFile, Source={x:Static core:Settings.Default}}"
+                              ToolTip="{Binding Header, RelativeSource={RelativeSource Self}}">
+                        <MenuItem.HeaderTemplate>
+                            <DataTemplate>
+                                <TextBlock MaxWidth="320" Text="{Binding}" TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                        </MenuItem.HeaderTemplate>
+                    </MenuItem>
                     <MenuItem Header="{localization:InspectorLoc Menu.MakeSettingsApplicationSpecific}"
                               Click="HandleMakeSettingsApplicationsSpecific_OnClick" />
                     <MenuItem Header="{localization:InspectorLoc Menu.DeleteApplicationSpecificSettings}"

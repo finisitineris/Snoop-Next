@@ -3,6 +3,7 @@ namespace Snoop.Host.SettingsSmoke;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -78,6 +79,7 @@ internal static class InspectorFlyoutSmoke
                 VerifyPopup(filter, inspector);
                 filter.IsDropDownOpen = false;
                 Drain();
+                InspectorContextMenuSmoke.Verify(inspector);
             }
         }
         finally
@@ -91,7 +93,7 @@ internal static class InspectorFlyoutSmoke
             Snoop.Core.Settings.Default.ThemeMode = originalTheme;
         }
 
-        Console.WriteLine("PASS: live top menu, nested menu, selected theme list and editable filter use Fluent popups in both themes.");
+        Console.WriteLine("PASS: live top menu, nested menu, selected theme list, editable filter, property context menu and grouped event picker use Fluent popups in both themes.");
     }
 
     private static FrameworkElement VerifyPopup(Control owner, Window inspector)
@@ -114,32 +116,52 @@ internal static class InspectorFlyoutSmoke
 
     private static void Capture(FrameworkElement surface, string name, params FrameworkElement[] popups)
     {
+        var window = Window.GetWindow(surface);
+        var hwnd = new WindowInteropHelper(window).Handle;
+        VerifyCaptionColor(hwnd, window);
         var path = Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR");
         if (string.IsNullOrEmpty(path))
         {
             return;
         }
 
-        // Popups have separate HWNDs. Composite their actual WPF renders at their screen positions.
+        // PointToScreen and GetWindowRect share screen pixel coordinates. Each popup
+        // has its own presentation source and can be on a differently scaled monitor.
+        var frame = CaptureNativeFrame(hwnd, out var bounds);
         var layers = new[] { surface }.Concat(popups).Select(control =>
         {
-            var size = new Size(Math.Ceiling(control.ActualWidth), Math.Ceiling(control.ActualHeight));
-            var bitmap = new RenderTargetBitmap((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Pbgra32);
+            var scale = PresentationSource.FromVisual(control).CompositionTarget.TransformToDevice;
+            var width = (int)Math.Ceiling(control.ActualWidth * scale.M11);
+            var height = (int)Math.Ceiling(control.ActualHeight * scale.M22);
+            var bitmap = new RenderTargetBitmap(width, height, 96 * scale.M11, 96 * scale.M22, PixelFormats.Pbgra32);
             bitmap.Render(control);
-            var origin = surface.PointFromScreen(control.PointToScreen(default));
-            return new { Bitmap = bitmap, Bounds = new Rect(origin, size) };
+            return new { Bitmap = bitmap, Bounds = new Rect(control.PointToScreen(default), new Size(width, height)) };
         }).ToArray();
+        var frameBounds = bounds;
+        foreach (var layer in layers)
+        {
+            bounds.Union(layer.Bounds);
+        }
+
         var visual = new DrawingVisual();
         using (var context = visual.RenderOpen())
         {
+            context.PushTransform(new TranslateTransform(-bounds.X, -bounds.Y));
+            if (frame is not null)
+            {
+                context.DrawImage(frame, frameBounds);
+            }
+
             foreach (var layer in layers)
             {
                 context.DrawImage(layer.Bitmap, layer.Bounds);
             }
+
+            context.Pop();
         }
 
-        var image = new RenderTargetBitmap((int)Math.Ceiling(surface.ActualWidth),
-            (int)Math.Ceiling(surface.ActualHeight), 96, 96, PixelFormats.Pbgra32);
+        var image = new RenderTargetBitmap((int)Math.Ceiling(bounds.Width),
+            (int)Math.Ceiling(bounds.Height), 96, 96, PixelFormats.Pbgra32);
         image.Render(visual);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(image));
@@ -148,8 +170,88 @@ internal static class InspectorFlyoutSmoke
         encoder.Save(file);
     }
 
+    private static BitmapSource? CaptureNativeFrame(IntPtr hwnd, out Rect bounds)
+    {
+        bounds = Rect.Empty;
+        if (!GetWindowRect(hwnd, out var rect) || rect.Right <= rect.Left || rect.Bottom <= rect.Top)
+        {
+            return null;
+        }
+
+        var width = rect.Right - rect.Left;
+        var height = rect.Bottom - rect.Top;
+        using var bitmap = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppRgb);
+        using (var graphics = System.Drawing.Graphics.FromImage(bitmap))
+        {
+            var dc = graphics.GetHdc();
+            try
+            {
+                // PW_RENDERFULLCONTENT without PW_CLIENTONLY includes the native caption.
+                if (!PrintWindow(hwnd, dc, 2))
+                {
+                    return null;
+                }
+            }
+            finally
+            {
+                graphics.ReleaseHdc(dc);
+            }
+        }
+
+        var pixels = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, width, height),
+            System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+        try
+        {
+            var frame = BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgr32, null,
+                pixels.Scan0, pixels.Stride * height, pixels.Stride);
+            frame.Freeze();
+            bounds = new Rect(rect.Left, rect.Top, width, height);
+            return frame;
+        }
+        finally
+        {
+            bitmap.UnlockBits(pixels);
+        }
+    }
+
+    private static void VerifyCaptionColor(IntPtr hwnd, Window window)
+    {
+        // DWMWA_CAPTION_COLOR is available starting with Windows 11 build 22000.
+        if (DwmGetWindowAttribute(hwnd, 35, out var actual, sizeof(int)) != 0)
+        {
+            return;
+        }
+
+        var color = ((SolidColorBrush)window.FindResource("SnoopNext.Brush.Background")).Color;
+        var expected = SystemParameters.HighContrast ? -1 : color.R | (color.G << 8) | (color.B << 16);
+        if (actual != expected)
+        {
+            throw new InvalidOperationException($"Native inspector caption expected COLORREF {expected:X8}; got {actual:X8}.");
+        }
+    }
+
+    [DllImport("dwmapi.dll", ExactSpelling = true)]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int attribute, out int value, int size);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(IntPtr hwnd, out WindowRect rect);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool PrintWindow(IntPtr hwnd, IntPtr deviceContext, uint flags);
+
     private static void Drain()
     {
         Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
     }
 }

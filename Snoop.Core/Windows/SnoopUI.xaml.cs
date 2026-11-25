@@ -1168,6 +1168,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private const double MinimumDiagnosticsHeight = 110;
     private const double MaximumDiagnosticsHeight = 440;
     private const double MinimumPreviewHeight = 110;
+    private const double CompactPreviewHeight = 60;
     private const double LayoutSizeTolerance = 0.001;
 
     // The v1.1 reference window's work area, after allowing for the chrome.
@@ -1479,7 +1480,10 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         var showDiagnostics = this.ShowDiagnosticsPaneItem.IsChecked;
         var splitterHeight = showDiagnostics ? SplitterSize : 0;
         var availableHeight = Math.Max(0, this.workbenchViewportHeight - splitterHeight);
-        var diagnosticsMinimum = showDiagnostics ? Math.Min(MinimumDiagnosticsHeight, availableHeight / 2) : 0;
+        // The diagnostics tabs include two control rows before their first line of data.
+        // When the command bar wraps, retain those rows and space for the preview tools.
+        var diagnosticsBudget = Math.Max(availableHeight / 2, availableHeight - CompactPreviewHeight);
+        var diagnosticsMinimum = showDiagnostics ? Math.Min(MinimumDiagnosticsHeight, diagnosticsBudget) : 0;
         var previewMinimum = Math.Min(MinimumPreviewHeight, availableHeight - diagnosticsMinimum);
         this.appliedWorkbenchSizes.Diagnostics = showDiagnostics
             ? Math.Min(this.expandedWorkbenchSizes.Diagnostics, availableHeight - previewMinimum)
