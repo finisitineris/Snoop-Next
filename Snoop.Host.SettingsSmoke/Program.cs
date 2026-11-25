@@ -331,6 +331,7 @@ internal static class Program
 
                         InspectorFilterSmoke.Verify(inspector);
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
+                        LauncherAppearanceSmoke.Verify(inspector);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!);

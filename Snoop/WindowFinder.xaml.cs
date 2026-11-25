@@ -12,6 +12,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 using Snoop.Windows;
 
 public enum WindowFinderType
@@ -41,7 +42,15 @@ public partial class WindowFinder
         this.lowLevelMouseHook.LowLevelMouseMove += this.LowLevelMouseMove;
     }
 
-    public WindowFinderType WindowFinderType { get; set; }
+    public static readonly DependencyProperty WindowFinderTypeProperty =
+        DependencyProperty.Register(nameof(WindowFinderType), typeof(WindowFinderType), typeof(WindowFinder),
+                                    new PropertyMetadata(WindowFinderType.Snoop));
+
+    public WindowFinderType WindowFinderType
+    {
+        get => (WindowFinderType)this.GetValue(WindowFinderTypeProperty);
+        set => this.SetValue(WindowFinderTypeProperty, value);
+    }
 
     public WindowInfoControl WindowInfoControl { get; } = new();
 
@@ -181,7 +190,8 @@ public partial class WindowFinder
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{windowInfo.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", windowInfo.Description), true);
         }
     }
 
@@ -191,7 +201,8 @@ public partial class WindowFinder
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{windowInfo.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", windowInfo.Description), true);
         }
     }
 

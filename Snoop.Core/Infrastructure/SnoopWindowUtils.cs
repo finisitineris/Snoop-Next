@@ -155,27 +155,43 @@ public static class SnoopWindowUtils
         saveAction(windowPlacement);
     }
 
+    /// <summary>Get the current monitor's usable bounds in the window's WPF coordinates.</summary>
+    public static Rect GetWindowWorkArea(Window window)
+    {
+        var hwnd = new WindowInteropHelper(window).Handle;
+        var origin = window.PointToScreen(default);
+        var bounds = new RECT((int)origin.X, (int)origin.Y,
+                              (int)Math.Ceiling(origin.X + 1), (int)Math.Ceiling(origin.Y + 1));
+        if (!TryGetMonitorInfo(bounds, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST, out var monitorInfo))
+        {
+            return SystemParameters.WorkArea;
+        }
+
+        Rectangle work = monitorInfo.rcWork;
+        return new Rect(DPIHelper.DevicePixelsToLogical(new Point(work.Left, work.Top), hwnd),
+                        DPIHelper.DevicePixelsToLogical(new Point(work.Right, work.Bottom), hwnd));
+    }
+
     private static bool IsVisibleOnAnyScreen(RECT rect, out Rectangle screenBounds)
     {
         screenBounds = Rectangle.Empty;
-
-        var rectangle = new Rectangle(rect.Left, rect.Top, rect.Width, rect.Height);
-
-        var apiRect = new global::Windows.Win32.Foundation.RECT(rectangle);
-
-        var monitor = PInvoke.MonitorFromRect(apiRect, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL);
-        if (monitor == HMONITOR.Null)
-        {
-            return false;
-        }
-
-        var monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
-        if (PInvoke.GetMonitorInfo(monitor, ref monitorInfo) == false)
+        if (!TryGetMonitorInfo(rect, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONULL, out var monitorInfo))
         {
             return false;
         }
 
         screenBounds = monitorInfo.rcMonitor;
         return true;
+    }
+
+    private static bool TryGetMonitorInfo(RECT rect, MONITOR_FROM_FLAGS flags, out MONITORINFO monitorInfo)
+    {
+        monitorInfo = new MONITORINFO { cbSize = (uint)Marshal.SizeOf<MONITORINFO>() };
+        var rectangle = new Rectangle(rect.Left, rect.Top, rect.Width, rect.Height);
+
+        var apiRect = new global::Windows.Win32.Foundation.RECT(rectangle);
+
+        var monitor = PInvoke.MonitorFromRect(apiRect, flags);
+        return monitor != HMONITOR.Null && PInvoke.GetMonitorInfo(monitor, ref monitorInfo);
     }
 }

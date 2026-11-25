@@ -31,6 +31,7 @@
                              d:DesignHeight="480"
                              d:DesignWidth="640"
                              DataContext="{Binding RelativeSource={RelativeSource Self}}"
+                             FontFamily="Segoe UI Variable Text, Segoe UI, Global User Interface"
                              Focusable="False"
                              ShowInTaskbar="True"
                              SnapsToDevicePixels="True"
@@ -41,32 +42,9 @@
                 <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style x:Key="SnoopNext.WorkbenchFocusVisual" TargetType="{x:Type Control}">
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type Control}">
-                            <Grid IsHitTestVisible="False" SnapsToDevicePixels="True">
-                                <Rectangle x:Name="HighContrastUnderlay"
-                                           Stroke="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
-                                           StrokeThickness="4"
-                                           Visibility="Collapsed" />
-                                <Rectangle x:Name="FocusOutline"
-                                           Stroke="{DynamicResource SnoopNext.Brush.Accent}"
-                                           StrokeThickness="2" />
-                            </Grid>
-                            <ControlTemplate.Triggers>
-                                <DataTrigger Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True">
-                                    <Setter TargetName="HighContrastUnderlay" Property="Visibility" Value="Visible" />
-                                    <Setter TargetName="FocusOutline"
-                                            Property="Stroke"
-                                            Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
-                                    <Setter TargetName="FocusOutline" Property="StrokeThickness" Value="1" />
-                                </DataTrigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+            <Style x:Key="SnoopNext.WorkbenchFocusVisual"
+                   TargetType="{x:Type Control}"
+                   BasedOn="{StaticResource SnoopNext.FocusVisual}" />
 
             <Style x:Key="SnoopNext.WorkbenchNavigationButton" TargetType="{x:Type Button}">
                 <Setter Property="AutomationProperties.Name" Value="{Binding ToolTip, RelativeSource={RelativeSource Self}}" />
@@ -82,13 +60,13 @@
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="Transparent"
                                     BorderThickness="1"
-                                    CornerRadius="6"
+                                    CornerRadius="4"
                                     SnapsToDevicePixels="True">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Background}" />
+                                    <Setter TargetName="ButtonSurface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Hover}" />
                                     <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Accent}" />
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
@@ -112,6 +90,42 @@
                 <Setter Property="StrokeEndLineCap" Value="Round" />
             </Style>
 
+            <Style x:Key="SnoopNext.WorkbenchTab" TargetType="{x:Type TabItem}" BasedOn="{StaticResource {x:Type TabItem}}">
+                <Setter Property="MinHeight" Value="28" />
+                <Setter Property="Padding" Value="7 3" />
+                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.WorkbenchFocusVisual}" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TabItem}">
+                            <Grid Background="Transparent">
+                                <Border x:Name="Surface" Margin="1" CornerRadius="4">
+                                    <ContentPresenter Margin="{TemplateBinding Padding}"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      ContentSource="Header"
+                                                      RecognizesAccessKey="True" />
+                                </Border>
+                                <Border x:Name="Indicator" Width="16" Height="3"
+                                        VerticalAlignment="Bottom" CornerRadius="1.5"
+                                        Background="{DynamicResource SnoopNext.Brush.Accent}" Visibility="Hidden" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Hover}" />
+                                </Trigger>
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <DataTemplate x:Key="stylelessTextBlockDataTemplate">
                 <TextBlock Text="{Binding}" />
             </DataTemplate>
@@ -121,7 +135,7 @@
     <DockPanel x:Name="WorkbenchChrome" Background="{DynamicResource SnoopNext.Brush.Background}">
         <StackPanel x:Name="WorkbenchHeader" DockPanel.Dock="Top">
             <Menu x:Name="WorkbenchMenuBar"
-                  Background="{DynamicResource SnoopNext.Brush.Panel}"
+                  Background="{DynamicResource SnoopNext.Brush.Background}"
                   BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                   BorderThickness="0 0 0 1">
                 <MenuItem x:Name="FileMenuItem" Header="{localization:InspectorLoc Menu.File}">
@@ -259,7 +273,7 @@
             </Menu>
             <Border x:Name="WorkbenchCommandBar"
                     Padding="8 4"
-                    Background="{DynamicResource SnoopNext.Brush.Panel}"
+                    Background="{DynamicResource SnoopNext.Brush.Background}"
                     BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                     BorderThickness="0 0 0 1">
                 <WrapPanel>
@@ -280,6 +294,7 @@
                             FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
                             Command="{x:Static windows:SnoopUI.OpenCommandPaletteCommand}" />
                     <Popup x:Name="WorkbenchCommandPalette"
+                           AllowsTransparency="True"
                            PlacementTarget="{Binding ElementName=CommandPaletteButton}"
                            Placement="Bottom"
                            VerticalOffset="4"
@@ -288,7 +303,8 @@
                            Closed="HandleCommandPaletteClosed">
                         <Border x:Name="CommandPaletteSurface"
                                 Width="320"
-                                Padding="10"
+                                CornerRadius="8"
+                                Padding="12"
                                 Background="{DynamicResource SnoopNext.Brush.Panel}"
                                 BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                                 BorderThickness="1"
@@ -368,7 +384,7 @@
         <Border x:Name="WorkbenchNavigationRail"
                 DockPanel.Dock="Left"
                 Width="51"
-                Background="{DynamicResource SnoopNext.Brush.Panel}"
+                Background="{DynamicResource SnoopNext.Brush.Background}"
                 BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                 BorderThickness="0 0 1 0">
             <ScrollViewer Focusable="False"
@@ -427,7 +443,7 @@
                 <ColumnDefinition x:Name="InspectorPaneColumn" Width="354" />
             </Grid.ColumnDefinitions>
 
-            <Grid x:Name="TreeWorkbenchPane" ClipToBounds="True">
+            <Grid x:Name="TreeWorkbenchPane" Background="{DynamicResource SnoopNext.Brush.Panel}" ClipToBounds="True">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition />
@@ -435,7 +451,9 @@
 
                 <!-- Filter Combo Box -->
                 <ComboBox x:Name="filterComboBox"
-                          Margin="2"
+                          MinHeight="28"
+                          Margin="4"
+                          AutomationProperties.Name="{localization:InspectorLoc Tooltip.FilterByNameOrType}"
                           infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
                           IsEditable="True"
                           Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
@@ -541,6 +559,9 @@
             <TabControl x:Name="PropertiesWorkbenchPane"
                         Grid.Column="4"
                         Margin="2 2 2 0"
+                        Background="{DynamicResource SnoopNext.Brush.Panel}"
+                        BorderThickness="0 1 0 0"
+                        ItemContainerStyle="{StaticResource SnoopNext.WorkbenchTab}"
                         ClipToBounds="True">
                 <TabItem x:Name="WorkbenchPropertiesTab">
                     <TabItem.Header>
@@ -653,6 +674,7 @@
                 </Grid.RowDefinitions>
 
                 <Grid x:Name="WorkbenchPreviewPane"
+                      Background="{DynamicResource SnoopNext.Brush.Panel}"
                       AutomationProperties.Name="{localization:InspectorLoc Tab.Preview}"
                       Focusable="True"
                       FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
@@ -662,10 +684,11 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <DockPanel Margin="6 4" ClipToBounds="True">
+                    <DockPanel Margin="8 5" ClipToBounds="True">
                         <TextBlock DockPanel.Dock="Left"
                                    Margin="0 0 10 0"
                                    Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                   FontWeight="SemiBold"
                                    Text="{localization:InspectorLoc Tab.Preview}">
                             <TextBlock.ToolTip>
                                 <TextBlock MaxWidth="300"
@@ -674,7 +697,7 @@
                             </TextBlock.ToolTip>
                         </TextBlock>
                         <TextBlock x:Name="WorkbenchPreviewSelectionPath"
-                                   Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                   Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
                                    TextTrimming="CharacterEllipsis">
                             <TextBlock.ToolTip>
                                 <ToolTip>
@@ -712,7 +735,10 @@
                               VerticalAlignment="Stretch" />
 
                 <TabControl x:Name="DiagnosticsWorkbenchPane"
-                            Grid.Row="2">
+                            Grid.Row="2"
+                            Background="{DynamicResource SnoopNext.Brush.Panel}"
+                            BorderThickness="0 1 0 0"
+                            ItemContainerStyle="{StaticResource SnoopNext.WorkbenchTab}">
                     <TabItem x:Name="WorkbenchDiagnosticsTab">
                         <TabItem.Header>
                             <TextBlock>
@@ -788,6 +814,7 @@
 
                         <DockPanel Margin="0 0 8 0">
                             <TextBlock x:Name="WorkbenchTargetLabel"
+                                       Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
                                        DockPanel.Dock="Left"
                                        Margin="0 0 4 0"
                                        Text="{localization:InspectorLoc Status.TargetProcess}" />
@@ -809,6 +836,7 @@
 
                         <DockPanel Grid.Column="1">
                             <TextBlock x:Name="WorkbenchSelectionLabel"
+                                       Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
                                        DockPanel.Dock="Left"
                                        Margin="0 0 4 0"
                                        Text="{localization:InspectorLoc Status.SelectedElement}" />

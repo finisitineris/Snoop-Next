@@ -17,8 +17,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Microsoft.Win32;
 using Snoop.Core;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 using Snoop.Views;
 using Snoop.Windows;
 
@@ -46,8 +48,9 @@ public partial class AppChooser
         this.SortColumn = 1;
 
         this.InitializeComponent();
+        this.Loaded += this.HandleChooserLoaded;
 
-        ThemeManager.Current.ApplyTheme(ThemeMode.Light, this);
+        ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this);
 
         this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefreshCommand));
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspectCommand, this.HandleCanInspectOrMagnifyCommand));
@@ -65,6 +68,58 @@ public partial class AppChooser
     public ICollectionView WindowInfos { get; }
 
     public int SortColumn { get; private set; }
+
+    private void HandleChooserLoaded(object sender, RoutedEventArgs e)
+    {
+        this.Loaded -= this.HandleChooserLoaded;
+        SystemEvents.UserPreferenceChanged += this.HandleSystemPreferenceChanged;
+        if (this.WindowState == WindowState.Minimized)
+        {
+            this.StateChanged += this.HandleFirstRestore;
+            return;
+        }
+
+        this.FitChooserToWorkArea();
+    }
+
+    private void HandleSystemPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+    {
+        // SystemEvents can run on another thread. Resolve the current system palette on the UI Dispatcher.
+        if (e.Category is UserPreferenceCategory.General or UserPreferenceCategory.Color or UserPreferenceCategory.VisualStyle
+            && !this.Dispatcher.HasShutdownStarted)
+        {
+            this.Dispatcher.InvokeAsync(() => ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this));
+        }
+    }
+
+    private void HandleFirstRestore(object? sender, EventArgs e)
+    {
+        if (this.WindowState != WindowState.Minimized)
+        {
+            this.StateChanged -= this.HandleFirstRestore;
+            this.FitChooserToWorkArea();
+        }
+    }
+
+    private void FitChooserToWorkArea()
+    {
+        var target = PresentationSource.FromVisual(this)?.CompositionTarget;
+        if (target is null)
+        {
+            return;
+        }
+
+        var work = SnoopWindowUtils.GetWindowWorkArea(this);
+        this.MinWidth = Math.Min(this.MinWidth, work.Width);
+        this.Width = Math.Min(this.ActualWidth, work.Width);
+
+        // Loaded windows with automatic startup placement can still have NaN Left/Top.
+        // Translate their actual desktop origin using the HWND's current DPI.
+        var origin = this.PointToScreen(default);
+        var logical = target.TransformFromDevice.Transform(origin);
+        this.Left = Math.Max(work.Left, Math.Min(logical.X, work.Right - this.Width));
+        this.Top = Math.Max(work.Top, Math.Min(logical.Y, work.Bottom - this.ActualHeight));
+    }
 
     public void Refresh()
     {
@@ -176,6 +231,7 @@ public partial class AppChooser
 
     protected override void OnClosed(EventArgs e)
     {
+        SystemEvents.UserPreferenceChanged -= this.HandleSystemPreferenceChanged;
         this.keyboardHook?.Stop();
 
         base.OnClosed(e);
@@ -204,7 +260,8 @@ public partial class AppChooser
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{window.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
         }
     }
 
@@ -221,7 +278,8 @@ public partial class AppChooser
 
         if (result?.Success == false)
         {
-            ErrorDialog.ShowDialog(result.AttachException, "Can't Snoop the process", $"Failed to attach to '{window.Description}'.", true);
+            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
+                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
         }
     }
 
@@ -237,12 +295,12 @@ public partial class AppChooser
         var window = new SnoopBaseWindow
         {
             Content = new SettingsView(),
-            Title = "Settings",
+            Title = LocalizationManager.Default["Chooser.Settings"],
             Owner = this,
             MinWidth = 480,
             MinHeight = 360,
-            Width = 480,
-            Height = 360,
+            Width = 560,
+            Height = 440,
             WindowStartupLocation = WindowStartupLocation.CenterScreen,
             WindowStyle = WindowStyle.ToolWindow
         };

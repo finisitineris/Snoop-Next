@@ -139,7 +139,8 @@ internal static class InspectorDispatcherSmoke
 
         try
         {
-            var dark = Color.FromRgb(46, 46, 46);
+            var dark = SystemParameters.HighContrast ? SystemColors.WindowColor : Color.FromRgb(46, 46, 46);
+            var light = SystemParameters.HighContrast ? SystemColors.WindowColor : Colors.White;
             manager.ApplyTheme(ThemeMode.Dark);
             var primaryDark = VerifyTheme(dark);
             var secondaryDark = secondaryDispatcher.Invoke(() => ((Border)secondaryWindow.Content).Background,
@@ -147,7 +148,7 @@ internal static class InspectorDispatcherSmoke
             Require(!ReferenceEquals(primaryDark, secondaryDark), "Inspectors on different Dispatchers shared a theme brush.");
 
             manager.ApplyTheme(ThemeMode.Light);
-            VerifyTheme(Colors.White);
+            VerifyTheme(light);
 
             // Queue a theme change for the second Dispatcher while it is busy.
             // Its newer selection must still win when the older queued operation runs.
@@ -172,11 +173,11 @@ internal static class InspectorDispatcherSmoke
 
             Require(update.Task.Wait(Timeout), "The second theme update did not finish.");
             inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
-            VerifyTheme(Colors.White);
+            VerifyTheme(light);
 
             manager.ApplyTheme(ThemeMode.Auto);
             var systemColor = ((SolidColorBrush)inspector.FindResource(BackgroundKey)).Color;
-            Require(systemColor == Colors.White || systemColor == dark, "System theme did not resolve to a known palette.");
+            Require(systemColor == light || systemColor == dark, "System theme did not resolve to a known palette.");
             VerifyTheme(systemColor);
 
             Require(ReferenceEquals(app.Resources, resources) && resources.Count == resourceCount

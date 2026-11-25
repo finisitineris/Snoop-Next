@@ -15,12 +15,17 @@ internal static class InspectorThemeResourceSmoke
     {
         var palette = new[]
         {
-            new { Key = "Text", Light = "#273447", Dark = "#E8EDF6" },
-            new { Key = "Panel", Light = "#FFFFFF", Dark = "#293548" },
-            new { Key = "Border", Light = "#DCE5F0", Dark = "#3B4A60" },
-            new { Key = "Accent", Light = "#3979D5", Dark = "#78ADFF" },
-            new { Key = "Background", Light = "#E7EDF7", Dark = "#141C28" },
-            new { Key = "Error", Light = "#CE5151", Dark = "#FF9494" },
+            new { Key = "Text", Light = "#1A1A1A", Dark = "#FFFFFF", Contrast = SystemColors.WindowTextColor },
+            new { Key = "TextSecondary", Light = "#5D5D5D", Dark = "#C8C8C8", Contrast = SystemColors.WindowTextColor },
+            new { Key = "Panel", Light = "#FFFFFF", Dark = "#2C2C2C", Contrast = SystemColors.WindowColor },
+            new { Key = "Background", Light = "#F3F3F3", Dark = "#202020", Contrast = SystemColors.WindowColor },
+            new { Key = "Border", Light = "#D1D1D1", Dark = "#505050", Contrast = SystemColors.WindowTextColor },
+            new { Key = "Control", Light = "#FBFBFB", Dark = "#373737", Contrast = SystemColors.WindowColor },
+            new { Key = "Hover", Light = "#F0F0F0", Dark = "#414141", Contrast = SystemColors.WindowColor },
+            new { Key = "Pressed", Light = "#E5E5E5", Dark = "#343434", Contrast = SystemColors.WindowColor },
+            new { Key = "Accent", Light = "#005FB8", Dark = "#60CDFF", Contrast = SystemColors.HighlightColor },
+            new { Key = "OnAccent", Light = "#FFFFFF", Dark = "#00354A", Contrast = SystemColors.HighlightTextColor },
+            new { Key = "Error", Light = "#C42B1C", Dark = "#FF99A4", Contrast = SystemColors.WindowTextColor },
         };
         var originalTheme = Snoop.Core.Settings.Default.ThemeMode;
         ThemeManager.Current.ApplyTheme(ThemeMode.Light, inspector);
@@ -76,8 +81,11 @@ internal static class InspectorThemeResourceSmoke
                 foreach (var color in palette)
                 {
                     var brush = BrushFor(color.Key);
-                    RequireBrush(brush, (Color)ColorConverter.ConvertFromString(theme == ThemeMode.Dark ? color.Dark : color.Light), color.Key);
-                    if (!brush.IsFrozen)
+                    var expected = SystemParameters.HighContrast
+                        ? color.Contrast
+                        : (Color)ColorConverter.ConvertFromString(theme == ThemeMode.Dark ? color.Dark : color.Light);
+                    RequireBrush(brush, expected, color.Key);
+                    if (!SystemParameters.HighContrast && !brush.IsFrozen)
                     {
                         throw new InvalidOperationException("Workbench palette brush is mutable: " + color.Key);
                     }

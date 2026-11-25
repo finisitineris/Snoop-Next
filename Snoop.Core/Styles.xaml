@@ -19,6 +19,80 @@
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/EditorTemplates.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <Style x:Key="SnoopNext.FocusVisual" TargetType="{x:Type Control}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Control}">
+                    <Grid IsHitTestVisible="False" SnapsToDevicePixels="True">
+                        <Rectangle x:Name="HighContrastUnderlay"
+                                   Stroke="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+                                   RadiusX="4" RadiusY="4"
+                                   StrokeThickness="4"
+                                   Visibility="Collapsed" />
+                        <Rectangle x:Name="FocusOutline"
+                                   Stroke="{DynamicResource SnoopNext.Brush.Accent}"
+                                   RadiusX="4" RadiusY="4"
+                                   StrokeThickness="2" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <DataTrigger Binding="{Binding Path=(SystemParameters.HighContrast)}" Value="True">
+                            <Setter TargetName="HighContrastUnderlay" Property="Visibility" Value="Visible" />
+                            <Setter TargetName="FocusOutline"
+                                    Property="Stroke"
+                                    Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}" />
+                            <Setter TargetName="FocusOutline" Property="StrokeThickness" Value="1" />
+                        </DataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SnoopNext.ButtonBase" TargetType="{x:Type ButtonBase}" BasedOn="{StaticResource BaseButtonStyle}">
+        <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Control}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
+        <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.FocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ButtonBase}">
+                    <Border x:Name="Surface"
+                            Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Pressed}" />
+                        </Trigger>
+                        <Trigger Property="Button.IsDefaulted" Value="True">
+                            <Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
+                        </Trigger>
+                        <Trigger Property="ToggleButton.IsChecked" Value="True">
+                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Accent}" />
+                            <Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.OnAccent}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Surface" Property="Background" Value="{DynamicResource SnoopNext.Brush.Background}" />
+                            <Setter TargetName="Surface" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource SnoopNext.ButtonBase}" />
+    <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource SnoopNext.ButtonBase}" />
+
     <Style TargetType="{x:Type Rectangle}" />
 
     <Style x:Key="Snoop.Styles.ProperTreeView"
@@ -173,32 +247,16 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
-                    <Border x:Name="Border"
-                            Width="19"
-                            Height="13"
-                            Background="#00FFFFFF">
-                        <Border x:Name="Border1"
-                                Width="9"
-                                Height="9"
-                                BorderBrush="#FF9495A2"
-                                BorderThickness="1 1 1 1"
-                                CornerRadius="1,1,1,1"
-                                SnapsToDevicePixels="True">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                    <GradientStop Color="#FFFFFFFF" Offset="0.4" />
-                                    <GradientStop Color="#FFC6CEDA" Offset="1" />
-                                </LinearGradientBrush>
-                            </Border.Background>
-                            <Path x:Name="ExpandPath"
-                                  Margin="1 1 1 1"
-                                  Data="M0,2L0,3 2,3 2,5 3,5 3,3 5,3 5,2 3,2 3,0 2,0 2,2z"
-                                  Fill="#FF000000" />
-                        </Border>
+                    <Border Width="19" Height="13" Background="Transparent">
+                        <Path x:Name="Chevron"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"
+                              Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType={x:Type TreeViewItem}}}"
+                              StrokeThickness="1.4" StrokeLineJoin="Round"
+                              Data="M 1,1 L 5,5 1,9" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="ExpandPath" Property="Data" Value="M0,2L0,3 5,3 5,2z" />
+                            <Setter TargetName="Chevron" Property="Data" Value="M 1,2 L 5,6 9,2" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -211,6 +269,7 @@
            TargetType="{x:Type TreeViewItem}"
            BasedOn="{StaticResource TreeViewItemStyle}">
         <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}, AncestorLevel=1}, FallbackValue=Left}" />
         <Setter Property="ItemsPanel">
@@ -231,6 +290,7 @@
                         </Grid.RowDefinitions>
                         <Border x:Name="PART_Header"
                                 Grid.Column="1"
+                                CornerRadius="4"
                                 Padding="{TemplateBinding Padding}"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
@@ -277,22 +337,25 @@
                             <Setter TargetName="PART_Header" Property="MinHeight" Value="19" />
                         </MultiTrigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.HighlightForeground}" />
-                            <Setter TargetName="PART_Header" Property="Background" Value="{DynamicResource Snoop.Brushes.Default.Highlight}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.OnAccent}" />
+                            <Setter TargetName="PART_Header" Property="Background" Value="{DynamicResource SnoopNext.Brush.Accent}" />
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
                                 <Condition Property="IsSelected" Value="True" />
                                 <Condition Property="IsSelectionActive" Value="False" />
                             </MultiTrigger.Conditions>
-                            <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.Foreground}" />
-                            <Setter TargetName="PART_Header" Property="Background" Value="{DynamicResource Snoop.Brushes.Default.Control}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+                            <Setter TargetName="PART_Header" Property="Background" Value="{DynamicResource SnoopNext.Brush.Pressed}" />
                         </MultiTrigger>
                         <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.Default.GrayForeground}" />
+                            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />
                         </Trigger>
                         <Trigger SourceName="PART_Header" Property="IsMouseOver" Value="true">
-                            <Setter TargetName="PART_Header" Property="BorderBrush" Value="{DynamicResource Item.MouseOver.Border}" />
+                            <Setter TargetName="PART_Header" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="PART_Header" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Text}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

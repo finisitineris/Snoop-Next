@@ -1,12 +1,17 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
-    <SolidColorBrush x:Key="SnoopNext.Brush.Text" Color="#273447" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Text" Color="#1A1A1A" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.TextSecondary" Color="#5D5D5D" options:Freeze="True" />
     <SolidColorBrush x:Key="SnoopNext.Brush.Panel" Color="#FFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Border" Color="#DCE5F0" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Accent" Color="#3979D5" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Background" Color="#E7EDF7" options:Freeze="True" />
-    <SolidColorBrush x:Key="SnoopNext.Brush.Error" Color="#CE5151" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Background" Color="#F3F3F3" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Control" Color="#FBFBFB" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Border" Color="#D1D1D1" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Hover" Color="#F0F0F0" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Pressed" Color="#E5E5E5" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Accent" Color="#005FB8" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.OnAccent" Color="#FFFFFF" options:Freeze="True" />
+    <SolidColorBrush x:Key="SnoopNext.Brush.Error" Color="#C42B1C" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Expander.Static.Circle.Stroke" Color="#FF333333" options:Freeze="True" />
     <SolidColorBrush x:Key="Expander.Static.Circle.Fill" Color="#FFFFFFFF" options:Freeze="True" />
@@ -40,65 +45,24 @@
     <SolidColorBrush x:Key="Item.SelectedInactive.Background" Color="#3DDADADA" options:Freeze="True" />
     <SolidColorBrush x:Key="Item.SelectedInactive.Border" Color="#FFDADADA" options:Freeze="True" />
 
-    <LinearGradientBrush x:Key="GridViewColumnHeaderBorderBackground" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFF2F2F2" Offset="0" />
-            <GradientStop Color="#FFD5D5D5" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
+    <StaticResource x:Key="GridViewColumnHeaderBorderBackground" ResourceKey="SnoopNext.Brush.Border" />
 
-    <LinearGradientBrush x:Key="GridViewColumnHeaderBackground" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFFFFFFF" Offset="0" />
-            <GradientStop Color="#FFFFFFFF" Offset="0.4091" />
-            <GradientStop Color="#FFF7F8F9" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
+    <StaticResource x:Key="GridViewColumnHeaderBackground" ResourceKey="SnoopNext.Brush.Control" />
 
-    <LinearGradientBrush x:Key="GridViewColumnHeaderHoverBackground" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFBDEDFF" Offset="0" />
-            <GradientStop Color="#FFB7E7FB" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
+    <StaticResource x:Key="GridViewColumnHeaderHoverBackground" ResourceKey="SnoopNext.Brush.Hover" />
 
-    <LinearGradientBrush x:Key="GridViewColumnHeaderPressBackground" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FF8DD6F7" Offset="0" />
-            <GradientStop Color="#FF8AD1F5" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
+    <StaticResource x:Key="GridViewColumnHeaderPressBackground" ResourceKey="SnoopNext.Brush.Pressed" />
 
-    <SolidColorBrush x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" Color="#FF767676" options:Freeze="True" />
+    <StaticResource x:Key="Snoop.Brushes.GridViewColumnHeader.SortIndicator" ResourceKey="SnoopNext.Brush.TextSecondary" />
 
-    <LinearGradientBrush x:Key="ListItemHoverFill" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFF1FBFF" Offset="0" />
-            <GradientStop Color="#FFD5F1FE" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="ListItemSelectedFill" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFD9F4FF" Offset="0" />
-            <GradientStop Color="#FF9BDDFB" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="ListItemSelectedHoverFill" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFEAF9FF" Offset="0" />
-            <GradientStop Color="#FFC9EDFD" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
-    <LinearGradientBrush x:Key="ListItemSelectedInactiveFill" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#FFEEEDED" Offset="0" />
-            <GradientStop Color="#FFDDDDDD" Offset="1" />
-        </LinearGradientBrush.GradientStops>
-    </LinearGradientBrush>
+    <StaticResource x:Key="ListItemHoverFill" ResourceKey="SnoopNext.Brush.Hover" />
+    <StaticResource x:Key="ListItemSelectedFill" ResourceKey="SnoopNext.Brush.Pressed" />
+    <StaticResource x:Key="ListItemSelectedHoverFill" ResourceKey="SnoopNext.Brush.Pressed" />
+    <StaticResource x:Key="ListItemSelectedInactiveFill" ResourceKey="SnoopNext.Brush.Pressed" />
 
-    <SolidColorBrush x:Key="Menu.Static.Background" Color="#FFFFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="Menu.Static.Border" Color="#FF999999" options:Freeze="True" />
-    <SolidColorBrush x:Key="Menu.Static.Foreground" Color="#FF212121" options:Freeze="True" />
+    <StaticResource x:Key="Menu.Static.Background" ResourceKey="SnoopNext.Brush.Panel" />
+    <StaticResource x:Key="Menu.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <StaticResource x:Key="Menu.Static.Foreground" ResourceKey="SnoopNext.Brush.Text" />
 
     <SolidColorBrush x:Key="Menu.Static.Separator" Color="#FFD7D7D7" options:Freeze="True" />
 
@@ -106,10 +70,10 @@
     <SolidColorBrush x:Key="Menu.Disabled.Border" Color="#FFDADADA" options:Freeze="True" />
     <SolidColorBrush x:Key="Menu.Disabled.Foreground" Color="#FF707070" options:Freeze="True" />
 
-    <SolidColorBrush x:Key="MenuItem.Selected.Background" Color="#3D26A0DA" options:Freeze="True" />
+    <StaticResource x:Key="MenuItem.Selected.Background" ResourceKey="SnoopNext.Brush.Hover" />
     <SolidColorBrush x:Key="MenuItem.Selected.Border" Color="#FF26A0DA" options:Freeze="True" />
 
-    <SolidColorBrush x:Key="MenuItem.Highlight.Background" Color="#3D26A0DA" options:Freeze="True" />
+    <StaticResource x:Key="MenuItem.Highlight.Background" ResourceKey="SnoopNext.Brush.Hover" />
     <SolidColorBrush x:Key="MenuItem.Highlight.Border" Color="#FF26A0DA" options:Freeze="True" />
 
     <SolidColorBrush x:Key="MenuItem.Highlight.Disabled.Background" Color="#0A000000" options:Freeze="True" />
@@ -169,25 +133,19 @@
     <SolidColorBrush x:Key="SliderThumb.Track.Background" Color="#FFE7EAEA" options:Freeze="True" />
     <SolidColorBrush x:Key="SliderThumb.Track.Border" Color="#FFD6D6D6" options:Freeze="True" />
 
-    <LinearGradientBrush x:Key="TabItem.Static.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#F0F0F0" Offset="0.0" />
-        <GradientStop Color="#E5E5E5" Offset="1.0" />
-    </LinearGradientBrush>
-    <SolidColorBrush x:Key="TabItem.Static.Border" Color="#ACACAC" options:Freeze="True" />
-    <LinearGradientBrush x:Key="TabItem.MouseOver.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#ECF4FC" Offset="0.0" />
-        <GradientStop Color="#DCECFC" Offset="1.0" />
-    </LinearGradientBrush>
+    <StaticResource x:Key="TabItem.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
+    <StaticResource x:Key="TabItem.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <StaticResource x:Key="TabItem.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
     <SolidColorBrush x:Key="TabItem.MouseOver.Border" Color="#7EB4EA" options:Freeze="True" />
-    <SolidColorBrush x:Key="TabItem.Selected.Background" Color="#FFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="TabItem.Selected.Border" Color="#ACACAC" options:Freeze="True" />
+    <StaticResource x:Key="TabItem.Selected.Background" ResourceKey="SnoopNext.Brush.Panel" />
+    <StaticResource x:Key="TabItem.Selected.Border" ResourceKey="SnoopNext.Brush.Border" />
     <SolidColorBrush x:Key="TabItem.Disabled.Background" Color="#F0F0F0" options:Freeze="True" />
     <SolidColorBrush x:Key="TabItem.Disabled.Border" Color="#D9D9D9" options:Freeze="True" />
 
     <SolidColorBrush x:Key="TextBox.Static.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="TextBox.Static.Border" Color="#FFABAdB3" options:Freeze="True" />
     <SolidColorBrush x:Key="TextBox.MouseOver.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <SolidColorBrush x:Key="TextBox.Focus.Border" Color="#FF569DE5" options:Freeze="True" />
+    <StaticResource x:Key="TextBox.Focus.Border" ResourceKey="SnoopNext.Brush.Accent" />
 
     <SolidColorBrush x:Key="ToolTip.Background" Color="#FFF1F2F7" options:Freeze="True" />
     <SolidColorBrush x:Key="ToolTip.Border" Color="#FF767676" options:Freeze="True" />
@@ -227,43 +185,28 @@
     <SolidColorBrush x:Key="OptionMark.Disabled.Border" Color="#FFBCBCBC" options:Freeze="True" />
     <SolidColorBrush x:Key="OptionMark.Disabled.Glyph" Color="#FF707070" options:Freeze="True" />
 
-    <LinearGradientBrush x:Key="ComboBox.Static.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#FFF0F0F0" Offset="0.0" />
-        <GradientStop Color="#FFE5E5E5" Offset="1.0" />
-    </LinearGradientBrush>
-    <SolidColorBrush x:Key="ComboBox.Static.Border" Color="#FFACACAC" options:Freeze="True" />
-    <SolidColorBrush x:Key="ComboBox.Static.Glyph" Color="#FF606060" options:Freeze="True" />
-    <SolidColorBrush x:Key="ComboBox.Static.Editable.Background" Color="#FFFFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="ComboBox.Static.Editable.Border" Color="#FFABADB3" options:Freeze="True" />
+    <StaticResource x:Key="ComboBox.Static.Background" ResourceKey="SnoopNext.Brush.Control" />
+    <StaticResource x:Key="ComboBox.Static.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <StaticResource x:Key="ComboBox.Static.Glyph" ResourceKey="SnoopNext.Brush.Text" />
+    <StaticResource x:Key="ComboBox.Static.Editable.Background" ResourceKey="SnoopNext.Brush.Panel" />
+    <StaticResource x:Key="ComboBox.Static.Editable.Border" ResourceKey="SnoopNext.Brush.Border" />
     <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Background" Color="Transparent" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Static.Editable.Button.Border" Color="Transparent" options:Freeze="True" />
 
-    <LinearGradientBrush x:Key="ComboBox.MouseOver.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#FFECF4FC" Offset="0.0" />
-        <GradientStop Color="#FFDCECFC" Offset="1.0" />
-    </LinearGradientBrush>
+    <StaticResource x:Key="ComboBox.MouseOver.Background" ResourceKey="SnoopNext.Brush.Hover" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <SolidColorBrush x:Key="ComboBox.MouseOver.Glyph" Color="#FF000000" options:Freeze="True" />
+    <StaticResource x:Key="ComboBox.MouseOver.Glyph" ResourceKey="SnoopNext.Brush.Text" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Border" Color="#FF7EB4EA" options:Freeze="True" />
-    <LinearGradientBrush x:Key="ComboBox.MouseOver.Editable.Button.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#FFEBF4FC" Offset="0.0" />
-        <GradientStop Color="#FFDCECFC" Offset="1.0" />
-    </LinearGradientBrush>
+    <StaticResource x:Key="ComboBox.MouseOver.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Hover" />
     <SolidColorBrush x:Key="ComboBox.MouseOver.Editable.Button.Border" Color="#FF7EB4EA" options:Freeze="True" />
 
-    <LinearGradientBrush x:Key="ComboBox.Pressed.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#FFDAECFC" Offset="0.0" />
-        <GradientStop Color="#FFC4E0FC" Offset="1.0" />
-    </LinearGradientBrush>
+    <StaticResource x:Key="ComboBox.Pressed.Background" ResourceKey="SnoopNext.Brush.Pressed" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Border" Color="#FF569DE5" options:Freeze="True" />
-    <SolidColorBrush x:Key="ComboBox.Pressed.Glyph" Color="#FF000000" options:Freeze="True" />
+    <StaticResource x:Key="ComboBox.Pressed.Glyph" ResourceKey="SnoopNext.Brush.Text" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Border" Color="#FF569DE5" options:Freeze="True" />
-    <LinearGradientBrush x:Key="ComboBox.Pressed.Editable.Button.Background" StartPoint="0,0" EndPoint="0,1" options:Freeze="True">
-        <GradientStop Color="#FFDAEBFC" Offset="0.0" />
-        <GradientStop Color="#FFC4E0FC" Offset="1.0" />
-    </LinearGradientBrush>
+    <StaticResource x:Key="ComboBox.Pressed.Editable.Button.Background" ResourceKey="SnoopNext.Brush.Pressed" />
     <SolidColorBrush x:Key="ComboBox.Pressed.Editable.Button.Border" Color="#FF569DE5" options:Freeze="True" />
 
     <SolidColorBrush x:Key="ComboBox.Disabled.Background" Color="#FFF0F0F0" options:Freeze="True" />
@@ -289,16 +232,16 @@
     <!-- Used for background of ScrollViewer, TreeView, ListBox, Expander, TextBox, Tab Control -->
     <SolidColorBrush x:Key="Snoop.Brushes.Default.Background" Color="#FFFFFFFF" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.LightDarkBackground" Color="#FFF1EDED" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.Foreground" Color="#FF000000" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.Border" Color="#ACACAC" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.GrayForeground" Color="#FF6D6D6D" options:Freeze="True" />
+    <StaticResource x:Key="Snoop.Brushes.Default.Foreground" ResourceKey="SnoopNext.Brush.Text" />
+    <StaticResource x:Key="Snoop.Brushes.Default.Border" ResourceKey="SnoopNext.Brush.Border" />
+    <StaticResource x:Key="Snoop.Brushes.Default.GrayForeground" ResourceKey="SnoopNext.Brush.TextSecondary" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.Control" Color="#FFF0F0F0" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.ControlDark" Color="#FFA0A0A0" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.ControlDarkDark" Color="#FF696969" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.Highlight" Color="#FF0078D7" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.HighlightForeground" Color="#FFFFFFFF" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.HotTrack" Color="#FF0066CC" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" Color="#FFF0F0F0" options:Freeze="True" />
+    <StaticResource x:Key="Snoop.Brushes.Default.Highlight" ResourceKey="SnoopNext.Brush.Accent" />
+    <StaticResource x:Key="Snoop.Brushes.Default.HighlightForeground" ResourceKey="SnoopNext.Brush.OnAccent" />
+    <StaticResource x:Key="Snoop.Brushes.Default.HotTrack" ResourceKey="SnoopNext.Brush.Accent" />
+    <StaticResource x:Key="Snoop.Brushes.Default.InactiveSelectionHighlight" ResourceKey="SnoopNext.Brush.Pressed" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.InactiveSelectionHighlightForeground" Color="#FF000000" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Snoop.Brushes.Window.Frame" Color="#FF646464" options:Freeze="True" />

@@ -16,7 +16,10 @@ public class ThemeManager
 {
     public static readonly ThemeManager Current = new();
 
-    private readonly ConditionalWeakTable<Dispatcher, ThemeResources> resourcesByDispatcher = new();
+    private static readonly ConditionalWeakTable<Dispatcher, ThemeResources> ResourcesByDispatcher = new();
+    private static readonly DependencyProperty HighContrastProperty = DependencyProperty.RegisterAttached(
+        "HighContrast", typeof(bool), typeof(ThemeManager), new PropertyMetadata(false, OnHighContrastChanged));
+
     private long themeChange;
 
     public void ApplyTheme(ThemeMode themeMode)
@@ -45,7 +48,7 @@ public class ThemeManager
                 // A newer choice on this Dispatcher can overtake an older queued choice.
                 if (Volatile.Read(ref this.themeChange) == change)
                 {
-                    this.ApplyResolvedTheme(finalThemeMode, window);
+                    ApplyResolvedTheme(finalThemeMode, window);
                 }
             }
         }
@@ -55,18 +58,18 @@ public class ThemeManager
     {
         if (visual is Window window)
         {
-            this.ApplyResolvedTheme(ResolveThemeMode(themeMode), window);
+            ApplyResolvedTheme(ResolveThemeMode(themeMode), window);
         }
     }
 
-    private void ApplyResolvedTheme(ThemeMode themeMode, Window window)
+    private static void ApplyResolvedTheme(ThemeMode themeMode, Window window)
     {
         if (!window.IsInitialized || window.Dispatcher.HasShutdownStarted)
         {
             return;
         }
 
-        var resources = this.resourcesByDispatcher.GetValue(window.Dispatcher, _ => new ThemeResources());
+        var resources = ResourcesByDispatcher.GetValue(window.Dispatcher, _ => new ThemeResources());
         var resourceDictionary = themeMode is ThemeMode.Dark ? resources.Dark : resources.Light;
         var resourceDictionaryToRemove = themeMode is ThemeMode.Dark ? resources.Light : resources.Dark;
         var dictionaries = window.Resources.MergedDictionaries;
@@ -74,6 +77,39 @@ public class ThemeManager
         dictionaries.Remove(resourceDictionary);
         dictionaries.Add(resourceDictionary);
         dictionaries.Remove(resourceDictionaryToRemove);
+
+        // Subscribe through the window's WPF resource expression. No process-wide event
+        // keeps an inspector alive after it closes.
+        if (window.ReadLocalValue(HighContrastProperty) == DependencyProperty.UnsetValue)
+        {
+            window.SetResourceReference(HighContrastProperty, SystemParameters.HighContrastKey);
+        }
+
+        ApplyContrastOverlay(window, resources);
+    }
+
+    private static void OnHighContrastChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args)
+    {
+        if (sender is Window window && !window.Dispatcher.HasShutdownStarted
+            && ResourcesByDispatcher.TryGetValue(window.Dispatcher, out var resources))
+        {
+            // WPF may still be walking the tree to invalidate system resources.
+            window.Dispatcher.InvokeAsync(() => ApplyContrastOverlay(window, resources));
+        }
+    }
+
+    private static void ApplyContrastOverlay(Window window, ThemeResources resources)
+    {
+        var dictionaries = window.Resources.MergedDictionaries;
+        if (!(bool)window.GetValue(HighContrastProperty))
+        {
+            dictionaries.Remove(resources.HighContrast);
+        }
+        else if (dictionaries.Count == 0 || dictionaries[dictionaries.Count - 1] != resources.HighContrast)
+        {
+            dictionaries.Remove(resources.HighContrast);
+            dictionaries.Add(resources.HighContrast);
+        }
     }
 
     private static ThemeMode ResolveThemeMode(ThemeMode themeMode)
@@ -96,6 +132,11 @@ public class ThemeManager
                 Source = new Uri("/Snoop.Core;component/Themes/Colors.Dark.xaml", UriKind.Relative)
             });
         }
+
+        public ResourceDictionary HighContrast { get; } = new()
+        {
+            Source = new Uri("/Snoop.Core;component/Themes/Colors.HighContrast.xaml", UriKind.Relative)
+        };
 
         public ResourceDictionary Light { get; }
 
