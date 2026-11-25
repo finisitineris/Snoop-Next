@@ -127,18 +127,15 @@ internal static class WorkbenchLayoutSmoke
             LoadLayout(new XElement("WorkbenchTreeWidth", "282"));
             WithInspector(edited =>
             {
+                Arrange(edited, 1920, ReferenceHeight);
                 var splitter = Find<GridSplitter>(edited, "GridSplitter");
                 ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(700, 0);
-                edited.UpdateLayout();
-                DrainDispatcher();
+                Arrange(edited, 1920, ReferenceHeight);
                 VerifyPaneSizes(edited, 982, 354, 210);
-                WorkbenchTreeOverflowSmoke.Verify(edited);
-                edited.Width = edited.MinWidth;
-                edited.UpdateLayout();
-                DrainDispatcher();
+                Arrange(edited, CompactWidth, CompactHeight);
                 Require(Find<ColumnDefinition>(edited, "CenterPaneColumn").ActualWidth >= 239,
                     "A wide tree preference must still leave the center usable on a small window.");
-            }, showWideWindow: true);
+            });
             RequireSavedSize(XDocument.Load(layoutPath).Root, "WorkbenchTreeWidth", 982);
             settings.Reload();
             WithInspector(reopened =>
@@ -146,6 +143,7 @@ internal static class WorkbenchLayoutSmoke
                 Arrange(reopened, 1920, ReferenceHeight);
                 VerifyPaneSizes(reopened, 982, 354, 210);
             });
+            WithInspector(WorkbenchTreeOverflowSmoke.Verify, showWideWindow: true);
 
             LoadLayout(new XElement("WorkbenchTreeFraction", "0.23"), new XElement("WorkbenchDiagnosticsFraction", "0.33"),
                 new XElement("WorkbenchTreeWidth", "315"), new XElement("WorkbenchPropertiesWidth", "610"),
@@ -197,8 +195,10 @@ internal static class WorkbenchLayoutSmoke
             {
                 inspector.Show();
                 inspector.WindowState = WindowState.Normal;
-                inspector.Width = 1740;
-                inspector.Height = 760;
+                inspector.Left = SystemParameters.WorkArea.Left + 8;
+                inspector.Top = SystemParameters.WorkArea.Top + 8;
+                inspector.Width = Math.Min(1740, SystemParameters.WorkArea.Width - 16);
+                inspector.Height = Math.Min(760, SystemParameters.WorkArea.Height - 16);
                 inspector.UpdateLayout();
                 DrainDispatcher();
             }

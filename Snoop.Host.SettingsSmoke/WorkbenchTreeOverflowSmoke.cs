@@ -19,6 +19,8 @@ internal static class WorkbenchTreeOverflowSmoke
         var chrome = (FrameworkElement)inspector.FindName("WorkbenchChrome");
         var language = InspectorLocalization.Default.LanguageTag;
         var originalSelection = inspector.CurrentSelection;
+        var propertiesToggle = (MenuItem)inspector.FindName("ShowPropertiesPaneItem");
+        var propertiesShown = propertiesToggle.IsChecked;
         var document = new Grid { Name = "PerformanceWorkspace" };
         var panel = document;
         var layers = new[]
@@ -57,6 +59,7 @@ internal static class WorkbenchTreeOverflowSmoke
         inspector.TreeItems.Add(rootItem);
         try
         {
+            SetPropertiesShown(false);
             InspectorLocalization.Default.SetLanguage("zh-CN");
             inspector.CurrentSelection = leaf;
             void Arrange()
@@ -93,12 +96,22 @@ internal static class WorkbenchTreeOverflowSmoke
         }
         finally
         {
+            SetPropertiesShown(propertiesShown);
             inspector.CurrentSelection = originalSelection;
             inspector.TreeItems.Remove(rootItem);
             InspectorLocalization.Default.SetLanguage(language);
         }
 
         Console.WriteLine("PASS: wide tree, full 18-level label scrolling and on-demand tree preview brushes.");
+
+        void SetPropertiesShown(bool shown)
+        {
+            if (propertiesToggle.IsChecked != shown)
+            {
+                propertiesToggle.IsChecked = shown;
+                propertiesToggle.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent, propertiesToggle));
+            }
+        }
 
         void VerifyDeferredToolTip()
         {
