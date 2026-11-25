@@ -597,7 +597,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleExport(object sender, ExecutedRoutedEventArgs e)
     {
-        if (this.CurrentSelection is null)
+        if (e.Parameter is not ExportOptions options)
         {
             return;
         }
@@ -607,7 +607,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         try
         {
-            var options = (ExportOptions)e.Parameter;
             var propertyFilter = options.UseFilter ? this.PropertyInspector.PropertyFilter : null;
 
             options.ExportXamlStyle = TreeItem.DefaultExportOptions.ExportXamlStyle;
@@ -1162,7 +1161,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     private const double SplitterSize = 5;
     private const double MinimumCenterWidth = 240;
     private const double MinimumTreeWidth = 165;
-    private const double MaximumTreeWidth = 500;
     private const double MinimumPropertiesWidth = 240;
     private const double MaximumPropertiesWidth = 590;
     private const double MinimumDiagnosticsHeight = 110;
@@ -1289,8 +1287,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             ReadPaneSize(
                 settings.WorkbenchTreeWidth,
                 ReadLegacyPaneSize(settings.WorkbenchTreeFraction, ReferenceWorkbenchWidth, DefaultLayout.Tree),
-                MinimumTreeWidth,
-                MaximumTreeWidth),
+                MinimumTreeWidth),
             ReadPaneSize(settings.WorkbenchPropertiesWidth, DefaultLayout.Properties, MinimumPropertiesWidth, MaximumPropertiesWidth),
             ReadPaneSize(
                 settings.WorkbenchDiagnosticsHeight,
@@ -1471,7 +1468,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     {
         // Pixel-to-star splitters enforce the pixel pane's limits. Include the room needed by its neighbors.
         var lateralBudget = this.GetAvailableWorkbenchWidth() - this.CenterPaneColumn.MinWidth;
-        this.TreePaneColumn.MaxWidth = BoundSize(lateralBudget - this.InspectorPaneColumn.Width.Value, this.TreePaneColumn.MinWidth, MaximumTreeWidth);
+        this.TreePaneColumn.MaxWidth = Math.Max(this.TreePaneColumn.MinWidth, lateralBudget - this.InspectorPaneColumn.Width.Value);
         this.InspectorPaneColumn.MaxWidth = BoundSize(lateralBudget - this.TreePaneColumn.Width.Value, this.InspectorPaneColumn.MinWidth, MaximumPropertiesWidth);
     }
 
@@ -1502,7 +1499,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         if (this.GridSplitter.Visibility == Visibility.Visible)
         {
             ReadSplitterEdit(
-                this.TreePaneColumn.Width.Value, ref this.appliedWorkbenchSizes.Tree, ref this.expandedWorkbenchSizes.Tree, MinimumTreeWidth, MaximumTreeWidth);
+                this.TreePaneColumn.Width.Value, ref this.appliedWorkbenchSizes.Tree, ref this.expandedWorkbenchSizes.Tree, MinimumTreeWidth);
         }
 
         if (this.PropertiesSplitter.Visibility == Visibility.Visible)
@@ -1518,7 +1515,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
     }
 
-    private static void ReadSplitterEdit(double current, ref double applied, ref double expanded, double minimum, double maximum)
+    private static void ReadSplitterEdit(double current, ref double applied, ref double expanded, double minimum, double maximum = double.PositiveInfinity)
     {
         if (SizeChangedFrom(current, applied))
         {
@@ -1577,7 +1574,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             && fraction is > 0 and < 1 ? referenceLength * fraction : fallback;
     }
 
-    private static double ReadPaneSize(string? value, double fallback, double minimum, double maximum)
+    private static double ReadPaneSize(string? value, double fallback, double minimum, double maximum = double.PositiveInfinity)
     {
         var size = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
             && parsed is > 0 and < double.PositiveInfinity ? parsed : fallback;

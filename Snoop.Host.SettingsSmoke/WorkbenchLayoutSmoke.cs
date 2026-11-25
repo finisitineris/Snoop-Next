@@ -118,7 +118,32 @@ internal static class WorkbenchLayoutSmoke
 
             LoadLayout(new XElement("WorkbenchTreeFraction", "0.98"), new XElement("WorkbenchDiagnosticsFraction", "0.02"),
                 new XElement("WorkbenchPropertiesWidth", "Infinity"));
-            WithInspector(legacy => VerifyPaneSizes(legacy, 500, 354, 110));
+            WithInspector(legacy =>
+            {
+                Arrange(legacy, 2200, ReferenceHeight);
+                VerifyPaneSizes(legacy, 0.98 * ReferenceWidth, 354, 110);
+            });
+
+            LoadLayout(new XElement("WorkbenchTreeWidth", "282"));
+            WithInspector(edited =>
+            {
+                WorkbenchTreeOverflowSmoke.Verify(edited);
+                Arrange(edited, 1920, ReferenceHeight);
+                var splitter = Find<GridSplitter>(edited, "GridSplitter");
+                ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(700, 0);
+                Arrange(edited, 1920, ReferenceHeight);
+                VerifyPaneSizes(edited, 982, 354, 210);
+                Arrange(edited, CompactWidth, CompactHeight);
+                Require(Find<ColumnDefinition>(edited, "CenterPaneColumn").ActualWidth >= 239,
+                    "A wide tree preference must still leave the center usable on a small window.");
+            });
+            RequireSavedSize(XDocument.Load(layoutPath).Root, "WorkbenchTreeWidth", 982);
+            settings.Reload();
+            WithInspector(reopened =>
+            {
+                Arrange(reopened, 1920, ReferenceHeight);
+                VerifyPaneSizes(reopened, 982, 354, 210);
+            });
 
             LoadLayout(new XElement("WorkbenchTreeFraction", "0.23"), new XElement("WorkbenchDiagnosticsFraction", "0.33"),
                 new XElement("WorkbenchTreeWidth", "315"), new XElement("WorkbenchPropertiesWidth", "610"),

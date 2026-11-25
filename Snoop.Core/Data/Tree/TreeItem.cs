@@ -16,6 +16,7 @@ using System.Windows.Data;
 using System.Windows.Media;
 using JetBrains.Annotations;
 using Snoop.Infrastructure;
+using Snoop.Localization;
 using Snoop.Windows;
 
 public class TreeItem : INotifyPropertyChanged, IDisposable
@@ -128,68 +129,64 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
 
     protected virtual ObservableCollection<MenuItem> CreateMenuItems()
     {
-        var items = new ObservableCollection<MenuItem>
-        {
-            new()
-            {
-                Header = "Export",
-                Items =
-                {
-                    new MenuItem { Header = "Tree (with filter)", Command = SnoopUI.ExportTreeWithFilterCommand, CommandParameter = new ExportOptions { Recurse = true, TreeItem = this, UseFilter = true } },
-                    new MenuItem { Header = "Tree (without filter)", Command = SnoopUI.ExportTreeWithFilterCommand, CommandParameter = new ExportOptions { Recurse = true, TreeItem = this, UseFilter = false } },
-                    new Separator(),
-                    new MenuItem { Header = "Element (with filter)", Command = SnoopUI.ExportTreeWithFilterCommand, CommandParameter = new ExportOptions { Recurse = false, TreeItem = this, UseFilter = true } },
-                    new MenuItem { Header = "Element (without filter)", Command = SnoopUI.ExportTreeWithFilterCommand, CommandParameter = new ExportOptions { Recurse = false, TreeItem = this, UseFilter = false } },
-                    new Separator(),
-                    new MenuItem
-                    {
-                        Header = "Export Options",
-                        Items =
-                        {
-                            MakeCheckableMenuItem("Export XAML Style", nameof(ExportOptions.ExportXamlStyle),"XAML style puts the controls type as the element name and most of the properties directly on the node itself rather than as child nodes with more metadata.  The output will look more like XAML."),
-                            new Separator(),
-                            MakeCheckableMenuItem("Include Default/Empty Values", nameof(ExportOptions.IncludeDefaultEmptyValues), "Values that equal the default for that valuetype. ie: If the type is nullable, null.  If the type is bool, false.  This is NOT necessarily default value for the dependency property (ie: a control may have a bool property IsEnabled that by default is true, even if the user has set this to false on the control it will not show up with this option enabled as the default value for a bool is false."),
-                            MakeCheckableMenuItem("Include Typename Only Values", nameof(ExportOptions.IncludeTypenameOnlyValues), "Values that when converted to a string are just the stringified version of the typename.  Note, this cannot ignore complex generic typenames"),
-                            MakeCheckableMenuItem("Include System.Collections Namespace Values", nameof(ExportOptions.IncludeSystemCollectionNamespaceValues), "Values that are System.Collections.* generics, generally these are just typenames, ie: List<Item>."),
-                            new Separator(),
-                            MakeCheckableMenuItem("Round Decimals", nameof(ExportOptions.RoundDecimals),"Round numerical values to 1 decimal place, ie 3.3"),
-                        }
-                    }
-                }
-            }
-        };
+        var export = CreateLocalizedMenuItem("TreeMenu.Export");
+        export.SetResourceReference(MenuItem.IconProperty, "SnoopNext.Icon.ExportTree");
+        export.Items.Add(this.CreateExportCommand("TreeMenu.TreeWithFilter", recurse: true, useFilter: true));
+        export.Items.Add(this.CreateExportCommand("TreeMenu.TreeWithoutFilter", recurse: true, useFilter: false));
+        export.Items.Add(new Separator());
+        export.Items.Add(this.CreateExportCommand("TreeMenu.ElementWithFilter", recurse: false, useFilter: true));
+        export.Items.Add(this.CreateExportCommand("TreeMenu.ElementWithoutFilter", recurse: false, useFilter: false));
+        export.Items.Add(new Separator());
 
+        var options = CreateLocalizedMenuItem("TreeMenu.ExportOptions");
+        options.Items.Add(CreateExportOption(nameof(ExportOptions.ExportXamlStyle)));
+        options.Items.Add(new Separator());
+        options.Items.Add(CreateExportOption(nameof(ExportOptions.IncludeDefaultEmptyValues)));
+        options.Items.Add(CreateExportOption(nameof(ExportOptions.IncludeTypenameOnlyValues)));
+        options.Items.Add(CreateExportOption(nameof(ExportOptions.IncludeSystemCollectionNamespaceValues)));
+        options.Items.Add(new Separator());
+        options.Items.Add(CreateExportOption(nameof(ExportOptions.RoundDecimals)));
+        export.Items.Add(options);
+
+        var items = new ObservableCollection<MenuItem> { export };
         if (this.CanBeScoped || this.IsScoped)
         {
-            items.Add(new()
-            {
-                Header = "Scope to this",
-                IsCheckable = true,
-                IsChecked = this.IsScoped,
-                Command = SnoopUI.ScopeToCommand,
-                CommandParameter = this.IsScoped ? null : this
-            });
+            var scope = CreateLocalizedMenuItem(this.IsScoped ? "TreeMenu.ClearScope" : "TreeMenu.Scope");
+            scope.SetResourceReference(MenuItem.IconProperty, "SnoopNext.Icon.ScopeTree");
+            scope.IsCheckable = true;
+            scope.IsChecked = this.IsScoped;
+            scope.Command = SnoopUI.ScopeToCommand;
+            scope.CommandParameter = this.IsScoped ? null : this;
+            items.Add(scope);
         }
 
         return items;
     }
 
-    private static MenuItem MakeCheckableMenuItem(string header, string bindingPath, string tooltip = "")
+    protected static MenuItem CreateLocalizedMenuItem(string key)
     {
-        var menuItem = new MenuItem
-        {
-            Header = header,
-            IsCheckable = true,
-            StaysOpenOnClick = true,
-        };
-        if (!string.IsNullOrWhiteSpace(tooltip))
-        {
-            menuItem.ToolTip = tooltip;
-        }
+        var item = new MenuItem();
+        item.SetBinding(MenuItem.HeaderProperty, new InspectorLocExtension(key).CreateBinding());
+        return item;
+    }
 
-        BindingOperations.SetBinding(menuItem, MenuItem.IsCheckedProperty, new Binding(bindingPath) { Source = DefaultExportOptions, Mode = BindingMode.TwoWay });
+    private MenuItem CreateExportCommand(string key, bool recurse, bool useFilter)
+    {
+        var item = CreateLocalizedMenuItem(key);
+        item.Command = SnoopUI.ExportTreeWithFilterCommand;
+        item.CommandParameter = new ExportOptions { TreeItem = this, Recurse = recurse, UseFilter = useFilter };
+        return item;
+    }
 
-        return menuItem;
+    private static MenuItem CreateExportOption(string property)
+    {
+        var key = "TreeMenu." + property;
+        var item = CreateLocalizedMenuItem(key);
+        item.IsCheckable = true;
+        item.StaysOpenOnClick = true;
+        item.SetBinding(MenuItem.ToolTipProperty, new InspectorLocExtension(key + "Tip").CreateBinding());
+        item.SetBinding(MenuItem.IsCheckedProperty, new Binding(property) { Source = DefaultExportOptions, Mode = BindingMode.TwoWay });
+        return item;
     }
 
     public bool IsSelected

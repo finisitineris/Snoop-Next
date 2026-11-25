@@ -554,7 +554,7 @@
 
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
-                                    <ContextMenu ItemsSource="{Binding MenuItems}" />
+                                    <ContextMenu ItemsSource="{Binding PlacementTarget.DataContext.MenuItems, RelativeSource={RelativeSource Self}}" />
                                 </Setter.Value>
                             </Setter>
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />

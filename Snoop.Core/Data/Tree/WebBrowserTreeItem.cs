@@ -18,7 +18,9 @@ public class WebBrowserTreeItem : DependencyObjectTreeItem
     {
         var items = base.CreateMenuItems();
 
-        items.Add(new MenuItem { Header = "Show dev tools", Command = new RelayCommand(_ => this.ShowDevTools()) });
+        var tools = CreateLocalizedMenuItem("TreeMenu.WebDeveloperTools");
+        tools.Command = new RelayCommand(_ => this.ShowDevTools());
+        items.Add(tools);
 
         return items;
     }

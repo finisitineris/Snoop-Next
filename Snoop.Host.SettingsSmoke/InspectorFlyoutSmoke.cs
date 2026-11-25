@@ -83,6 +83,7 @@ internal static class InspectorFlyoutSmoke
                 filter.IsDropDownOpen = false;
                 Drain();
                 InspectorContextMenuSmoke.Verify(inspector);
+                TreeNodeMenuSmoke.Verify(inspector, mode);
             }
         }
         finally
@@ -99,7 +100,7 @@ internal static class InspectorFlyoutSmoke
         Console.WriteLine("PASS: live top menu, nested menu, selected theme list, editable filter, property context menu and grouped event picker use Fluent popups in both themes.");
     }
 
-    private static FrameworkElement VerifyPopup(Control owner, Window inspector)
+    internal static FrameworkElement VerifyPopup(Control owner, Window inspector)
     {
         Drain();
         owner.ApplyTemplate();
@@ -117,7 +118,7 @@ internal static class InspectorFlyoutSmoke
         return root;
     }
 
-    private static void Capture(FrameworkElement surface, string name, params FrameworkElement[] popups)
+    internal static void Capture(FrameworkElement surface, string name, params FrameworkElement[] popups)
     {
         var window = Window.GetWindow(surface);
         var hwnd = new WindowInteropHelper(window).Handle;
