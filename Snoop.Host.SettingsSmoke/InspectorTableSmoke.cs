@@ -246,7 +246,7 @@ internal static class InspectorTableSmoke
         InspectorFlyoutSmoke.Capture(grid, "datagrid-" + theme);
     }
 
-    private static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
+    internal static IEnumerable<DependencyObject> Descendants(DependencyObject parent)
     {
         for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
         {

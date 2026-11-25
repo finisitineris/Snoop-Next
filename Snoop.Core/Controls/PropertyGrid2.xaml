@@ -22,6 +22,10 @@
             </ResourceDictionary.MergedDictionaries>
 
             <ContextMenu x:Key="PropertyMenu">
+                <MenuItem Header="{localization:InspectorLoc PropertyGrid.ShowOrigin}" InputGestureText="Alt+Enter"
+                          Command="{x:Static controls:PropertyGrid2.ShowPropertyOriginCommand}"
+                          CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                          CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                 <MenuItem Command="{x:Static controls:PropertyInspector.DelveCommand}"
                           CommandParameter="{Binding}">
                     <MenuItem.Header>
@@ -102,26 +106,27 @@
                 </ControlTemplate.Triggers>
             </ControlTemplate>
 
-            <DataTemplate x:Key="ValueSourceTemplate"
-                          DataType="infrastructure:PropertyInformation">
-                <TextBlock Height="16"
-                           Text="{Binding ValueSourceText}"
-                           TextTrimming="CharacterEllipsis">
-                    <TextBlock.ToolTip>
-                        <TextBlock Text="{Binding ValueSourceText}" />
-                    </TextBlock.ToolTip>
-                </TextBlock>
+            <DataTemplate x:Key="ValueSourceTemplate" DataType="{x:Type infrastructure:PropertyInformation}">
+                <Button x:Name="ShowPropertyOriginButton"
+                        HorizontalContentAlignment="Left" Padding="3 0" MinHeight="0"
+                        Background="Transparent" BorderThickness="0"
+                        Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListViewItem}}"
+                        Command="{x:Static controls:PropertyGrid2.ShowPropertyOriginCommand}" CommandParameter="{Binding}"
+                        AutomationProperties.HelpText="{localization:InspectorLoc PropertyGrid.ShowOrigin}"
+                        ToolTip="{localization:InspectorLoc PropertyGrid.ShowOrigin}">
+                    <TextBlock Text="{Binding ValueSourceText}" TextTrimming="CharacterEllipsis" TextDecorations="Underline" />
+                </Button>
             </DataTemplate>
         </ResourceDictionary>
     </Grid.Resources>
 
     <Grid.RowDefinitions>
         <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <ListView x:Name="ListView"
               Style="{DynamicResource GridView.GridViewStyle}"
-              Grid.RowSpan="2"
               MinWidth="0"
               MinHeight="0"
               HorizontalContentAlignment="Stretch"
@@ -130,6 +135,9 @@
               IsSynchronizedWithCurrentItem="True"
               ItemsSource="{Binding ElementName=PropertyGrid, Path=Properties}"
               SelectedItem="{Binding ElementName=PropertyGrid, Path=Selection, Mode=TwoWay}">
+        <ListView.InputBindings>
+            <KeyBinding Key="Enter" Modifiers="Alt" Command="{x:Static controls:PropertyGrid2.ShowPropertyOriginCommand}" />
+        </ListView.InputBindings>
         <!-- cplotts note: -->
         <!-- does turning virtualization off actually improve performance? let's play with this later. -->
         <!--
@@ -227,7 +235,8 @@
                 </GridViewColumn>
 
                 <GridViewColumn Width="140"
-                                infrastructure:GridViewSort.PropertyName="ValueSourceText">
+                                infrastructure:GridViewSort.PropertyName="ValueSourceText"
+                                CellTemplate="{StaticResource ValueSourceTemplate}">
                     <GridViewColumn.Header>
                         <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueSource}">
                             <TextBlock.ToolTip>
@@ -235,13 +244,6 @@
                             </TextBlock.ToolTip>
                         </TextBlock>
                     </GridViewColumn.Header>
-                    <GridViewColumn.CellTemplate>
-                        <DataTemplate>
-                            <ContentControl x:Name="ContentHost"
-                                            Content="{Binding}"
-                                            ContentTemplate="{StaticResource ValueSourceTemplate}" />
-                        </DataTemplate>
-                    </GridViewColumn.CellTemplate>
                 </GridViewColumn>
 
                 <GridViewColumn Width="200"
@@ -314,4 +316,24 @@
             </GridView>
         </ListView.View>
     </ListView>
+
+    <Border x:Name="OriginDetailsPanel" Grid.Row="1" Visibility="Collapsed" DataContext="{x:Null}"
+            Padding="8 5" BorderThickness="0 1 0 0"
+            BorderBrush="{DynamicResource SnoopNext.Brush.Border}" Background="{DynamicResource SnoopNext.Brush.Panel}">
+        <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Margin="0 0 0 3">
+                <Button x:Name="CloseOriginDetailsButton" DockPanel.Dock="Right"
+                        MinHeight="24" Padding="6 1" Margin="6 0 0 0"
+                        Content="{localization:InspectorLoc Highlight.Close}" Click="CloseOriginDetails_Click" />
+                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                           Foreground="{DynamicResource SnoopNext.Brush.Text}">
+                    <Run Text="{localization:InspectorLoc PropertyGrid.ColumnValueSource}" /><Run Text=" · " /><Run Text="{Binding DisplayName, Mode=OneWay}" />
+                </TextBlock>
+            </DockPanel>
+            <TextBox x:Name="OriginDetailsText" MaxHeight="140" Padding="4 2"
+                     AutomationProperties.Name="{localization:InspectorLoc PropertyGrid.ColumnValueSource}"
+                     IsReadOnly="True" IsReadOnlyCaretVisible="True" TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto" Text="{Binding PropertyOriginDetails, Mode=OneWay}" />
+        </DockPanel>
+    </Border>
 </controls:Inspector>

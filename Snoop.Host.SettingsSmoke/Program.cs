@@ -356,6 +356,7 @@ internal static class Program
                         TargetWindowRenderingSmoke.Verify(app);
                         InspectorFlyoutSmoke.Verify(inspector);
                         CheckSurface(InspectorTableSmoke.Verify);
+                        CheckSurface(PropertyOriginSmoke.Verify);
                         CheckSurface(ZoomerPresentationSmoke.Verify);
                         if (surfaceFailures.Count > 0)
                         {

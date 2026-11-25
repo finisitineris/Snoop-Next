@@ -25,6 +25,7 @@ using Snoop.Windows;
 public partial class PropertyGrid2 : INotifyPropertyChanged
 {
     public static readonly RoutedCommand ShowBindingErrorsCommand = new(nameof(ShowBindingErrorsCommand), typeof(PropertyGrid2));
+    public static readonly RoutedCommand ShowPropertyOriginCommand = new(nameof(ShowPropertyOriginCommand), typeof(PropertyGrid2));
     public static readonly RoutedCommand ClearCommand = new(nameof(ClearCommand), typeof(PropertyGrid2));
     public static readonly RoutedCommand SortCommand = new(nameof(SortCommand), typeof(PropertyGrid2));
 
@@ -43,6 +44,8 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
         this.Unloaded += this.HandleUnloaded;
 
         this.CommandBindings.Add(new CommandBinding(ShowBindingErrorsCommand, this.HandleShowBindingErrors, this.CanShowBindingErrors));
+        this.CommandBindings.Add(new CommandBinding(ShowPropertyOriginCommand, this.ShowPropertyOrigin,
+            (_, e) => e.CanExecute = !this.NameValueOnly && (e.Parameter as PropertyInformation ?? this.Selection) is not null));
         this.CommandBindings.Add(new CommandBinding(ClearCommand, this.HandleClear, this.CanClear));
         this.CommandBindings.Add(new CommandBinding(SortCommand, this.HandleSort));
 
@@ -111,6 +114,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
     {
         if (this.target != newTarget)
         {
+            this.ClosePropertyOrigin();
             this.target = newTarget;
 
             foreach (var property in this.Properties)
@@ -130,6 +134,12 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
 
         set
         {
+            if (ReferenceEquals(this.selection, value))
+            {
+                return;
+            }
+
+            this.ClosePropertyOrigin();
             this.selection = value;
             this.OnPropertyChanged(nameof(this.Selection));
         }
@@ -194,6 +204,63 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
             this.propertiesToAdd?.Dispose();
             this.propertiesToAdd = null;
         }
+    }
+
+    private void ShowPropertyOrigin(object sender, ExecutedRoutedEventArgs e)
+    {
+        var property = e.Parameter as PropertyInformation ?? this.Selection;
+        if (property is null || !this.ListView.Items.Contains(property))
+        {
+            return;
+        }
+
+        this.ListView.SetCurrentValue(ListView.SelectedItemProperty, property);
+        // A replacement binding can produce the same effective value without a change notification.
+        property.RefreshValueSource();
+        if (!ReferenceEquals(this.OriginDetailsPanel.DataContext, property))
+        {
+            this.ClosePropertyOrigin();
+            this.OriginDetailsPanel.DataContext = property;
+            this.OriginDetailsPanel.Visibility = Visibility.Visible;
+            PropertyChangedEventManager.AddHandler(InspectorLocalization.Default, this.OriginLanguageChanged, nameof(InspectorLocalization.LanguageTag));
+        }
+
+        this.OriginDetailsText.Focus();
+        this.OriginDetailsText.ScrollToHome();
+        e.Handled = true;
+    }
+
+    private void OriginLanguageChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (this.Dispatcher.CheckAccess())
+        {
+            this.RefreshOriginText();
+        }
+        else if (!this.Dispatcher.HasShutdownStarted)
+        {
+            this.Dispatcher.InvokeAsync(this.RefreshOriginText);
+        }
+    }
+
+    private void RefreshOriginText() => this.OriginDetailsText.GetBindingExpression(TextBox.TextProperty)?.UpdateTarget();
+
+    private void ClosePropertyOrigin()
+    {
+        if (this.OriginDetailsPanel?.DataContext is not PropertyInformation)
+        {
+            return;
+        }
+
+        PropertyChangedEventManager.RemoveHandler(InspectorLocalization.Default, this.OriginLanguageChanged, nameof(InspectorLocalization.LanguageTag));
+        this.OriginDetailsPanel.DataContext = null;
+        this.OriginDetailsPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private void CloseOriginDetails_Click(object sender, RoutedEventArgs e)
+    {
+        this.ClosePropertyOrigin();
+        var selectedRow = this.ListView.ItemContainerGenerator.ContainerFromItem(this.ListView.SelectedItem) as ListViewItem;
+        (selectedRow as UIElement ?? this.ListView).Focus();
     }
 
     private void HandleShowBindingErrors(object sender, ExecutedRoutedEventArgs eventArgs)
@@ -293,6 +360,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
 
     private void HandleUnloaded(object sender, EventArgs e)
     {
+        this.ClosePropertyOrigin();
         foreach (var property in this.Properties)
         {
             property.Teardown();
@@ -358,6 +426,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
 
     public void RefreshPropertyGrid()
     {
+        this.ClosePropertyOrigin();
         this.Properties.Clear();
 
         this.propertiesToAdd = null;

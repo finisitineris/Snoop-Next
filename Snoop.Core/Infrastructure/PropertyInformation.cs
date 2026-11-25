@@ -23,6 +23,7 @@ using JetBrains.Annotations;
 using Snoop.Converters;
 using Snoop.Infrastructure.Diagnostics;
 using Snoop.Infrastructure.Helpers;
+using Snoop.Localization;
 
 public class PropertyInformation : DependencyObject, IComparable, INotifyPropertyChanged
 {
@@ -203,7 +204,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         if (this.isRunning == false
             || this.ignoreUpdate)
         {
-            this.UpdateValueSource();
+            this.RefreshValueSource();
             return;
         }
 
@@ -554,9 +555,9 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
     {
         get
         {
-            var dp = this.DependencyProperty;
-            if (dp is not null
-                && this.Target is DependencyObject d)
+            if (this.Target is DependencyObject d
+                && d.CheckAccess()
+                && this.DependencyProperty is { } dp)
             {
                 return BindingOperations.GetBindingExpressionBase(d, dp);
             }
@@ -608,6 +609,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
             this.OnPropertyChanged(nameof(this.ValueSource));
             this.OnPropertyChanged(nameof(this.ValueSourceText));
+            this.OnPropertyChanged(nameof(this.PropertyOriginDetails));
             this.OnPropertyChanged(nameof(this.IsExpression));
             this.OnPropertyChanged(nameof(this.IsAnimated));
         }
@@ -620,16 +622,39 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         {
             var text = this.ValueSource.BaseValueSource.ToString();
 
-            if (this.IsExpression)
+            if (this.BindingExpression is not null)
             {
                 text += " (Binding)";
             }
-            else if (this.ResourceKey is not null)
+            else if (this.ValueSource.IsExpression)
             {
-                text += " (Resource)";
+                text += " (Expression)";
             }
 
             return text;
+        }
+    }
+
+    // Query the target when details are requested: WPF can change the origin
+    // (for example, replace a Binding with a literal) without changing the value.
+    public string PropertyOriginDetails
+    {
+        get
+        {
+            var target = this.Target as DependencyObject;
+            if (target is not null && !target.CheckAccess())
+            {
+                return InspectorLocalization.Default["PropertyOrigin.Unavailable"];
+            }
+
+            if (target is null || this.DependencyProperty is not { } dp)
+            {
+                return this.property is null
+                    ? InspectorLocalization.Default["PropertyOrigin.NoDependencyProperty"]
+                    : InspectorLocalization.Default["PropertyOrigin.Clr"];
+            }
+
+            return PropertyOriginFormatter.GetDetails(target, dp);
         }
     }
 
@@ -720,7 +745,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
                 }
             }
 
-            this.UpdateValueSource();
+            this.RefreshValueSource();
         }
 
         this.OnPropertyChanged(nameof(this.IsLocallySet));
@@ -735,19 +760,9 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         this.OnPropertyChanged(nameof(this.ValueSource));
     }
 
-    private void UpdateValueSource()
+    internal void RefreshValueSource()
     {
-        var dp = this.DependencyProperty;
-        var d = this.Target as DependencyObject;
-
-        if (dp is null
-            || d is null)
-        {
-            return;
-        }
-
-        if (SnoopModes.MultipleDispatcherMode
-            && d.Dispatcher != this.Dispatcher)
+        if (this.Target is not DependencyObject d || !d.CheckAccess() || this.DependencyProperty is not { } dp)
         {
             return;
         }
