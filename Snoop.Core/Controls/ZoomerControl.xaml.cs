@@ -11,6 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using Snoop.AttachedProperties;
 using Snoop.Infrastructure;
 using Snoop.Windows;
 
@@ -27,6 +28,10 @@ public partial class ZoomerControl
         this.Loaded += this.HandleLoaded;
         this.Unloaded += this.HandleUnloaded;
     }
+
+    internal event Action<Visual, UIElement>? ElementPicked;
+
+    internal bool IgnoreHitTestVisibility { get; set; } = true;
 
     #region Target
 
@@ -64,7 +69,8 @@ public partial class ZoomerControl
     /// </summary>
     protected virtual void OnTargetChanged(DependencyPropertyChangedEventArgs e)
     {
-        this.ResetZoomAndTranslation();
+        this.CancelPointerGesture();
+        var previousImage = this.contextImage;
 
         if (this.pooSniffer is null)
         {
@@ -75,12 +81,18 @@ public partial class ZoomerControl
 
         this.SetSelectionOutline(Rect.Empty);
         this.RefreshPreview(replaceFallback: true);
+        if (previousImage is null || !ReferenceEquals(previousImage, this.contextImage))
+        {
+            this.ResetZoomAndTranslation();
+        }
     }
     #endregion
 
     internal void SetScopeTarget(object? target)
     {
+        this.CancelPointerGesture();
         this.scopeTarget = target;
+        this.ResetZoomAndTranslation();
         this.RefreshPreview(replaceFallback: true);
     }
 
@@ -92,6 +104,7 @@ public partial class ZoomerControl
 
     private void HandleUnloaded(object sender, RoutedEventArgs e)
     {
+        this.CancelPointerGesture();
         this.LayoutUpdated -= this.HandleLayoutUpdated;
         this.contextImage = null;
         this.Viewbox.Child = null;
@@ -110,9 +123,7 @@ public partial class ZoomerControl
     {
         if (this.Target is UIElement selected && this.GetPreviewContext(selected) is { } context)
         {
-            var toBrush = VisualTreeHelper.GetTransform(context)?.Value ?? Matrix.Identity;
-            var offset = VisualTreeHelper.GetOffset(context);
-            toBrush.Translate(offset.X, offset.Y);
+            var toBrush = GetContextTransform(context);
             var crop = Rect.Transform(new Rect(context.RenderSize), toBrush);
             if (HasArea(crop))
             {
@@ -128,6 +139,14 @@ public partial class ZoomerControl
         }
 
         this.SetSelectionOutline(Rect.Empty);
+    }
+
+    private static Matrix GetContextTransform(Visual context)
+    {
+        var transform = VisualTreeHelper.GetTransform(context)?.Value ?? Matrix.Identity;
+        var offset = VisualTreeHelper.GetOffset(context);
+        transform.Translate(offset.X, offset.Y);
+        return transform;
     }
 
     private UIElement? GetPreviewContext(UIElement selected)
@@ -308,28 +327,168 @@ public partial class ZoomerControl
 
     private void Content_MouseDown(object sender, MouseButtonEventArgs e)
     {
+        if (this.pointerButton is not null
+            || !this.IsValidTarget
+            || (e.OriginalSource is Visual source
+                && (ReferenceEquals(source, this.ColorSlider) || this.ColorSlider.IsAncestorOf(source))))
+        {
+            return;
+        }
+
         this.Focus();
-        this.downPoint = e.GetPosition(this.DocumentRoot);
-        this.DocumentRoot.CaptureMouse();
+        if (!this.DocumentRoot.CaptureMouse() || !this.DocumentRoot.IsMouseCaptured)
+        {
+            return;
+        }
+
+        this.BeginPointerGesture(e.GetPosition(this.DocumentRoot), e.ChangedButton, ReferenceEquals(e.OriginalSource, this.contextImage));
+        e.Handled = true;
     }
 
     private void Content_MouseMove(object sender, MouseEventArgs e)
     {
-        if (this.IsValidTarget
-            && this.DocumentRoot.IsMouseCaptured)
+        if (this.DocumentRoot.IsMouseCaptured && this.pointerButton is not null)
         {
-            var delta = e.GetPosition(this.DocumentRoot) - this.downPoint;
-            this.translation.X += delta.X;
-            this.translation.Y += delta.Y;
-
-            this.downPoint = e.GetPosition(this.DocumentRoot);
-            this.RefreshPreview();
+            this.MovePointerGesture(e.GetPosition(this.DocumentRoot));
+            e.Handled = true;
         }
     }
 
-    private void Content_MouseUp(object sender, MouseEventArgs e)
+    private void Content_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        this.DocumentRoot.ReleaseMouseCapture();
+        if (this.DocumentRoot.IsMouseCaptured && this.pointerButton == e.ChangedButton)
+        {
+            this.CompletePointerGesture(e.GetPosition(this.DocumentRoot), e.ChangedButton);
+            e.Handled = true;
+        }
+    }
+
+    private void Content_LostMouseCapture(object sender, MouseEventArgs e)
+    {
+        if (!this.DocumentRoot.IsMouseCaptured)
+        {
+            this.CancelPointerGesture();
+        }
+    }
+
+    private void BeginPointerGesture(Point position, MouseButton button, bool fromImage)
+    {
+        this.pointerButton = button;
+        this.pointerStart = position;
+        this.panAnchor = position;
+        this.pressedImage = button == MouseButton.Left && fromImage ? this.contextImage : null;
+        this.isPanning = false;
+    }
+
+    private void MovePointerGesture(Point position)
+    {
+        if (this.pointerButton is null || (!this.isPanning && !this.ExceedsDragThreshold(position)))
+        {
+            return;
+        }
+
+        this.isPanning = true;
+        var delta = position - this.panAnchor;
+        this.translation.X += delta.X;
+        this.translation.Y += delta.Y;
+        this.panAnchor = position;
+        this.RefreshPreview();
+    }
+
+    private bool ExceedsDragThreshold(Point position)
+        => Math.Abs(position.X - this.pointerStart.X) >= SystemParameters.MinimumHorizontalDragDistance
+            || Math.Abs(position.Y - this.pointerStart.Y) >= SystemParameters.MinimumVerticalDragDistance;
+
+    private void CompletePointerGesture(Point position, MouseButton button)
+    {
+        if (this.pointerButton != button)
+        {
+            return;
+        }
+
+        var shouldPick = this.pressedImage is not null
+            && ReferenceEquals(this.pressedImage, this.contextImage)
+            && !this.isPanning
+            && !this.ExceedsDragThreshold(position);
+        this.CancelPointerGesture();
+        if (shouldPick)
+        {
+            this.SelectPreviewElementAt(position);
+        }
+    }
+
+    private void CancelPointerGesture()
+    {
+        this.pointerButton = null;
+        this.pressedImage = null;
+        this.isPanning = false;
+        if (this.DocumentRoot.IsMouseCaptured)
+        {
+            this.DocumentRoot.ReleaseMouseCapture();
+        }
+    }
+
+    private void SelectPreviewElementAt(Point position)
+    {
+        if (this.contextImage is not { IsArrangeValid: true, Fill: VisualBrush { Visual: UIElement context } brush } image
+            || !ReferenceEquals(this.Viewbox.Child, image)
+            || this.Target is not UIElement selected
+            || !ReferenceEquals(this.GetPreviewContext(selected), context)
+            || !new Rect(this.DocumentRoot.RenderSize).Contains(position))
+        {
+            return;
+        }
+
+        var imageBounds = new Rect(image.RenderSize);
+        var toImage = image.TransformToAncestor(this.DocumentRoot).Inverse;
+        if (!HasArea(imageBounds) || toImage is null || !toImage.TryTransform(position, out var imagePoint)
+            || !imageBounds.Contains(imagePoint))
+        {
+            return;
+        }
+
+        var crop = brush.Viewbox;
+        var toContext = GetContextTransform(context);
+        var contextBounds = new Rect(context.RenderSize);
+        if (!toContext.HasInverse || !HasArea(crop) || crop != Rect.Transform(contextBounds, toContext))
+        {
+            return;
+        }
+
+        var brushPoint = new Point(
+            crop.X + ((imagePoint.X / imageBounds.Width) * crop.Width),
+            crop.Y + ((imagePoint.Y / imageBounds.Height) * crop.Height));
+        toContext.Invert();
+        var contextPoint = toContext.Transform(brushPoint);
+        if (!contextBounds.Contains(contextPoint))
+        {
+            return;
+        }
+
+        Visual? hit = null;
+        VisualTreeHelper.HitTest(context, this.FilterPreviewHitTest, result =>
+        {
+            hit = result.VisualHit as Visual;
+            return hit is null ? HitTestResultBehavior.Continue : HitTestResultBehavior.Stop;
+        }, new PointHitTestParameters(contextPoint));
+
+        // Updating selection can change adorners, so it must happen after the hit test.
+        if (hit is not null)
+        {
+            this.ElementPicked?.Invoke(hit, context);
+        }
+    }
+
+    private HitTestFilterBehavior FilterPreviewHitTest(DependencyObject candidate)
+    {
+        if (SnoopAttachedProperties.GetIsSnoopPart(candidate)
+            || (candidate is Visual visual && VisualTreeHelper.GetOpacity(visual) == 0)
+            || (candidate is UIElement element && (!element.IsVisible || (!this.IgnoreHitTestVisibility && !element.IsHitTestVisible))))
+        {
+            return HitTestFilterBehavior.ContinueSkipSelfAndChildren;
+        }
+
+        return HitTestFilterBehavior.Continue;
     }
 
     protected override void OnMouseWheel(MouseWheelEventArgs e)
@@ -339,6 +498,7 @@ public partial class ZoomerControl
         if (this.IsValidTarget)
         {
             e.Handled = true;
+            this.pressedImage = null;
 
             var zoom = Math.Pow(ZoomFactor, e.Delta / 120.0);
             var offset = e.GetPosition(this.Viewbox);
@@ -383,7 +543,11 @@ public partial class ZoomerControl
     private readonly TranslateTransform translation = new();
     private readonly ScaleTransform zoom = new();
     private readonly TransformGroup transform = new();
-    private Point downPoint;
+    private MouseButton? pointerButton;
+    private Point pointerStart;
+    private Point panAnchor;
+    private Rectangle? pressedImage;
+    private bool isPanning;
 
     private const double ZoomFactor = 1.1;
 }
