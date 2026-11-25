@@ -32,6 +32,11 @@ public partial class AppChooser
     public static readonly RoutedCommand SettingsCommand = new(nameof(SettingsCommand), typeof(AppChooser));
     public static readonly RoutedCommand MinimizeCommand = new(nameof(MinimizeCommand), typeof(AppChooser));
 
+    private static readonly DependencyPropertyKey SortColumnPropertyKey =
+        DependencyProperty.RegisterReadOnly(nameof(SortColumn), typeof(int), typeof(AppChooser), new PropertyMetadata(1));
+
+    public static readonly DependencyProperty SortColumnProperty = SortColumnPropertyKey.DependencyProperty;
+
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
 
     private LowLevelKeyboardHook? keyboardHook;
@@ -45,7 +50,6 @@ public partial class AppChooser
     {
         this.WindowInfos = CollectionViewSource.GetDefaultView(this.windowInfos);
         this.WindowInfos.SortDescriptions.Add(new SortDescription(nameof(WindowInfo.OwningProcessId), ListSortDirection.Ascending));
-        this.SortColumn = 1;
 
         this.InitializeComponent();
         this.Loaded += this.HandleChooserLoaded;
@@ -67,7 +71,7 @@ public partial class AppChooser
 
     public ICollectionView WindowInfos { get; }
 
-    public int SortColumn { get; private set; }
+    public int SortColumn => (int)this.GetValue(SortColumnProperty);
 
     private void HandleChooserLoaded(object sender, RoutedEventArgs e)
     {
@@ -350,7 +354,7 @@ public partial class AppChooser
         }
 
         var gridColumn = (int)textBlock.GetValue(Grid.ColumnProperty);
-        this.SortColumn = gridColumn;
+        this.SetValue(SortColumnPropertyKey, gridColumn);
 
         var propertyName = string.Empty;
         switch (gridColumn)

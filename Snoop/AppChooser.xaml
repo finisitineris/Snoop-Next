@@ -73,13 +73,13 @@
                             <Image Width="14" Height="14" Margin="0,0,4,0"
                                    Visibility="{Binding OwningProcessInfo.IsProcessElevated, Converter={x:Static snoopwpf:BoolToVisibilityConverter.DefaultInstance}}"
                                    Source="{Binding Source={x:Static infrastructure:SystemIcon.Shield}, Converter={x:Static converters:SystemIconToImageSourceConverter.Instance}, ConverterParameter=16}" />
-                            <TextBlock Grid.Column="1" Style="{StaticResource TargetColumn}" FontFamily="Consolas"
+                            <TextBlock x:Name="Pid" Grid.Column="1" Style="{StaticResource TargetColumn}" FontFamily="Consolas"
                                        Text="{Binding OwningProcessId, StringFormat={}[{0}]}"
                                        ToolTip="{local:Loc Chooser.SortPid}" MouseRightButtonUp="HandleDropDownColumn_OnMouseRightButtonUp" />
-                            <TextBlock Grid.Column="2" Style="{StaticResource TargetColumn}" MaxWidth="155" FontWeight="SemiBold"
+                            <TextBlock x:Name="Process" Grid.Column="2" Style="{StaticResource TargetColumn}" MaxWidth="155"
                                        Text="{Binding ProcessName}" ToolTip="{local:Loc Chooser.SortProcess}"
                                        MouseRightButtonUp="HandleDropDownColumn_OnMouseRightButtonUp" />
-                            <TextBlock Grid.Column="3" Style="{StaticResource TargetColumn}" MaxWidth="320" Text="{Binding WindowTitle}"
+                            <TextBlock x:Name="Caption" Grid.Column="3" Style="{StaticResource TargetColumn}" MaxWidth="320" Text="{Binding WindowTitle}"
                                        MouseRightButtonUp="HandleDropDownColumn_OnMouseRightButtonUp">
                                 <TextBlock.ToolTip>
                                     <StackPanel>
@@ -89,6 +89,17 @@
                                 </TextBlock.ToolTip>
                             </TextBlock>
                         </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsPresenter}}" Value="1">
+                                <Setter TargetName="Pid" Property="FontWeight" Value="SemiBold" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsPresenter}}" Value="2">
+                                <Setter TargetName="Process" Property="FontWeight" Value="SemiBold" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource AncestorType=ItemsPresenter}}" Value="3">
+                                <Setter TargetName="Caption" Property="FontWeight" Value="SemiBold" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>

@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Snoop.Core;
+using Snoop.Localization;
 using Snoop.Next.Localization;
 using Snoop.Views;
 using Snoop.Windows;
@@ -23,9 +24,12 @@ internal static class LauncherAppearanceSmoke
         var chooser = new AppChooser();
         var content = (FrameworkElement)chooser.Content;
         var language = LocalizationManager.Default.LanguageTag;
+        var inspectorLanguage = InspectorLocalization.Default.LanguageTag;
         var palette = Snoop.Core.Settings.Default.ThemeMode;
         try
         {
+            chooser.ApplyTemplate();
+            WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
             var list = Find<ComboBox>("windowsComboBox");
             var attach = Find<Button>("InspectTargetButton");
             var magnify = Find<Button>("MagnifyTargetButton");
@@ -50,7 +54,7 @@ internal static class LauncherAppearanceSmoke
                 foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 {
                     ThemeManager.Current.ApplyTheme(mode, chooser);
-                    var bounds = new Rect(0, 0, chooser.Width, chooser.Height);
+                    var bounds = new Rect(0, 0, chooser.MinWidth, chooser.Height);
                     WorkbenchLayoutSmoke.Arrange(content, bounds);
                     foreach (var name in new[]
                     {
@@ -66,13 +70,14 @@ internal static class LauncherAppearanceSmoke
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(AutomationProperties.GetName(attach)))
+                    if (AutomationProperties.GetName(attach) != LocalizationManager.Default["Chooser.Inspect"])
                     {
                         throw new InvalidOperationException("The attach action needs an accessible name.");
                     }
 
                     if (tag == "zh-CN")
                     {
+                        WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
                         CaptureIfRequested(content, "launcher-" + mode);
                     }
                 }
@@ -87,6 +92,7 @@ internal static class LauncherAppearanceSmoke
                 try
                 {
                     LocalizationManager.Default.SetLanguage("zh-CN");
+                    InspectorLocalization.Default.SetLanguage("zh-CN");
                     foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                     {
                         ThemeManager.Current.ApplyTheme(mode, inspector);
@@ -108,6 +114,7 @@ internal static class LauncherAppearanceSmoke
         finally
         {
             LocalizationManager.Default.SetLanguage(language);
+            InspectorLocalization.Default.SetLanguage(inspectorLanguage);
             ThemeManager.Current.ApplyTheme(palette, inspector);
             chooser.Close();
         }
