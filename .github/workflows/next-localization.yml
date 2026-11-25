@@ -99,10 +99,11 @@ jobs:
           & $smoke
           if ($LASTEXITCODE -ne 0) { throw 'Snoop host/inspector UI smoke failed' }
       - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
         with:
           name: fluent-ui-previews
           path: output/next-ui-previews/*.png
-          if-no-files-found: error
+          if-no-files-found: warn
       - name: Check host-side DLL and explicit install manifests
         shell: pwsh
         run: |

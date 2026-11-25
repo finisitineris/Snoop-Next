@@ -2,6 +2,7 @@ namespace Snoop.Host.SettingsSmoke;
 
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -188,7 +189,9 @@ internal static class InspectorDispatcherSmoke
             SolidColorBrush VerifyTheme(Color color)
             {
                 var brush = (SolidColorBrush)inspector.FindResource(BackgroundKey);
-                Require(brush.Color == color, "The primary inspector did not apply the selected theme.");
+                Require(brush.Color == color, $"Expected primary inspector background {color}, got {brush.Color}. " +
+                    $"System contrast: {SystemParameters.HighContrast}. Merged dictionaries: " +
+                    string.Join(", ", inspector.Resources.MergedDictionaries.Select(dictionary => dictionary.Source)));
                 secondaryDispatcher.Invoke(() =>
                 {
                     Require(((SolidColorBrush)((Border)secondaryWindow.Content).Background).Color == color,

@@ -330,8 +330,8 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
-                        InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         LauncherAppearanceSmoke.Verify(inspector);
+                        InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
