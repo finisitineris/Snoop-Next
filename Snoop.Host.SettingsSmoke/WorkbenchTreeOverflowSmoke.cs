@@ -89,6 +89,7 @@ internal static class WorkbenchTreeOverflowSmoke
                 throw new InvalidOperationException($"The end of the deep node is clipped after scrolling. Header end {RightEdge()}, viewer {viewer.ActualWidth}, offset {viewer.HorizontalOffset}.");
             }
 
+            LauncherAppearanceSmoke.CaptureIfRequested(chrome, "expanded-visual-tree-scrolled");
             viewer.ScrollToLeftEnd();
             Arrange();
             LauncherAppearanceSmoke.CaptureIfRequested(chrome, "expanded-visual-tree");
