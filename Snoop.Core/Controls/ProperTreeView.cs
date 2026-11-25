@@ -70,31 +70,32 @@ public class ProperTreeView : TreeView
         }
 
         var curItem = (TreeItem)curNode.DataContext;
-        var item = curItem;
-
-        var selectedItem = this.snoopUI.CurrentSelection;
-
-        if (selectedItem is not null
-            && item.Depth < selectedItem.Depth)
-        {
-            item = selectedItem;
-        }
-
-        if (item.Parent is null)
-        {
-            return false;
-        }
-
-        var rootItem = this.GetRootItem();
-
-        if (rootItem is null)
-        {
-            return false;
-        }
-
         var shouldReduce = GetRemainingStackSize() < MinStackRequired;
-        var shouldWiden = shouldReduce == false && curNode.IsSelected && curItem == rootItem;
+        var filtered = this.snoopUI.IsTreeFilterApplied;
+        if (filtered && !shouldReduce)
+        {
+            // A matching result deliberately appears as a root even when selected.
+            return false;
+        }
 
+        var item = curItem;
+        if (!filtered && this.snoopUI.CurrentSelection is { } selected && item.Depth < selected.Depth)
+        {
+            item = selected;
+        }
+
+        if (item.Parent is null || this.Items.Count == 0)
+        {
+            return false;
+        }
+
+        var rootItem = filtered ? GetDisplayedRoot(curNode) : this.Items[0] as TreeItem;
+        if (rootItem is null || (filtered && curItem == rootItem))
+        {
+            return false;
+        }
+
+        var shouldWiden = !shouldReduce && curNode.IsSelected && curItem == rootItem;
         if (shouldReduce == false
             && shouldWiden == false)
         {
@@ -109,7 +110,7 @@ public class ProperTreeView : TreeView
 
         for (var i = 0; i < levelsToShowAboveNewRoot; ++i)
         {
-            if (newRoot?.Parent is null)
+            if (newRoot?.Parent is null || (filtered && newRoot == rootItem))
             {
                 break;
             }
@@ -122,14 +123,20 @@ public class ProperTreeView : TreeView
             return false;
         }
 
-        this.snoopUI.ApplyReduceDepthFilter(newRoot);
+        this.snoopUI.ApplyReduceDepthFilter(newRoot, filtered ? rootItem : null);
 
         return true;
     }
 
-    private TreeItem? GetRootItem()
+    private static TreeItem? GetDisplayedRoot(TreeViewItem container)
     {
-        return this.Items[0] as TreeItem;
+        // Model parents extend above the search results. Container parents stop at the displayed root.
+        while (ItemsControl.ItemsControlFromItemContainer(container) is TreeViewItem parent)
+        {
+            container = parent;
+        }
+
+        return container.DataContext as TreeItem;
     }
 
     protected override DependencyObject GetContainerForItemOverride()

@@ -104,6 +104,12 @@
   <data name="zh-CN.Tree.Logical" xml:space="preserve"><value>逻辑</value></data>
   <data name="en-US.Tree.Automation" xml:space="preserve"><value>Automation</value></data>
   <data name="zh-CN.Tree.Automation" xml:space="preserve"><value>自动化</value></data>
+  <data name="en-US.Tree.FilterNoMatches" xml:space="preserve"><value>No elements match this filter.</value></data>
+  <data name="zh-CN.Tree.FilterNoMatches" xml:space="preserve"><value>没有匹配此筛选条件的元素。</value></data>
+  <data name="en-US.Tree.FilterNoBindingErrors" xml:space="preserve"><value>No elements in this tree have binding errors.</value></data>
+  <data name="zh-CN.Tree.FilterNoBindingErrors" xml:space="preserve"><value>当前树中的元素均无绑定错误。</value></data>
+  <data name="en-US.Tree.ClearFilter" xml:space="preserve"><value>Clear filter</value></data>
+  <data name="zh-CN.Tree.ClearFilter" xml:space="preserve"><value>清除筛选</value></data>
   <data name="en-US.Density.Label" xml:space="preserve"><value>Density</value></data>
   <data name="zh-CN.Density.Label" xml:space="preserve"><value>界面密度</value></data>
   <data name="en-US.Density.Comfortable" xml:space="preserve"><value>Comfortable</value></data>

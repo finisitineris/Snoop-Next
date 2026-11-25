@@ -34,8 +34,6 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
     private bool isSelected;
 
     private string name = string.Empty;
-    private string nameLower = string.Empty;
-    private readonly string typeNameLower;
     private int childItemCount;
     private readonly ObservableCollection<TreeItem> children = new();
     private ObservableCollection<MenuItem>? menuItems;
@@ -50,8 +48,6 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
         this.IsScoped = isScoped;
         this.Target = target ?? throw new ArgumentNullException(nameof(target));
         this.TargetType = this.Target.GetType();
-
-        this.typeNameLower = this.TargetType.Name.ToLower();
 
         this.Parent = parent;
         this.TreeService = treeService;
@@ -109,7 +105,6 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
             // ReSharper disable once ConstantNullCoalescingCondition
             // ensure that name never is null
             this.name = value ?? string.Empty;
-            this.nameLower = this.name.ToLower();
 
             this.OnPropertyChanged(nameof(this.Name));
             this.OnPropertyChanged(nameof(this.DisplayName));
@@ -347,23 +342,9 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
     /// <returns><c>true</c> if this matches <paramref name="value"/>. Otherwise <c>false</c>.</returns>
     public bool Filter(string value)
     {
-        if (this.typeNameLower.Contains(value, StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        if (this.nameLower.Contains(value, StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        if (int.TryParse(value, out var n)
-            && n == this.Depth)
-        {
-            return true;
-        }
-
-        return false;
+        return this.TargetType.Name.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0
+               || this.Name.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0
+               || (int.TryParse(value, out var depth) && depth == this.Depth);
     }
 
     protected void AddChild(TreeItem item)

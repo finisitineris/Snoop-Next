@@ -601,6 +601,39 @@
                         <TextBlock Text="{localization:InspectorLoc Tooltip.TreeSelect}" />
                     </controls:ProperTreeView.ToolTip>
                 </controls:ProperTreeView>
+
+                <StackPanel x:Name="TreeFilterEmptyState" Grid.Row="1"
+                            Margin="12 10 12 0" VerticalAlignment="Top">
+                    <StackPanel.Style>
+                        <Style TargetType="{x:Type StackPanel}">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsTreeFilterEmpty}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock x:Name="TreeFilterEmptyText" TextWrapping="Wrap"
+                               Foreground="{DynamicResource SnoopNext.Brush.Text}">
+                        <TextBlock.Style>
+                            <Style TargetType="{x:Type TextBlock}">
+                                <Setter Property="Text" Value="{localization:InspectorLoc Tree.FilterNoMatches}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected, ElementName=BindingErrorsFilterItem}" Value="True">
+                                        <Setter Property="Text" Value="{localization:InspectorLoc Tree.FilterNoBindingErrors}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Button x:Name="ClearEmptyTreeFilterButton"
+                            HorizontalAlignment="Left" Margin="0 8 0 0" MinHeight="28" Padding="9 3"
+                            Content="{localization:InspectorLoc Tree.ClearFilter}"
+                            ToolTip="{localization:InspectorLoc Tooltip.ClearFilter}"
+                            AutomationProperties.HelpText="{Binding Text, ElementName=TreeFilterEmptyText}"
+                            Click="ClearTreeFilter_Click" />
+                </StackPanel>
             </Grid>
 
             <GridSplitter x:Name="GridSplitter"
