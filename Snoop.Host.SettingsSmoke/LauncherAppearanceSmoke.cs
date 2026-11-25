@@ -3,6 +3,7 @@ namespace Snoop.Host.SettingsSmoke;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -70,6 +71,8 @@ internal static class LauncherAppearanceSmoke
                         }
                     }
 
+                    VerifyCompactLayout(chooser, capture: tag == "zh-CN" ? "launcher-compact-" + mode : null);
+
                     if (AutomationProperties.GetName(attach) != LocalizationManager.Default["Chooser.Inspect"])
                     {
                         throw new InvalidOperationException("The attach action needs an accessible name.");
@@ -81,6 +84,16 @@ internal static class LauncherAppearanceSmoke
                         CaptureIfRequested(content, "launcher-" + mode);
                     }
                 }
+            }
+
+            var reopened = new AppChooser { Width = 320, Height = 86 };
+            try
+            {
+                VerifyCompactLayout(reopened, capture: null);
+            }
+            finally
+            {
+                reopened.Close();
             }
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR")))
@@ -119,11 +132,61 @@ internal static class LauncherAppearanceSmoke
             chooser.Close();
         }
 
-        Console.WriteLine("PASS: launcher command routing, independent pickers, light/dark layout in Chinese and English");
+        Console.WriteLine("PASS: launcher commands and pickers, full 320 DIP layout, wide restore and reopen in Chinese and English");
 
         T Find<T>(string name)
             where T : FrameworkElement
             => chooser.FindName(name) as T ?? throw new InvalidOperationException("Missing launcher element " + name);
+    }
+
+    private static void VerifyCompactLayout(AppChooser chooser, string? capture)
+    {
+        var applyWorkArea = typeof(AppChooser).GetMethod("ApplyWorkArea", BindingFlags.Instance | BindingFlags.NonPublic)
+                            ?? throw new InvalidOperationException("Missing launcher work-area layout.");
+        var content = (FrameworkElement)chooser.Content;
+        var actions = (WrapPanel)chooser.FindName("TargetActions");
+        var small = new Rect(48, 72, 320, 180);
+        applyWorkArea.Invoke(chooser, new object[] { small, small.BottomRight });
+        var bounds = new Rect(0, 0, chooser.Width, chooser.Height);
+        WorkbenchLayoutSmoke.Arrange(content, bounds);
+        if (bounds.Width != 320 || bounds.Height <= 48 || !small.Contains(new Rect(chooser.Left, chooser.Top, bounds.Width, bounds.Height))
+                                || Grid.GetRow(actions) != 1)
+        {
+            throw new InvalidOperationException($"The compact launcher must reflow within its 320 DIP work area, got {bounds}.");
+        }
+
+        var names = new[]
+        {
+            "windowsComboBox", "RefreshTargetsButton", "InspectTargetButton", "InspectWindowFinder", "MagnifyTargetButton",
+            "MagnifyWindowFinder", "SettingsButton", "MinimizeButton", "CloseButton"
+        };
+        var boxes = names.Select(name =>
+        {
+            var element = (FrameworkElement)chooser.FindName(name);
+            return element.TransformToAncestor(content).TransformBounds(new Rect(element.RenderSize));
+        }).ToArray();
+        for (var i = 0; i < boxes.Length; i++)
+        {
+            var box = boxes[i];
+            if (box.Width < (i == 0 ? 145 : 28) || box.Height < 28 || !bounds.Contains(box)
+                || boxes.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > 0, Height: > 0 }))
+            {
+                throw new InvalidOperationException($"The compact launcher must expose its selector and every action without overlap. {names[i]} at {box}.");
+            }
+        }
+
+        if (capture is not null)
+        {
+            CaptureIfRequested(content, capture);
+        }
+
+        applyWorkArea.Invoke(chooser, new object[] { new Rect(0, 0, 1280, 720), new Point(20, 20) });
+        WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
+        if (chooser.Width != 740 || chooser.MinWidth != 560 || chooser.Height != 48 || Grid.GetRow(actions) != 0
+            || ((TextBlock)chooser.FindName("BrandLabel")).Visibility != Visibility.Visible)
+        {
+            throw new InvalidOperationException("A wider work area must restore the launcher's single-row geometry.");
+        }
     }
 
     internal static void CaptureIfRequested(FrameworkElement surface, string name)

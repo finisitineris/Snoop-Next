@@ -13,7 +13,7 @@
         xmlns:snoop="clr-namespace:Snoop"
         xmlns:snoopwpf="urn:snoopwpf"
         x:Name="Root" Title="{local:Loc Shell.Title}" Icon="Snoop.ico"
-        Width="740" MinWidth="560" Height="48" MinHeight="48" MaxHeight="48"
+        Width="740" MinWidth="560" Height="48" MinHeight="48"
         AllowsTransparency="True" Background="Transparent" Topmost="True"
         ResizeMode="NoResize" WindowStyle="None" UseLayoutRounding="True" SnapsToDevicePixels="True"
         Foreground="{DynamicResource SnoopNext.Brush.Text}" FontFamily="Segoe UI" FontSize="13"
@@ -40,9 +40,14 @@
     <Border x:Name="ChooserSurface" Background="{DynamicResource SnoopNext.Brush.Background}"
             BorderBrush="{DynamicResource SnoopNext.Brush.Border}" BorderThickness="1" CornerRadius="8" Padding="7,0">
         <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" MinHeight="46" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <StackPanel Margin="0,0,10,0" Orientation="Horizontal" Background="Transparent"
@@ -53,7 +58,7 @@
                           Stroke="{DynamicResource SnoopNext.Brush.OnAccent}" StrokeThickness="1.4" StrokeLineJoin="Round"
                           Data="M 2,1 L 13,1 Q 14,1 14,2 L 14,8 M 6,12 L 2,12 Q 1,12 1,11 L 1,2 Q 1,1 2,1 M 1,4 L 14,4 M 7,6 L 7,13 L 9,11 L 11,14 L 13,13 L 11,10 L 14,10 Z" />
                 </Grid>
-                <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{local:Loc Shell.Title}" />
+                <TextBlock x:Name="BrandLabel" VerticalAlignment="Center" FontWeight="SemiBold" Text="{local:Loc Shell.Title}" />
             </StackPanel>
 
             <ComboBox x:Name="windowsComboBox" Grid.Column="1" VerticalAlignment="Center"
@@ -104,7 +109,7 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
 
-            <StackPanel Grid.Column="2" Margin="3,0,0,0" Orientation="Horizontal" VerticalAlignment="Center">
+            <WrapPanel x:Name="TargetActions" Grid.Column="2" Margin="3,0,0,0" VerticalAlignment="Center">
                 <Button x:Name="RefreshTargetsButton" Style="{StaticResource LauncherButton}" Command="{x:Static snoop:AppChooser.RefreshCommand}"
                         AutomationProperties.Name="{local:Loc Chooser.Refresh}" ToolTip="{local:Loc Chooser.Refresh}">
                     <Path Style="{StaticResource LauncherIcon}" Data="M14,6 A6,6 0 1 0 14,11 M14,2 L14,6.5 L9.5,6.5" />
@@ -124,7 +129,9 @@
                     </StackPanel>
                 </Button>
                 <snoop:WindowFinder x:Name="MagnifyWindowFinder" WindowFinderType="Magnify" ToolTip="{local:Loc Chooser.PickMagnify}" />
-                <Border Style="{StaticResource LauncherDivider}" />
+            </WrapPanel>
+            <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="WindowActionsDivider" Style="{StaticResource LauncherDivider}" />
                 <Button x:Name="SettingsButton" Style="{StaticResource LauncherButton}" Command="{x:Static snoop:AppChooser.SettingsCommand}"
                         AutomationProperties.Name="{local:Loc Chooser.Settings}" ToolTip="{local:Loc Chooser.Settings}">
                     <Path Style="{StaticResource LauncherIcon}" Data="M6.4,1 H9.6 L10,3 L11.3,3.8 L13.2,3.2 L14.8,5.8 L13.4,7.2 V8.8 L14.8,10.2 L13.2,12.8 L11.3,12.2 L10,13 L9.6,15 H6.4 L6,13 L4.7,12.2 L2.8,12.8 L1.2,10.2 L2.6,8.8 V7.2 L1.2,5.8 L2.8,3.2 L4.7,3.8 L6,3 Z M10.5,8 A2.5,2.5 0 1 1 5.5,8 A2.5,2.5 0 1 1 10.5,8" />

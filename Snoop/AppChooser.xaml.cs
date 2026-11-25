@@ -38,6 +38,8 @@ public partial class AppChooser
     public static readonly DependencyProperty SortColumnProperty = SortColumnPropertyKey.DependencyProperty;
 
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
+    private readonly double singleRowMinimumWidth;
+    private double preferredWidth;
 
     private LowLevelKeyboardHook? keyboardHook;
 
@@ -52,6 +54,8 @@ public partial class AppChooser
         this.WindowInfos.SortDescriptions.Add(new SortDescription(nameof(WindowInfo.OwningProcessId), ListSortDirection.Ascending));
 
         this.InitializeComponent();
+        this.singleRowMinimumWidth = this.MinWidth;
+        this.preferredWidth = this.Width;
         this.Loaded += this.HandleChooserLoaded;
 
         ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this);
@@ -113,16 +117,27 @@ public partial class AppChooser
             return;
         }
 
-        var work = SnoopWindowUtils.GetWindowWorkArea(this);
-        this.MinWidth = Math.Min(this.MinWidth, work.Width);
-        this.Width = Math.Min(this.ActualWidth, work.Width);
-
         // Loaded windows with automatic startup placement can still have NaN Left/Top.
         // Translate their actual desktop origin using the HWND's current DPI.
         var origin = this.PointToScreen(default);
-        var logical = target.TransformFromDevice.Transform(origin);
-        this.Left = Math.Max(work.Left, Math.Min(logical.X, work.Right - this.Width));
-        this.Top = Math.Max(work.Top, Math.Min(logical.Y, work.Bottom - this.ActualHeight));
+        this.ApplyWorkArea(SnoopWindowUtils.GetWindowWorkArea(this), target.TransformFromDevice.Transform(origin));
+    }
+
+    private void ApplyWorkArea(Rect work, Point origin)
+    {
+        var compact = work.Width < this.singleRowMinimumWidth;
+        this.BrandLabel.Visibility = this.WindowActionsDivider.Visibility = compact ? Visibility.Collapsed : Visibility.Visible;
+        Grid.SetRow(this.TargetActions, compact ? 1 : 0);
+        Grid.SetColumn(this.TargetActions, compact ? 0 : 2);
+        Grid.SetColumnSpan(this.TargetActions, compact ? 4 : 1);
+        this.TargetActions.Margin = compact ? new Thickness(0, 0, 0, 6) : new Thickness(3, 0, 0, 0);
+
+        this.MinWidth = Math.Min(this.singleRowMinimumWidth, work.Width);
+        this.Width = Math.Min(this.preferredWidth, work.Width);
+        this.ChooserSurface.Measure(new Size(this.Width, double.PositiveInfinity));
+        this.Height = this.ChooserSurface.DesiredSize.Height;
+        this.Left = Math.Max(work.Left, Math.Min(origin.X, work.Right - this.Width));
+        this.Top = Math.Max(work.Top, Math.Min(origin.Y, work.Bottom - this.Height));
     }
 
     public void Refresh()
@@ -195,6 +210,10 @@ public partial class AppChooser
 
         // load the window placement details from the user settings.
         SnoopWindowUtils.LoadWindowPlacement(this, Settings.Default.AppChooserWindowPlacement);
+        if (this.Width >= this.singleRowMinimumWidth)
+        {
+            this.preferredWidth = this.Width;
+        }
     }
 
     private static void KeyboardHook_LowLevelKeyUp(object sender, KeyEventArgs e)
@@ -329,6 +348,7 @@ public partial class AppChooser
     private void HandleMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         this.DragMove();
+        this.FitChooserToWorkArea();
     }
 
     private void HandleWindowsComboBox_OnDropDownOpened(object sender, EventArgs e)
