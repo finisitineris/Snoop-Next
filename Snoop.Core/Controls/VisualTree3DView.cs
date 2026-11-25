@@ -45,12 +45,12 @@ public class VisualTree3DView : Viewport3D
             Content = @group
         };
 
-        if (model is not null)
+        if (model is not null && !model.Bounds.IsEmpty)
         {
             var bounds = model.Bounds;
             const double fieldOfView = 45;
             var lookAtPoint = new Point3D(bounds.X + (bounds.SizeX / 2), bounds.Y + (bounds.SizeY / 2), bounds.Z + (bounds.SizeZ / 2));
-            var cameraDistance = 0.5 * bounds.SizeX / Math.Tan(0.5 * fieldOfView * Math.PI / 180);
+            var cameraDistance = (0.56 * Math.Max(bounds.SizeX, bounds.SizeY) / Math.Tan(0.5 * fieldOfView * Math.PI / 180)) + (bounds.SizeZ / 2);
             var position = lookAtPoint - new Vector3D(0, 0, cameraDistance);
             Camera camera = new PerspectiveCamera(position, new Vector3D(0, 0, 1), new Vector3D(0, -1, 0), fieldOfView);
 
@@ -80,13 +80,13 @@ public class VisualTree3DView : Viewport3D
 
     private Model3D? ConvertVisualToModel3D(Visual? visual, int dpi, ref double z)
     {
-        if (visual is null)
+        if (visual is null or UIElement { IsVisible: false })
         {
             return null;
         }
 
         Model3D? model = null;
-        var bounds = visual is UIElement { IsVisible: false } ? Rect.Empty : VisualTreeHelper.GetContentBounds(visual);
+        var bounds = VisualTreeHelper.GetContentBounds(visual);
 
         if (visual is Viewport3D viewport3D)
         {
@@ -149,7 +149,7 @@ public class VisualTree3DView : Viewport3D
                 }
             }
 
-            model = group;
+            model = group.Children.Count == 0 ? null : group;
         }
 
         if (model is not null)

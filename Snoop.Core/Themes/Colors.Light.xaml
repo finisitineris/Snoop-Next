@@ -258,13 +258,16 @@
 
     <SolidColorBrush x:Key="Snoop.Brushes.Window.Frame" Color="#FF646464" options:Freeze="True" />
 
-    <SolidColorBrush x:Key="Snoop.Brushes.ItemsControl.AlternationBackground" Color="#FFEAEAEA" options:Freeze="True" />
 
-    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsLocallySetForeground" Color="DarkBlue" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.HasChangedRecently" Color="Yellow" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsExpression" Color="LightGreen" options:Freeze="True" />
-    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsAnimated" Color="LightSalmon" options:Freeze="True" />
 
     <SolidColorBrush x:Key="Snoop.Brushes.EventsView.Handled.Background" Color="LightGreen" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.EventsView.Handled.Foreground" Color="Black" options:Freeze="True" />
+
+    <SolidColorBrush x:Key="Snoop.Brushes.ItemsControl.AlternationBackground" Color="#F8F9FA" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsLocallySetForeground" Color="#005A9E" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.HasChangedRecently" Color="#FFF1BA" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsExpression" Color="#E3F3E9" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsAnimated" Color="#FCE7DA" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingBackground" Color="#FDE7E9" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingForeground" Color="#A4262C" options:Freeze="True" />
 </ResourceDictionary>

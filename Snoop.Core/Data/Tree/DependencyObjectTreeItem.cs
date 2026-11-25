@@ -76,6 +76,8 @@ public class DependencyObjectTreeItem : ResourceContainerTreeItem
 
     public override Brush TreeBackgroundBrush => Brushes.Transparent;
 
+    public override bool HasPreviewToolTip => VisualCaptureUtil.IsSafeToVisualize(this.Visual);
+
     public override Brush? VisualBrush
     {
         get

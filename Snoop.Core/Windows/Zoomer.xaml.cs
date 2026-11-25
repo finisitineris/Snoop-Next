@@ -26,6 +26,8 @@ public sealed partial class Zoomer
     private object? target;
     private Visual? targetVisual;
     private VisualTree3DView? visualTree3DView;
+    private UIElement? waitingForLayout;
+    private bool isThreeDimensional;
 
     private const double ZoomFactor = 1.1;
 
@@ -81,10 +83,9 @@ public sealed partial class Zoomer
             && application.CheckAccess())
         {
             // try to use the application's main window (if visible) as the root
-            if (application.MainWindow is not null
-                && application.MainWindow.Visibility == Visibility.Visible)
+            if (application.MainWindow is { } main && main.CheckAccess() && main.IsVisible && !main.IsPartOfSnoopVisualTree())
             {
-                root = application.MainWindow;
+                root = main;
             }
             else
             {
@@ -97,7 +98,7 @@ public sealed partial class Zoomer
                     }
 
                     if (appWindow.CheckAccess()
-                        && appWindow.Visibility == Visibility.Visible)
+                        && appWindow.IsVisible && !appWindow.IsPartOfSnoopVisualTree())
                     {
                         root = appWindow;
                         break;
@@ -115,10 +116,14 @@ public sealed partial class Zoomer
 
         set
         {
+            this.StopWaitingForLayout();
             this.target = value;
-            this.targetVisual = value as Visual;
-            var element = this.CreateIfPossible(value);
-            this.Viewbox.Child = element;
+            if (value is not Visual)
+            {
+                this.isThreeDimensional = false;
+            }
+
+            this.UpdateProjection();
         }
     }
 
@@ -150,28 +155,20 @@ public sealed partial class Zoomer
 
     protected override void OnClosed(EventArgs e)
     {
+        this.StopWaitingForLayout();
         this.Viewbox.Child = null;
-
+        this.target = null;
+        this.targetVisual = null;
+        this.visualTree3DView = null;
         base.OnClosed(e);
     }
 
     private void HandleReset(object sender, ExecutedRoutedEventArgs args)
     {
-        this.translation.X = 0;
-        this.translation.Y = 0;
-        this.zoom.ScaleX = 1;
-        this.zoom.ScaleY = 1;
-        this.zoom.CenterX = 0;
-        this.zoom.CenterY = 0;
-
-        if (this.visualTree3DView is not null)
-        {
-            this.visualTree3DView = null;
-            this.ZScaleSlider.Value = 0;
-            this.dpiBox.SelectedIndex = 2;
-
-            this.CreateAndSetVisualTree3DView(this.targetVisual);
-        }
+        this.translation.X = this.translation.Y = 0;
+        this.zoom.ScaleX = this.zoom.ScaleY = 1;
+        this.ZScaleSlider.Value = 0;
+        this.visualTree3DView?.Reset();
     }
 
     private void CanReset(object sender, CanExecuteRoutedEventArgs args)
@@ -182,13 +179,13 @@ public sealed partial class Zoomer
 
     private void HandleZoomIn(object sender, ExecutedRoutedEventArgs args)
     {
-        var offset = Mouse.GetPosition(this.Viewbox);
+        var offset = new Point(this.Viewbox.ActualWidth / 2, this.Viewbox.ActualHeight / 2);
         this.Zoom(ZoomFactor, offset);
     }
 
     private void HandleZoomOut(object sender, ExecutedRoutedEventArgs args)
     {
-        var offset = Mouse.GetPosition(this.Viewbox);
+        var offset = new Point(this.Viewbox.ActualWidth / 2, this.Viewbox.ActualHeight / 2);
         this.Zoom(1 / ZoomFactor, offset);
     }
 
@@ -214,58 +211,91 @@ public sealed partial class Zoomer
 
     private void HandleSwitchTo2D(object sender, ExecutedRoutedEventArgs args)
     {
-        if (this.visualTree3DView is not null)
+        if (this.isThreeDimensional)
         {
-            this.Target = this.target;
-            this.visualTree3DView = null;
-            this.ThreeDViewControls.Visibility = Visibility.Collapsed;
+            this.isThreeDimensional = false;
+            this.UpdateProjection();
         }
     }
 
     private void HandleSwitchTo3D(object sender, ExecutedRoutedEventArgs args)
     {
-        if (this.visualTree3DView is null
-            && this.targetVisual is not null)
+        if (!this.isThreeDimensional && this.targetVisual is not null)
         {
-            this.CreateAndSetVisualTree3DView(this.targetVisual);
-
-            this.ThreeDViewControls.Visibility = Visibility.Visible;
+            this.isThreeDimensional = true;
+            this.UpdateProjection();
         }
     }
 
-    private void CreateAndSetVisualTree3DView(Visual? visual)
+    private void UpdateProjection()
     {
-        try
+        this.targetVisual = VisualCaptureUtil.GetCaptureVisual(this.target as Visual);
+        var bounds = this.targetVisual is not null ? VisualTreeHelper.GetDescendantBounds(this.targetVisual) : Rect.Empty;
+        var waiting = this.target is Visual && (this.targetVisual is null || this.targetVisual is UIElement { IsVisible: false }
+                                                || bounds.IsEmpty || bounds.Width <= 0 || bounds.Height <= 0);
+        if (waiting && this.waitingForLayout is null && this.target is UIElement pending)
         {
-            Mouse.OverrideCursor = Cursors.Wait;
-
-            if (visual is not null)
-            {
-                this.visualTree3DView = new VisualTree3DView(visual, int.Parse(((TextBlock)((ComboBoxItem)this.dpiBox.SelectedItem).Content).Text));
-            }
-            else
-            {
-                this.visualTree3DView = null;
-            }
-
-            this.Viewbox.Child = this.visualTree3DView;
+            // A newly shown window can acquire its client and drawing after Inspect() returns.
+            this.waitingForLayout = pending;
+            pending.LayoutUpdated += this.OnTargetLayoutUpdated;
         }
-        finally
+        else if (!waiting)
         {
-            Mouse.OverrideCursor = null;
+            this.StopWaitingForLayout();
+        }
+
+        UIElement? projection = null;
+        this.visualTree3DView = null;
+        if (!waiting && this.isThreeDimensional && this.targetVisual is not null)
+        {
+            var dpi = int.Parse((string)((ComboBoxItem)this.dpiBox.SelectedItem).Content, CultureInfo.InvariantCulture);
+            this.visualTree3DView = new VisualTree3DView(this.targetVisual, dpi) { ZScale = Math.Pow(10, this.ZScaleSlider.Value) };
+            if (this.visualTree3DView.Camera is not null)
+            {
+                projection = this.visualTree3DView;
+            }
+        }
+        else if (!waiting)
+        {
+            projection = ZoomerUtilities.CreateIfPossible(this.targetVisual ?? this.target);
+            if (projection is Panel { Children.Count: 0 })
+            {
+                projection = null;
+            }
+        }
+
+        this.Viewbox.Child = projection;
+        this.Mode2D.IsChecked = !this.isThreeDimensional;
+        this.Mode3D.IsChecked = this.isThreeDimensional;
+        this.ThreeDViewControls.Visibility = this.isThreeDimensional ? Visibility.Visible : Visibility.Collapsed;
+        this.EmptyState.Visibility = projection is null ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void OnTargetLayoutUpdated(object? sender, EventArgs e) => this.UpdateProjection();
+
+    private void StopWaitingForLayout()
+    {
+        if (this.waitingForLayout is not null)
+        {
+            this.waitingForLayout.LayoutUpdated -= this.OnTargetLayoutUpdated;
+            this.waitingForLayout = null;
         }
     }
 
     private void CanSwitchTo3D(object sender, CanExecuteRoutedEventArgs args)
     {
-        args.CanExecute = this.targetVisual is not null;
+        args.CanExecute = this.targetVisual is not null && this.Viewbox?.Child is not null;
         args.Handled = true;
     }
 
     private void Content_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        this.downPoint = e.GetPosition(this.DocumentRoot);
-        this.DocumentRoot.CaptureMouse();
+        if (e.ChangedButton == MouseButton.Left && this.Viewbox.Child is not null)
+        {
+            this.DocumentRoot.Focus();
+            this.downPoint = e.GetPosition(this.DocumentRoot);
+            this.DocumentRoot.CaptureMouse();
+        }
     }
 
     private void Content_MouseMove(object sender, MouseEventArgs e)
@@ -300,11 +330,6 @@ public sealed partial class Zoomer
         }
     }
 
-    private UIElement? CreateIfPossible(object? item)
-    {
-        return ZoomerUtilities.CreateIfPossible(item);
-    }
-
     private void Zoom(double newZoom, Point offset)
     {
         var v = new Vector((1 - newZoom) * offset.X, (1 - newZoom) * offset.Y);
@@ -319,25 +344,17 @@ public sealed partial class Zoomer
 
     private void DpiBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (this.visualTree3DView is not null
-            && this.targetVisual is not null)
+        if (this.visualTree3DView is not null)
         {
-            this.translation.X = 0;
-            this.translation.Y = 0;
-            this.zoom.ScaleX = 1;
-            this.zoom.ScaleY = 1;
-            this.zoom.CenterX = 0;
-            this.zoom.CenterY = 0;
-
-            this.CreateAndSetVisualTree3DView(this.targetVisual);
+            this.UpdateProjection();
         }
     }
 
     private void FixTextFormattingModeButton_OnClick(object sender, RoutedEventArgs e)
     {
-        if (this.targetVisual is not null)
+        if (this.target is Visual selected)
         {
-            TextOptions.SetTextFormattingMode(this.targetVisual, TextFormattingMode.Ideal);
+            TextOptions.SetTextFormattingMode(selected, TextFormattingMode.Ideal);
         }
     }
 }

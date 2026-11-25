@@ -30,7 +30,6 @@
 
     <SolidColorBrush x:Key="GridViewColumnHeaderHoverBackground" Color="{StaticResource SnoopNext.Color.Hover}" options:Freeze="True" />
 
-    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsExpression" Color="#023e19" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.EventsView.Handled.Background" Color="LightGreen" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.EventsView.Handled.Foreground" Color="Black" options:Freeze="True" />
 
@@ -70,4 +69,12 @@
     <SolidColorBrush x:Key="Snoop.Brushes.Default.HotTrack" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="{StaticResource SnoopNext.Color.Accent}" options:Freeze="True" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.HighlightForeground" Color="{StaticResource SnoopNext.Color.OnAccent}" options:Freeze="True" />
+
+    <SolidColorBrush x:Key="Snoop.Brushes.ItemsControl.AlternationBackground" Color="#292B2D" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsLocallySetForeground" Color="#80C9FA" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.HasChangedRecently" Color="#4C3D17" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsExpression" Color="#193B2B" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsAnimated" Color="#493023" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingBackground" Color="#482326" options:Freeze="True" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingForeground" Color="#FFB3B5" options:Freeze="True" />
 </ResourceDictionary>

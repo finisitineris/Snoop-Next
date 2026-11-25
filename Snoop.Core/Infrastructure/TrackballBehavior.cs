@@ -13,6 +13,9 @@ using System.Windows.Media.Media3D;
 
 public class TrackballBehavior
 {
+    private static readonly Quaternion InitialOrientation = new Quaternion(new Vector3D(0, 1, 0), -18)
+                                                           * new Quaternion(new Vector3D(1, 0, 0), 9);
+
     public TrackballBehavior(Viewport3D viewport, Point3D lookAtPoint)
     {
         if (viewport is null)
@@ -30,6 +33,7 @@ public class TrackballBehavior
             this.distance = offset.Length;
         }
 
+        this.Reset();
         viewport.MouseLeftButtonDown += this.Viewport_MouseLeftButtonDown;
         viewport.MouseMove += this.Viewport_MouseMove;
         viewport.MouseLeftButtonUp += this.Viewport_MouseLeftButtonUp;
@@ -38,7 +42,7 @@ public class TrackballBehavior
 
     public void Reset()
     {
-        this.orientation = Quaternion.Identity;
+        this.orientation = InitialOrientation;
         this.zoom = 1;
         this.UpdateCamera();
     }

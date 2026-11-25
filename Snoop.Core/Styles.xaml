@@ -16,6 +16,7 @@
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Icons.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/BaseStyles.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Themes/FluentFlyouts.xaml" />
+        <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Themes/FluentTables.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/MouseWheelValueEditorTemplates.xaml" />
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/EditorTemplates.xaml" />
     </ResourceDictionary.MergedDictionaries>

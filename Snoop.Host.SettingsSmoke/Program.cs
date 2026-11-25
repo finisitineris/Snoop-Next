@@ -353,6 +353,8 @@ internal static class Program
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
                         InspectorFlyoutSmoke.Verify(inspector);
+                        InspectorTableSmoke.Verify();
+                        ZoomerPresentationSmoke.Verify();
                     }
                     finally
                     {

@@ -234,6 +234,8 @@ public class TreeItem : INotifyPropertyChanged, IDisposable
 
     public virtual Brush TreeBackgroundBrush => new SolidColorBrush(Color.FromArgb(255, 240, 240, 240));
 
+    public virtual bool HasPreviewToolTip => this.VisualBrush is not null;
+
     public virtual Brush? VisualBrush => null;
 
     /// <summary>

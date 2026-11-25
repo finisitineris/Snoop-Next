@@ -560,9 +560,12 @@
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                             <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                             <Setter Property="Padding" Value="1 2 0 2" />
-                            <Setter Property="ToolTip" Value="{Binding VisualBrush}" />
 
                             <Style.Triggers>
+                                <!-- A realized row keeps just its model. The hover popup creates the live brush on demand. -->
+                                <DataTrigger Binding="{Binding HasPreviewToolTip}" Value="True">
+                                    <Setter Property="ToolTip" Value="{Binding}" />
+                                </DataTrigger>
                                 <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
                                              Value="{x:Static core:Settings.CompactDensity}">
                                     <Setter Property="Padding" Value="1 0 0 0" />
@@ -577,8 +580,8 @@
                                             <ControlTemplate TargetType="{x:Type ToolTip}">
                                                 <Grid Width="200"
                                                       Height="200">
-                                                    <Rectangle Margin="10"
-                                                               Fill="{TemplateBinding Content}"
+                                                    <Rectangle x:Name="PreviewImage" Margin="10"
+                                                               Fill="{Binding Content.VisualBrush, RelativeSource={RelativeSource TemplatedParent}}"
                                                                RadiusX="10"
                                                                RadiusY="10" />
 

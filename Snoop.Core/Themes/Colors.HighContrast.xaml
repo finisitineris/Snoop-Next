@@ -52,4 +52,12 @@
     <SolidColorBrush x:Key="Snoop.Brushes.Default.HotTrack" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
     <SolidColorBrush x:Key="TextBox.Focus.Border" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" />
     <SolidColorBrush x:Key="Snoop.Brushes.Default.HighlightForeground" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}" />
+
+    <SolidColorBrush x:Key="Snoop.Brushes.ItemsControl.AlternationBackground" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsLocallySetForeground" Color="{DynamicResource {x:Static SystemColors.HotTrackColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.HasChangedRecently" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsExpression" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.IsAnimated" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingBackground" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}" />
+    <SolidColorBrush x:Key="Snoop.Brushes.PropertyGrid.InvalidBindingForeground" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}" />
 </ResourceDictionary>

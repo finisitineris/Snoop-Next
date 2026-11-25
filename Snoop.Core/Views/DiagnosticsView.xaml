@@ -21,7 +21,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <DataTemplate DataType="{x:Type diagnostics:DiagnosticProvider}">
-                <CheckBox IsChecked="{Binding IsActive}">
+                <CheckBox Style="{StaticResource SnoopNext.ChecklistItem}" IsChecked="{Binding IsActive, Mode=TwoWay}">
                     <TextBlock>
                         <TextBlock.Text>
                             <MultiBinding Converter="{x:Static localization:DiagnosticLabelConverter.Default}">

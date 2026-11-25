@@ -126,7 +126,7 @@
               MinHeight="0"
               HorizontalContentAlignment="Stretch"
               AlternationCount="2"
-              Background="{DynamicResource Snoop.Brushes.Default.Background}"
+              Background="{DynamicResource SnoopNext.Brush.Panel}"
               IsSynchronizedWithCurrentItem="True"
               ItemsSource="{Binding ElementName=PropertyGrid, Path=Properties}"
               SelectedItem="{Binding ElementName=PropertyGrid, Path=Selection, Mode=TwoWay}">
@@ -168,8 +168,8 @@
                         <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.PropertyGrid.IsAnimated}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding IsInvalidBinding}" Value="True">
-                        <Setter Property="Background" Value="Red" />
-                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.PropertyGrid.InvalidBindingBackground}" />
+                        <Setter Property="Foreground" Value="{DynamicResource Snoop.Brushes.PropertyGrid.InvalidBindingForeground}" />
                     </DataTrigger>
                     <DataTrigger Binding="{Binding HasChangedRecently}" Value="True">
                         <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.PropertyGrid.HasChangedRecently}" />

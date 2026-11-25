@@ -16,8 +16,12 @@
              d:DesignWidth="300"
              Focusable="True"
              mc:Ignorable="d">
+    <UserControl.Resources>
+        <ResourceDictionary Source="/Snoop.Core;component/Themes/FluentZoomSlider.xaml" />
+    </UserControl.Resources>
     <Grid x:Name="DocumentRoot"
           ClipToBounds="True"
+          FocusVisualStyle="{x:Null}"
           Focusable="True"
           LostMouseCapture="Content_LostMouseCapture"
           Mouse.MouseDown="Content_MouseDown"
@@ -50,6 +54,8 @@
         </Canvas>
 
         <Slider x:Name="ColorSlider"
+                Style="{StaticResource SnoopNext.ZoomSlider}"
+                AutomationProperties.Name="{localization:InspectorLoc Zoomer.Backdrop}"
                 Width="100"
                 Margin="0 2 2 0"
                 HorizontalAlignment="Right"
@@ -58,7 +64,6 @@
                 Focusable="False"
                 Maximum="1"
                 Minimum="0"
-                Opacity=".5"
                 Value=".75">
             <Slider.ToolTip>
                 <TextBlock Text="{localization:InspectorLoc Zoomer.BackgroundTooltip}" />

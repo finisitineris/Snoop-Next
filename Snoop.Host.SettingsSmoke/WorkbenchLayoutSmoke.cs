@@ -127,12 +127,12 @@ internal static class WorkbenchLayoutSmoke
             LoadLayout(new XElement("WorkbenchTreeWidth", "282"));
             WithInspector(edited =>
             {
-                WorkbenchTreeOverflowSmoke.Verify(edited);
                 Arrange(edited, 1920, ReferenceHeight);
                 var splitter = Find<GridSplitter>(edited, "GridSplitter");
                 ((ITransformProvider)new GridSplitterAutomationPeer(splitter)).Move(700, 0);
                 Arrange(edited, 1920, ReferenceHeight);
                 VerifyPaneSizes(edited, 982, 354, 210);
+                WorkbenchTreeOverflowSmoke.Verify(edited);
                 Arrange(edited, CompactWidth, CompactHeight);
                 Require(Find<ColumnDefinition>(edited, "CenterPaneColumn").ActualWidth >= 239,
                     "A wide tree preference must still leave the center usable on a small window.");

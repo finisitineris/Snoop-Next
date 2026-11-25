@@ -126,7 +126,7 @@ internal static class LauncherAppearanceSmoke
             => chooser.FindName(name) as T ?? throw new InvalidOperationException("Missing launcher element " + name);
     }
 
-    private static void CaptureIfRequested(FrameworkElement surface, string name)
+    internal static void CaptureIfRequested(FrameworkElement surface, string name)
     {
         var directory = Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR");
         if (string.IsNullOrEmpty(directory))
