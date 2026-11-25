@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using JetBrains.Annotations;
@@ -90,6 +91,22 @@ public partial class PropertyInspector : INotifyPropertyChanged
 
         this.checkBoxClearAfterDelve.IsChecked = Settings.Default.ClearAfterDelve;
         this.UseRegex = Settings.Default.UseRegex;
+    }
+
+    private void PropertyFilterToolbar_OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (!e.WidthChanged)
+        {
+            return;
+        }
+
+        // Reserve room for a usable search field before sharing its row with the navigation options.
+        var inline = e.NewSize.Width >= 330;
+        Grid.SetColumnSpan(this.FilterSearchRow, inline ? 1 : 2);
+        Grid.SetRow(this.DelveOptions, inline ? 0 : 2);
+        Grid.SetColumn(this.DelveOptions, inline ? 1 : 0);
+        Grid.SetColumnSpan(this.DelveOptions, inline ? 1 : 2);
+        this.DelveOptions.Margin = inline ? new Thickness(8, 0, 0, 0) : new Thickness(0, 4, 0, 0);
     }
 
     private static void OnLocalizedLanguageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

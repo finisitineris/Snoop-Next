@@ -102,6 +102,8 @@ internal static class InspectorTableSmoke
                 InspectorFlyoutSmoke.Capture(properties, "property-table-" + theme);
                 VerifyDataGrid(window, theme);
             }
+
+            VerifyPropertyFilterToolbar(window);
         }
         finally
         {
@@ -111,6 +113,80 @@ internal static class InspectorTableSmoke
         }
 
         Console.WriteLine("PASS: both themes cover actual diagnostic/provider and property tables, plus editable and read-only WPF DataGrid cells.");
+    }
+
+    private static void VerifyPropertyFilterToolbar(Window window)
+    {
+        var inspector = new PropertyInspector
+        {
+            RootTarget = new System.Windows.Shapes.Rectangle { Width = 120, Height = 36 },
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        window.Content = inspector;
+        ThemeManager.Current.ApplyTheme(ThemeMode.Light, window);
+        var toolbar = (Grid)inspector.FindName("PropertyFilterToolbar");
+        var search = (TextBox)inspector.FindName("PropertiesFilter");
+        var regex = (ToggleButton)inspector.FindName("RegexToggle");
+        var clear = (CheckBox)inspector.FindName("checkBoxClearAfterDelve");
+        var back = (Button)inspector.FindName("PopTargetButton");
+        var preset = (ComboBox)inspector.FindName("FilterSetCombo");
+        var controls = new Control[] { search, regex, clear, back, preset, (ToggleButton)inspector.FindName("defaultsToggle"), (ToggleButton)inspector.FindName("uncommonToggle") };
+        foreach (var language in new[] { "zh-CN", "en-US" })
+        {
+            InspectorLocalization.Default.SetLanguage(language);
+            foreach (var width in new[] { 240, 354, 590 })
+            {
+                inspector.Width = width;
+                Drain();
+                var bounds = controls.Select(item => item.TransformToAncestor(toolbar).TransformBounds(new Rect(item.RenderSize))).ToArray();
+                var available = new Rect(-1, -1, toolbar.ActualWidth + 2, toolbar.ActualHeight + 2);
+                for (var i = 0; i < controls.Length; i++)
+                {
+                    var box = bounds[i];
+                    if (!controls[i].IsVisible || !available.Contains(box) || Math.Abs(box.Height - 32) > 1 || box.Width < 28
+                        || bounds.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > 1, Height: > 1 }))
+                    {
+                        throw new InvalidOperationException($"Property filter control {controls[i].Name} is clipped, uneven or overlapping at {width} DIP ({language}): {box} in {available}.");
+                    }
+                }
+
+                if (search.ActualWidth < 95 || preset.ActualWidth < 84 || (width == 240) != (bounds[2].Top > bounds[0].Bottom - 1))
+                {
+                    throw new InvalidOperationException($"Property filtering lost its usable width or reflow at {width} DIP ({language}): input {bounds[0]}, clear {bounds[2]}, presets {bounds[4]}.");
+                }
+
+                if (language == "zh-CN" && width != 590)
+                {
+                    LauncherAppearanceSmoke.CaptureIfRequested(toolbar, width == 354 ? "property-filter-toolbar" : "property-filter-toolbar-narrow");
+                }
+            }
+        }
+
+        var originalRegex = inspector.UseRegex;
+        try
+        {
+            regex.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+            search.SetCurrentValue(TextBox.TextProperty, "[");
+            Drain();
+            var error = (FrameworkElement)inspector.FindName("FilterError");
+            if (!inspector.UseRegex || inspector.FilterString != "[" || !error.IsVisible || !inspector.PropertyFilter.HasError)
+            {
+                throw new InvalidOperationException("The live regex control must expose invalid input.");
+            }
+
+            search.SetCurrentValue(TextBox.TextProperty, "Width");
+            Drain();
+            if (error.IsVisible || inspector.PropertyFilter.HasError || !ReferenceEquals(back.Command, PropertyInspector.PopTargetCommand))
+            {
+                throw new InvalidOperationException("Correcting the property filter must clear its error and preserve the navigation command.");
+            }
+        }
+        finally
+        {
+            inspector.UseRegex = originalRegex;
+        }
+
+        Console.WriteLine("PASS: property filter controls reflow at 240, 354 and 590 DIP in Chinese and English, preserving input, presets and live regex feedback.");
     }
 
     private static void VerifyGridView(ListView list)

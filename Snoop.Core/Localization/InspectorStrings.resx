@@ -342,6 +342,8 @@
   <data name="zh-CN.PropertyInspector.ShowDefaultsTip" xml:space="preserve"><value>显示仍为默认值的属性。</value></data>
   <data name="en-US.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>Show properties that are not commonly used in WPF applications.</value></data>
   <data name="zh-CN.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>显示 WPF 应用程序中不常用的属性。</value></data>
+  <data name="en-US.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>Filter properties</value></data>
+  <data name="zh-CN.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>筛选属性</value></data>
   <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name or type name. Press Esc to clear.</value></data>
   <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称或属性类型名称筛选。按 Esc 清空。</value></data>
   <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>
