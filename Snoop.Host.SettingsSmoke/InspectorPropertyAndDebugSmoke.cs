@@ -107,7 +107,7 @@ internal static class InspectorPropertyAndDebugSmoke
             {
                 var apply = (TextBlock)Find<Button>(dialog, "buttonSetFilter").Content;
                 var output = Find<TextBox>(listener, "textBoxDebugContent");
-                var filterRow = (StackPanel)Find<ListBox>(dialog, "listBoxFilters").ItemTemplate.LoadContent();
+                var filterRow = (Grid)Find<ListBox>(dialog, "listBoxFilters").ItemTemplate.LoadContent();
                 filterRow.DataContext = new SnoopSingleFilter { IsInverse = true, FilterType = FilterType.RegularExpression, Text = "^X$" };
                 var inverse = (TextBlock)filterRow.Children[0];
                 var matchType = (ComboBox)filterRow.Children[1];

@@ -221,8 +221,7 @@
 
             <DataTemplate x:Key="SelectedValueTemplate"
                           DataType="valueEditors:BrushValueEditor">
-                <Grid Height="Auto"
-                      HorizontalAlignment="Left">
+                <Grid>
                     <Grid.ToolTip>
                         <ToolTip>
                             <ItemsControl Width="200"
@@ -302,8 +301,7 @@
 
             <DataTemplate x:Key="SelectedValueTemplate"
                           DataType="valueEditors:ColorValueEditor">
-                <Grid Height="Auto"
-                      HorizontalAlignment="Left">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="24" />
                         <ColumnDefinition />
@@ -389,9 +387,6 @@
                                                       IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
                                                       PropertyInfo="{Binding}"
                                                       Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
                 </DockPanel>
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.StandardTemplate>
@@ -407,9 +402,6 @@
                                                   IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
                                                   PropertyInfo="{Binding}"
                                                   Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
                 </DockPanel>
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.EnumTemplate>
@@ -420,30 +412,23 @@
                     <!-- add mouse wheel editor to right of value (only visible when IsSelected and CanEdit) -->
                     <valueEditors:MouseWheelValueEditor />
 
-                    <valueEditors:BoolValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
+                    <valueEditors:BoolValueEditor HorizontalAlignment="Left"
+                                                  DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
                                                   IsEditable="{Binding CanEdit}"
                                                   IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
                                                   PropertyInfo="{Binding}"
                                                   Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
                 </DockPanel>
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.BoolTemplate>
 
         <valueEditors:ValueEditorTemplateSelector.StringTemplate>
             <DataTemplate DataType="infrastructure:PropertyInformation">
-                <DockPanel>
-                    <valueEditors:StringValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
-                                                    IsEditable="{Binding CanEdit}"
-                                                    IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
-                                                    PropertyInfo="{Binding}"
-                                                    Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
-                </DockPanel>
+                <valueEditors:StringValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
+                                                IsEditable="{Binding CanEdit}"
+                                                IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
+                                                PropertyInfo="{Binding}"
+                                                Value="{Binding Value, Mode=TwoWay}" />
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.StringTemplate>
 
@@ -458,9 +443,6 @@
                                                    IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
                                                    PropertyInfo="{Binding}"
                                                    Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
                 </DockPanel>
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.BrushTemplate>
@@ -476,25 +458,17 @@
                                                    IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
                                                    PropertyInfo="{Binding}"
                                                    Value="{Binding Value, Mode=TwoWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
                 </DockPanel>
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.ColorTemplate>
 
         <valueEditors:ValueEditorTemplateSelector.WithResourceKeyTemplate>
             <DataTemplate DataType="infrastructure:PropertyInformation">
-                <DockPanel>
-                    <!-- The displayed key can be copied. It has no property edit target. -->
-                    <valueEditors:StandardValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
-                                                      IsEditable="False"
-                                                      IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
-                                                      Value="{Binding ResourceKey, Mode=OneWay}" />
-
-                    <!-- to allow ValueEditor to live on the left and not stretch -->
-                    <Border />
-                </DockPanel>
+                <!-- The displayed key can be copied. It has no property edit target. -->
+                <valueEditors:StandardValueEditor DescriptiveValue="{Binding DescriptiveValue, Mode=OneWay}"
+                                                  IsEditable="False"
+                                                  IsSelected="{Binding IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListViewItem}}}"
+                                                  Value="{Binding ResourceKey, Mode=OneWay}" />
             </DataTemplate>
         </valueEditors:ValueEditorTemplateSelector.WithResourceKeyTemplate>
     </valueEditors:ValueEditorTemplateSelector>

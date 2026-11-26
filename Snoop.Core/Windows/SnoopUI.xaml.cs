@@ -1759,18 +1759,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleHighlightOptions_OnClick(object sender, RoutedEventArgs e)
     {
-        var window = new SnoopBaseWindow
-        {
-            Content = new HighlightSettingsView(),
-            Owner = this,
-            MinWidth = 480,
-            MinHeight = 360,
-            Width = 480,
-            Height = 360,
-            WindowStartupLocation = WindowStartupLocation.CenterScreen,
-            WindowStyle = WindowStyle.ToolWindow
-        };
-        window.SetBinding(TitleProperty, new InspectorLocExtension("HighlightSettings.Title").CreateBinding());
+        var window = new HighlightSettingsWindow { Owner = this };
         window.ShowDialog();
     }
 

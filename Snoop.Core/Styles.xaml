@@ -10,6 +10,7 @@
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:localization="clr-namespace:Snoop.Localization"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                     mc:Ignorable="options d">
     <ResourceDictionary.MergedDictionaries>
@@ -21,6 +22,7 @@
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/EditorTemplates.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <system:Double x:Key="SnoopNext.FontSize.UI">13</system:Double>
     <FontFamily x:Key="SnoopNext.FontFamily.UI">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI, Global User Interface</FontFamily>
 
     <Style x:Key="SnoopNext.FocusVisual" TargetType="{x:Type Control}">

@@ -15,7 +15,7 @@ public sealed class Settings : SettingsBase<Settings>
     private static readonly XmlSerializer serializer = new(typeof(Settings));
 
     private bool enableDiagnostics = true;
-    private KeyGestureEx? globalHotKey = new(Key.F12, ModifierKeys.Control | ModifierKeys.Windows | ModifierKeys.Alt);
+    private KeyGestureEx? globalHotKey = DefaultGlobalHotKey;
     private string? ilSpyPath = "%path%";
     private string languageTag = LanguageTagPolicy.DefaultLanguageTag;
     private MultipleAppDomainMode multipleAppDomainMode = MultipleAppDomainMode.Ask;
@@ -30,6 +30,8 @@ public sealed class Settings : SettingsBase<Settings>
     }
 
     public static Settings Default { get; } = new Settings().Load();
+
+    internal static KeyGestureEx DefaultGlobalHotKey => new(Key.F12, ModifierKeys.Control | ModifierKeys.Windows | ModifierKeys.Alt);
 
     protected override XmlSerializer Serializer => serializer;
 

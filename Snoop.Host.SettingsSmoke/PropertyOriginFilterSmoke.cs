@@ -242,7 +242,7 @@ internal static class PropertyOriginFilterSmoke
         });
     }
 
-    private static ListViewItem SelectRow(ListView list, PropertyInformation row)
+    internal static ListViewItem SelectRow(ListView list, PropertyInformation row)
     {
         Require(list.Items.Contains(row), "The property row must be present in the filtered view: " + row.DisplayName);
         list.SetCurrentValue(Selector.SelectedItemProperty, row);

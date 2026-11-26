@@ -60,12 +60,8 @@ internal static class LauncherSettingsFormSmoke
                 RequireUnchanged(defaults, committed);
 
                 Fill(view, edited);
-                Find<TextBox>(view, "GlobalHotKeyEditor").Text = "Ctrl+NoSuchKey";
-                Click(view, "SaveSettingsAndClose");
-                Require(window.IsVisible && Find<TextBlock>(view, "GlobalHotKeyError").IsVisible,
-                    "An invalid shortcut must keep the form open and show a validation message.");
+                VerifyRecorder(view, edited);
                 RequireUnchanged(defaults, committed);
-                Find<TextBox>(view, "GlobalHotKeyEditor").Text = "Ctrl+Shift+F8";
                 Click(view, "SaveSettingsAndClose");
             }, save: true);
 
@@ -75,6 +71,7 @@ internal static class LauncherSettingsFormSmoke
             {
                 VerifyForm(view, edited);
                 VerifyLayout(window, view, capture: false);
+                VerifyRecorder(view, edited);
                 Click(view, "ResetAllSettings");
                 VerifyForm(view, defaults);
                 RequireUnchanged(edited, committed);
@@ -85,7 +82,7 @@ internal static class LauncherSettingsFormSmoke
             ShowForm((_, view) =>
             {
                 VerifyForm(view, edited);
-                Find<TextBox>(view, "GlobalHotKeyEditor").Clear();
+                Click(view, "DisableShortcut");
                 Click(view, "SaveSettingsAndClose");
             }, save: true);
             var reloaded = new HostSettings { SettingsFile = file }.Reload();
@@ -94,12 +91,26 @@ internal static class LauncherSettingsFormSmoke
 
             ShowForm((_, view) =>
             {
-                Require(Find<TextBox>(view, "GlobalHotKeyEditor").Text.Length == 0, "A disabled shortcut must reopen blank.");
+                Require(Equals(Find<Button>(view, "GlobalHotKeyEditor").Content, LocalizationManager.Default["Settings.ShortcutDisabled"]),
+                    "A disabled shortcut must reopen with an explicit localized status.");
                 Click(view, "ResetAllSettings");
                 VerifyForm(view, defaults);
                 Click(view, "SaveSettingsAndClose");
             }, save: true);
             VerifySaved(defaults);
+
+            // A gesture recorded in an earlier release remains usable on an unrelated save.
+            settings.GlobalHotKey = new KeyGestureEx(Key.F6);
+            settings.Save();
+            ShowForm((_, view) =>
+            {
+                Require(Equals(Find<Button>(view, "GlobalHotKeyEditor").Content, "F6"), "The stored legacy shortcut must be displayed.");
+                Find<CheckBox>(view, "EnableDiagnosticsCheckBox").IsChecked = false;
+                Click(view, "SaveSettingsAndClose");
+            }, save: true);
+            var legacy = new HostSettings { SettingsFile = file }.Reload();
+            Require(legacy.GlobalHotKey?.Key == Key.F6 && legacy.GlobalHotKey.Modifiers == ModifierKeys.None && !legacy.EnableDiagnostics,
+                "An unrelated save must preserve an older shortcut.");
             Require(CultureInfo.CurrentUICulture.Equals(originalCulture), "The settings window changed the dispatcher UI culture.");
         }
         finally
@@ -168,9 +179,9 @@ internal static class LauncherSettingsFormSmoke
     private static void VerifyLayout(SettingsWindow window, SettingsView view, bool capture)
     {
         Require(window.Width == 640 && window.Height == 620
-                && Find<TextBlock>(view, "VersionValue").Text == HostSettings.Default.Version
+                && view.FindName("VersionValue") is null
                 && !VisualChildren<ListView>(view).Any() && !VisualChildren<DataGrid>(view).Any(),
-            "Expected the dedicated 640×620 settings form with a read-only version and typed fields.");
+            "Expected the dedicated 640×620 settings form with typed fields and no version row.");
         var labels = new[] { "LanguageSelector", "MultipleAppDomainModeSelector", "MultipleDispatcherModeSelector" };
         var keys = new[] { "Settings.Language", "Settings.MultipleAppDomains", "Settings.MultipleDispatchers" };
         var languageOptions = new[] { "Settings.Chinese", "Settings.English", "Settings.FollowSystem" };
@@ -189,10 +200,16 @@ internal static class LauncherSettingsFormSmoke
             var scroll = Find<ScrollViewer>(view, "SettingsScrollViewer");
             scroll.ScrollToTop();
             Drain();
-            var versionRow = Find<TextBlock>(view, "VersionValue");
-            Require(scroll.ComputedVerticalScrollBarVisibility != Visibility.Visible && Inside(versionRow, scroll)
-                    && versionRow.TranslatePoint(new Point(0, versionRow.ActualHeight), scroll).Y + 4 <= scroll.ActualHeight,
-                "The default settings size must fit the version line above the footer without scrolling.");
+            var lastField = Find<TextBox>(view, "ILSpyPathTextBox");
+            Require(scroll.ComputedVerticalScrollBarVisibility != Visibility.Visible && Inside(lastField, scroll),
+                "The default settings size must fit the external tool field above the footer without scrolling.");
+            var hint = Find<TextBlock>(view, "ShortcutHint");
+            var recorder = Find<Button>(view, "GlobalHotKeyEditor");
+            Require(AutomationProperties.GetLabeledBy(recorder) is Label shortcutLabel && ReferenceEquals(shortcutLabel.Target, recorder)
+                    && Inside(recorder, scroll) && Inside(hint, scroll) && !string.IsNullOrWhiteSpace(hint.Text)
+                    && hint.FontFamily.Equals(recorder.FontFamily) && hint.FontSize == recorder.FontSize
+                    && hint.FontFamily.Source.Contains("Microsoft YaHei"),
+                "The shortcut recorder and instructions must be labeled and use the form's Latin/CJK typography.");
             if (capture)
             {
                 InspectorFlyoutSmoke.CaptureFramed(view, "settings-" + theme);
@@ -226,10 +243,18 @@ internal static class LauncherSettingsFormSmoke
         Drain();
         var viewer = Find<ScrollViewer>(view, "SettingsScrollViewer");
         Require(viewer.ScrollableHeight > 0 && viewer.ScrollableWidth < 1, "The compact settings form must scroll vertically.");
+        viewer.ScrollToTop();
+        Drain();
+        foreach (var id in new[] { "GlobalHotKeyEditor", "ResetShortcut", "DisableShortcut" })
+        {
+            var action = Find<Button>(view, id);
+            Require(Inside(action, viewer), "A compact shortcut action was clipped: " + id);
+        }
+
         viewer.ScrollToEnd();
         Drain();
-        var version = Find<TextBlock>(view, "VersionValue");
-        Require(Inside(version, viewer) && viewer.VerticalOffset > 0, "The last settings field must be reachable by scrolling.");
+        var path = Find<TextBox>(view, "ILSpyPathTextBox");
+        Require(Inside(path, viewer) && viewer.VerticalOffset > 0, "The last settings field must be reachable by scrolling.");
         foreach (var id in new[] { "ResetAllSettings", "DiscardSettings", "SaveSettingsAndClose" })
         {
             Require(Inside(Find<Button>(view, id), view), "A compact settings action was clipped: " + id);
@@ -273,10 +298,124 @@ internal static class LauncherSettingsFormSmoke
         Find<CheckBox>(view, "EnableDiagnosticsCheckBox").IsChecked = value.EnableDiagnostics;
         Find<CheckBox>(view, "StartAppChooserMinimizedCheckBox").IsChecked = value.StartAppChooserMinimized;
         Find<TextBox>(view, "ILSpyPathTextBox").Text = value.ILSpyPath ?? string.Empty;
-        Find<TextBox>(view, "GlobalHotKeyEditor").Text = value.GlobalHotKey?.ToString() ?? string.Empty;
+        var shortcut = value.GlobalHotKey!;
+        Click(view, "GlobalHotKeyEditor");
+        SendKey(view, shortcut.Key, shortcut.Modifiers);
     }
 
-    private static void VerifyForm(SettingsView view, HostSettings expected)
+    private static void VerifyRecorder(SettingsView view, HostSettings edited)
+    {
+        var button = Find<Button>(view, "GlobalHotKeyEditor");
+        var hint = Find<TextBlock>(view, "ShortcutHint");
+        var text = LocalizationManager.Default;
+        Find<Button>(view, "ResetShortcut").Focus();
+        button.Focus();
+        Require(button.IsKeyboardFocused && Equals(button.Content, text["Settings.ShortcutListening"]),
+            "Focusing the shortcut field must start recording.");
+        foreach (var number in new[] { Key.D5, Key.D6, Key.NumPad5, Key.NumPad6 })
+        {
+            SendKey(view, number);
+            Require(hint.Text == text["Settings.ShortcutNeedsModifier"], "Bare digits must explain the missing modifier.");
+        }
+
+        Drain();
+        InspectorFlyoutSmoke.CaptureFramed(view, "settings-shortcut-validation-" + text.LanguageTag);
+        SendKey(view, Key.F8, ModifierKeys.Alt);
+        Require(hint.Text == text["Settings.ShortcutAlt"], "An Alt shortcut without Ctrl must explain the launcher's modifier requirement.");
+        SendKey(view, Key.L, ModifierKeys.Windows);
+        Require(hint.Text == text["Settings.ShortcutWindows"], "A Windows shortcut must explain which additional modifiers are supported.");
+        SendKey(view, Key.LeftCtrl, ModifierKeys.Control);
+        SendKey(view, Key.LeftCtrl, release: true);
+        Require(hint.Text == text["Settings.ShortcutNeedsKey"], "A lone modifier must explain the missing second key.");
+        foreach (var gesture in new KeyGestureEx[]
+                 {
+                     new(Key.C, ModifierKeys.Control),
+                     new(Key.V, ModifierKeys.Control),
+                     new(Key.Z, ModifierKeys.Control),
+                     new(Key.F4, ModifierKeys.Alt),
+                     new(Key.S, ModifierKeys.Windows | ModifierKeys.Shift),
+                     new(Key.Delete, ModifierKeys.Control | ModifierKeys.Alt)
+                 })
+        {
+            SendKey(view, gesture.Key, gesture.Modifiers);
+            Require(hint.Text == text["Settings.ShortcutReserved"], "The recorder accepted a reserved combination: " + gesture);
+        }
+
+        Click(view, "SaveSettingsAndClose");
+        Require(Window.GetWindow(view).IsVisible && hint.IsVisible && hint.Text == text["Settings.ShortcutReserved"],
+            "An unresolved shortcut error must keep the form open.");
+        SendKey(view, Key.Escape);
+        VerifyForm(view, edited);
+
+        Click(view, "ResetShortcut");
+        var defaultKey = new HostSettings().GlobalHotKey!;
+        VerifyForm(view, edited, expectedShortcut: defaultKey);
+
+        Click(view, "GlobalHotKeyEditor");
+        SendKey(view, Key.Tab);
+        Require(Find<Button>(view, "ResetShortcut").IsKeyboardFocused, "Tab must move from the recorder to the shortcut reset action.");
+        button.Focus();
+        SendKey(view, Key.Tab, ModifierKeys.Shift);
+        Require(Find<ComboBox>(view, "LanguageSelector").IsKeyboardFocusWithin, "Shift+Tab must return to the language selector.");
+
+        Click(view, "GlobalHotKeyEditor");
+        SendKey(view, defaultKey.Key, defaultKey.Modifiers);
+        Require(Equals(button.Content, defaultKey.ToString()), "The recorder must accept the factory shortcut including the Windows modifier.");
+        Click(view, "GlobalHotKeyEditor");
+        var editedShortcut = edited.GlobalHotKey!;
+        SendKey(view, editedShortcut.Key, editedShortcut.Modifiers);
+        VerifyForm(view, edited);
+    }
+
+    // Set only this UI thread's keyboard state and pass the key through WPF's input manager.
+    // This exercises preview, bubbling, and focus traversal without sending desktop-wide keystrokes.
+    private static void SendKey(SettingsView view, Key key, ModifierKeys modifiers = ModifierKeys.None, bool release = false)
+    {
+        var element = Find<Button>(view, "GlobalHotKeyEditor");
+        Require(element.IsKeyboardFocused, "Keyboard input must target the focused recorder.");
+        var previous = new byte[256];
+        Require(GetKeyboardState(previous), "Unable to read the smoke thread's modifier state.");
+        var state = new byte[256];
+        if ((modifiers & ModifierKeys.Control) != 0)
+        {
+            state[0x11] = state[0xA2] = 0x80;
+        }
+
+        if ((modifiers & ModifierKeys.Alt) != 0)
+        {
+            state[0x12] = state[0xA4] = 0x80;
+        }
+
+        if ((modifiers & ModifierKeys.Shift) != 0)
+        {
+            state[0x10] = state[0xA0] = 0x80;
+        }
+
+        if ((modifiers & ModifierKeys.Windows) != 0)
+        {
+            state[0x5B] = 0x80;
+        }
+
+        state[KeyInterop.VirtualKeyFromKey(key)] = release ? (byte)0 : (byte)0x80;
+        try
+        {
+            Require(SetKeyboardState(state), "Unable to set the smoke thread's modifier state.");
+            var input = new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(element), Environment.TickCount, key)
+            {
+                Source = element,
+                RoutedEvent = release ? Keyboard.PreviewKeyUpEvent : Keyboard.PreviewKeyDownEvent
+            };
+            InputManager.Current.ProcessInput(input);
+        }
+        finally
+        {
+            var restored = new byte[256];
+            Require(SetKeyboardState(previous) && GetKeyboardState(restored) && restored.SequenceEqual(previous),
+                "The smoke thread's keyboard state was not restored after input.");
+        }
+    }
+
+    private static void VerifyForm(SettingsView view, HostSettings expected, KeyGestureEx? expectedShortcut = null)
     {
         Require(Equals(Find<ComboBox>(view, "LanguageSelector").SelectedValue, expected.LanguageTag)
                 && Equals(Find<ComboBox>(view, "MultipleAppDomainModeSelector").SelectedValue, expected.MultipleAppDomainMode)
@@ -286,7 +425,7 @@ internal static class LauncherSettingsFormSmoke
                 && Find<CheckBox>(view, "EnableDiagnosticsCheckBox").IsChecked == expected.EnableDiagnostics
                 && Find<CheckBox>(view, "StartAppChooserMinimizedCheckBox").IsChecked == expected.StartAppChooserMinimized
                 && Find<TextBox>(view, "ILSpyPathTextBox").Text == expected.ILSpyPath
-                && Find<TextBox>(view, "GlobalHotKeyEditor").Text == expected.GlobalHotKey?.ToString(),
+                && Equals(Find<Button>(view, "GlobalHotKeyEditor").Content, (expectedShortcut ?? expected.GlobalHotKey)?.ToString()),
             "The displayed fields did not match the expected pending preferences.");
     }
 
@@ -332,6 +471,12 @@ internal static class LauncherSettingsFormSmoke
         Find<Button>(view, name).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
 
     private static void Drain() => Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern bool GetKeyboardState([Out] byte[] state);
+
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern bool SetKeyboardState(byte[] state);
 
     [DllImport("user32.dll", EntryPoint = "GetWindowLongW", ExactSpelling = true)]
     private static extern int GetWindowLong(IntPtr hwnd, int index);

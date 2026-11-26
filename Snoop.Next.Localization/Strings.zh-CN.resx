@@ -28,8 +28,18 @@
   <data name="Settings.InspectorSection" xml:space="preserve"><value>检查选项</value></data>
   <data name="Settings.ToolsSection" xml:space="preserve"><value>外部工具</value></data>
   <data name="Settings.GlobalHotKey" xml:space="preserve"><value>全局快捷键</value></data>
-  <data name="Settings.ShortcutHelp" xml:space="preserve"><value>例如 Ctrl+Shift+F12。留空可禁用快捷键。</value></data>
-  <data name="Settings.ShortcutInvalid" xml:space="preserve"><value>请输入有效的快捷键，例如 Ctrl+Shift+F12，也可以留空。</value></data>
+  <data name="Settings.ShortcutHelp" xml:space="preserve"><value>选择快捷键后，按下新的组合键。</value></data>
+  <data name="Settings.ShortcutListening" xml:space="preserve"><value>请按组合键…</value></data>
+  <data name="Settings.ShortcutRecordingHelp" xml:space="preserve"><value>请按下组合键，例如 Ctrl+Shift+F8。按 Esc 取消。</value></data>
+  <data name="Settings.ShortcutNeedsModifier" xml:space="preserve"><value>请按住修饰键，再按另一个键，例如 Ctrl+Shift+F8。</value></data>
+  <data name="Settings.ShortcutNeedsKey" xml:space="preserve"><value>请按住修饰键，再按另一个键。</value></data>
+  <data name="Settings.ShortcutReserved" xml:space="preserve"><value>此组合键用于 Windows 或应用中的常用命令，请换一组键。</value></data>
+  <data name="Settings.ShortcutWindows" xml:space="preserve"><value>使用 Win 键时，请同时按住 Ctrl 或 Shift。</value></data>
+  <data name="Settings.ShortcutAlt" xml:space="preserve"><value>使用 Alt 键时，请同时按住 Ctrl，例如 Ctrl+Alt+F8。</value></data>
+  <data name="Settings.ShortcutUnsupported" xml:space="preserve"><value>无法录制此键，请选择其他按键。</value></data>
+  <data name="Settings.ShortcutReset" xml:space="preserve"><value>重置</value></data>
+  <data name="Settings.ShortcutDisable" xml:space="preserve"><value>禁用</value></data>
+  <data name="Settings.ShortcutDisabled" xml:space="preserve"><value>已禁用</value></data>
   <data name="Settings.StartMinimized" xml:space="preserve"><value>启动时最小化启动器</value></data>
   <data name="Settings.MultipleAppDomains" xml:space="preserve"><value>多个应用程序域</value></data>
   <data name="Settings.MultipleDispatchers" xml:space="preserve"><value>多个 UI 调度器</value></data>
@@ -40,7 +50,6 @@
   <data name="Settings.ShowActivated" xml:space="preserve"><value>打开检查器时激活其窗口</value></data>
   <data name="Settings.EnableDiagnostics" xml:space="preserve"><value>启用诊断</value></data>
   <data name="Settings.ILSpyPath" xml:space="preserve"><value>ILSpy 可执行文件路径</value></data>
-  <data name="Settings.Version" xml:space="preserve"><value>版本</value></data>
   <data name="Settings.SaveFailed" xml:space="preserve"><value>无法保存设置。请确认设置文件可以写入，然后重试。</value></data>
   <data name="Settings.SaveAndClose" xml:space="preserve"><value>保存并关闭</value></data>
   <data name="Settings.DiscardChanges" xml:space="preserve"><value>放弃更改</value></data>

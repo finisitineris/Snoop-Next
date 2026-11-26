@@ -50,6 +50,8 @@ internal static class InspectorFlyoutSmoke
 
                 settingsMenu.IsSubmenuOpen = true;
                 var parent = VerifyPopup(settingsMenu, inspector);
+                VerifySettingsMenuLayout(inspector, settingsMenu, parent);
+                Capture(surface, "settings-menu-" + mode, parent);
                 densityMenu.IsSubmenuOpen = true;
                 var child = VerifyPopup(densityMenu, inspector);
                 Capture(surface, "submenu-" + mode, parent, child);
@@ -100,6 +102,40 @@ internal static class InspectorFlyoutSmoke
         }
 
         Console.WriteLine("PASS: live top menu, nested menu, selected theme list, editable filter, property context menu and grouped event picker use Fluent popups in both themes.");
+    }
+
+    private static void VerifySettingsMenuLayout(SnoopUI inspector, MenuItem settingsMenu, FrameworkElement popup)
+    {
+        var family = (FontFamily)inspector.FindResource("SnoopNext.FontFamily.UI");
+        var size = (double)inspector.FindResource("SnoopNext.FontSize.UI");
+        var menu = (Menu)inspector.FindName("WorkbenchMenuBar");
+        var accessKeys = new System.Collections.Generic.HashSet<char>();
+        foreach (var item in menu.Items.OfType<MenuItem>())
+        {
+            item.ApplyTemplate();
+            var presenter = (ContentPresenter)item.Template.FindName("HeaderPresenter", item);
+            var header = ((AccessText)VisualTreeHelper.GetChild(presenter, 0)).Text;
+            var index = header.IndexOf('_');
+            if (index < 0 || index + 1 >= header.Length || !accessKeys.Add(char.ToUpperInvariant(header[index + 1]))
+                || !item.FontFamily.Equals(family) || item.FontSize != size)
+            {
+                throw new InvalidOperationException("Expected a distinct access key and shared typeface for " + header);
+            }
+        }
+
+        foreach (var item in settingsMenu.Items.OfType<MenuItem>())
+        {
+            var caption = (ContentPresenter)item.Template.FindName("HeaderPresenter", item);
+            var icon = (Grid)item.Template.FindName("IconSlot", item);
+            var shortcut = (TextBlock)item.Template.FindName("Shortcut", item);
+            var left = caption.TranslatePoint(default, popup).X;
+            if (icon.Visibility != Visibility.Collapsed || left < 5 || left > 16
+                || !item.FontFamily.Equals(family) || item.FontSize != size
+                || !shortcut.FontFamily.Equals(family) || shortcut.FontSize != size)
+            {
+                throw new InvalidOperationException($"Plain settings menu row '{item.Header}' has inset {left:F1} and font {item.FontSize}.");
+            }
+        }
     }
 
     private static void VerifyEditableFilterContrast(SnoopUI inspector, ComboBox filter)

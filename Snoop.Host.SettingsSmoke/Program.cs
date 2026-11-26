@@ -251,6 +251,7 @@ internal static class Program
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     LauncherSettingsFormSmoke.Verify(file);
+                    HighlightSettingsFormSmoke.Verify();
                     Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
                     var inspector = new SnoopUI();
                     try

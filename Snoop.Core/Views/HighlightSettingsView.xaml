@@ -1,19 +1,56 @@
-﻿<UserControl x:Class="Snoop.Views.HighlightSettingsView"
+<UserControl x:Class="Snoop.Views.HighlightSettingsView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
+             xmlns:highlight="clr-namespace:Snoop.Infrastructure.SelectionHighlight"
              xmlns:localization="clr-namespace:Snoop.Localization"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             x:Name="Control"
-             d:DesignHeight="450"
-             d:DesignWidth="800"
-             mc:Ignorable="d">
+             DataContext="{x:Static highlight:SelectionHighlightOptions.Default}"
+             FontFamily="{DynamicResource SnoopNext.FontFamily.UI}" FontSize="{DynamicResource SnoopNext.FontSize.UI}"
+             Background="{DynamicResource SnoopNext.Brush.Background}"
+             Foreground="{DynamicResource SnoopNext.Brush.Text}">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Styles.xaml" />
+                <ResourceDictionary Source="/Snoop.Core;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="FieldLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="Padding" Value="0,0,16,0" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="Field" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Padding" Value="8,3" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <EventSetter Event="LostKeyboardFocus" Handler="Field_OnLostKeyboardFocus" />
+                <EventSetter Event="PreviewKeyDown" Handler="Field_OnPreviewKeyDown" />
+            </Style>
+            <Style x:Key="FieldError" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Error}" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="Margin" Value="0,2,0,3" />
+                <Setter Property="Visibility" Value="Collapsed" />
+            </Style>
+            <DrawingBrush x:Key="Checkerboard" TileMode="Tile" Viewport="0,0,8,8" ViewportUnits="Absolute">
+                <DrawingBrush.Drawing>
+                    <DrawingGroup>
+                        <GeometryDrawing Brush="White" Geometry="M0,0 H2 V2 H0Z" />
+                        <GeometryDrawing Brush="LightGray" Geometry="M0,0 H1 V1 H0Z M1,1 H2 V2 H1Z" />
+                    </DrawingGroup>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
+            <Style x:Key="Swatch" TargetType="Border">
+                <Setter Property="Width" Value="26" />
+                <Setter Property="Height" Value="26" />
+                <Setter Property="Margin" Value="0,0,8,0" />
+                <Setter Property="Background" Value="{StaticResource Checkerboard}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="IsHitTestVisible" Value="False" />
+            </Style>
+            <Style x:Key="Action" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="MinWidth" Value="88" />
+                <Setter Property="Padding" Value="14,4" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -21,105 +58,93 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <ScrollViewer x:Name="FormScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Focusable="False">
+            <StackPanel Margin="18,16,18,12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
 
-        <Grid.Resources>
-            <ResourceDictionary>
-                <Style x:Key="Snoop.Styles.Button.Large"
-                       TargetType="Button"
-                       BasedOn="{StaticResource BaseButtonStyle}">
-                    <Setter Property="Height" Value="30" />
-                    <Setter Property="Margin" Value="5" />
-                    <Setter Property="MinWidth" Value="100" />
-                    <Setter Property="Padding" Value="5" />
-                </Style>
-
-            </ResourceDictionary>
-        </Grid.Resources>
-
-        <ListView x:Name="ListView"
-                  Style="{StaticResource GridView.GridViewStyle}"
-                  Grid.Row="0"
-                  MinWidth="0"
-                  MinHeight="0"
-                  HorizontalContentAlignment="Stretch"
-                  AlternationCount="2"
-                  IsSynchronizedWithCurrentItem="True"
-                  ItemsSource="{Binding ElementName=Control, Path=Properties}">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="{x:Type ListViewItem}"
-                       BasedOn="{StaticResource GridView.GridViewItemContainerStyle}">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                    <Style.Triggers>
-                        <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                            <Setter Property="Background" Value="Transparent" />
-                        </Trigger>
-                        <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                            <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.ItemsControl.AlternationBackground}" />
-                        </Trigger>
-                        <DataTrigger Binding="{Binding HasChangedRecently}" Value="True">
-                            <Setter Property="Background" Value="{DynamicResource Snoop.Brushes.PropertyGrid.HasChangedRecently}" />
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Width="200">
-                        <GridViewColumn.Header>
-                            <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnName}">
-                                <TextBlock.ToolTip>
-                                    <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnNameTip}" />
-                                </TextBlock.ToolTip>
+                    <Label x:Name="FillLabel" Style="{StaticResource FieldLabel}" Content="{localization:InspectorLoc Highlight.Background}"
+                           Target="{Binding ElementName=FillEditor}" />
+                    <DockPanel Grid.Column="1" Margin="0,0,0,4">
+                        <Border Style="{StaticResource Swatch}"><Border Background="{Binding Background}" /></Border>
+                        <Grid>
+                            <TextBox x:Name="FillEditor" Style="{StaticResource Field}"
+                                     AutomationProperties.LabeledBy="{Binding ElementName=FillLabel}"
+                                     AutomationProperties.HelpText="{localization:InspectorLoc Highlight.ColorHelp}" />
+                            <TextBlock Margin="9,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                       Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
+                                       Text="{localization:InspectorLoc Highlight.NoFill}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Text, ElementName=FillEditor}" Value="">
+                                                <Setter Property="Visibility" Value="Visible" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
                             </TextBlock>
-                        </GridViewColumn.Header>
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate DataType="infrastructure:PropertyInformation">
-                                <TextBlock ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="{x:Type TextBlock}">
-                                            <Setter Property="Text" Value="{Binding DisplayName}" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Name}" Value="Background">
-                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.Background}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Name}" Value="BorderBrush">
-                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.BorderBrush}" />
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Name}" Value="BorderThickness">
-                                                    <Setter Property="Text" Value="{localization:InspectorLoc Highlight.BorderThickness}" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
+                        </Grid>
+                    </DockPanel>
+                    <TextBlock x:Name="FillError" Grid.Row="1" Grid.Column="1" Style="{StaticResource FieldError}" Text="{localization:InspectorLoc Highlight.InvalidColor}" />
 
-                    <GridViewColumn Width="200"
-                                    CellTemplateSelector="{DynamicResource EditorSelector}">
-                        <GridViewColumn.Header>
-                            <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValue}">
-                                <TextBlock.ToolTip>
-                                    <TextBlock Text="{localization:InspectorLoc PropertyGrid.ColumnValueTip}" />
-                                </TextBlock.ToolTip>
-                            </TextBlock>
-                        </GridViewColumn.Header>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
+                    <Label x:Name="BorderColorLabel" Grid.Row="2" Style="{StaticResource FieldLabel}" Content="{localization:InspectorLoc Highlight.BorderBrush}"
+                           Target="{Binding ElementName=BorderColorEditor}" />
+                    <DockPanel Grid.Row="2" Grid.Column="1" Margin="0,4,0,0">
+                        <Border Style="{StaticResource Swatch}"><Border Background="{Binding BorderBrush}" /></Border>
+                        <TextBox x:Name="BorderColorEditor" Style="{StaticResource Field}"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=BorderColorLabel}"
+                                 AutomationProperties.HelpText="{localization:InspectorLoc Highlight.ColorHelp}" />
+                    </DockPanel>
+                    <TextBlock x:Name="BorderColorError" Grid.Row="3" Grid.Column="1" Style="{StaticResource FieldError}" Text="{localization:InspectorLoc Highlight.InvalidColor}" />
+                    <TextBlock Grid.Row="4" Grid.ColumnSpan="2" Margin="0,6,0,9" TextWrapping="Wrap"
+                               Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}" Text="{localization:InspectorLoc Highlight.ColorHelp}" />
 
-        <StackPanel Grid.Row="1"
-                    Orientation="Horizontal">
-            <Button x:Name="Close"
-                    Style="{StaticResource Snoop.Styles.Button.Large}"
-                    Click="Close_OnClick"
-                    Content="{localization:InspectorLoc Highlight.Close}" />
-            <Button x:Name="ResetSettings"
-                    Style="{StaticResource Snoop.Styles.Button.Large}"
-                    Click="ResetSettings_OnClick"
-                    Content="{localization:InspectorLoc Menu.ResetSettings}" />
-        </StackPanel>
+                    <Label x:Name="ThicknessLabel" Grid.Row="5" Style="{StaticResource FieldLabel}" Content="{localization:InspectorLoc Highlight.BorderThickness}"
+                           Target="{Binding ElementName=ThicknessEditor}" />
+                    <StackPanel Grid.Row="5" Grid.Column="1" Orientation="Horizontal">
+                        <TextBox x:Name="ThicknessEditor" Width="100" Style="{StaticResource Field}" AutomationProperties.LabeledBy="{Binding ElementName=ThicknessLabel}" />
+                        <TextBlock Margin="8,0" VerticalAlignment="Center" Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}" Text="DIP" />
+                    </StackPanel>
+                    <TextBlock x:Name="ThicknessError" Grid.Row="6" Grid.Column="1" Style="{StaticResource FieldError}" Text="{localization:InspectorLoc Highlight.InvalidThickness}" />
+                </Grid>
+                <Border Margin="0,15,0,0" Padding="12,10" CornerRadius="4" BorderThickness="1"
+                        Background="{DynamicResource SnoopNext.Brush.Panel}" BorderBrush="{DynamicResource SnoopNext.Brush.Border}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Text="{localization:InspectorLoc Tab.Preview}" />
+                        <Grid Grid.Column="1" Height="40" ClipToBounds="True" Background="{DynamicResource SnoopNext.Brush.Control}">
+                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{localization:InspectorLoc Highlight.SelectedElement}" />
+                            <Rectangle x:Name="HighlightSample" Fill="{Binding Background}" Stroke="{Binding BorderBrush}" StrokeThickness="{Binding BorderThickness}" />
+                        </Grid>
+                    </Grid>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+        <Border Grid.Row="1" Padding="18,10" Background="{DynamicResource SnoopNext.Brush.Panel}"
+                BorderBrush="{DynamicResource SnoopNext.Brush.Border}" BorderThickness="0,1,0,0">
+            <DockPanel LastChildFill="False">
+                <Button x:Name="ResetSettings" DockPanel.Dock="Left" Style="{StaticResource Action}"
+                        Content="{localization:InspectorLoc Highlight.Reset}" Click="ResetSettings_OnClick" />
+                <Button x:Name="Close" DockPanel.Dock="Right" Style="{StaticResource Action}" IsCancel="True"
+                        Content="{localization:InspectorLoc Highlight.Close}" Click="Close_OnClick" />
+            </DockPanel>
+        </Border>
     </Grid>
 </UserControl>

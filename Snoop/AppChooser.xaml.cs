@@ -205,7 +205,7 @@ public partial class AppChooser
         base.OnSourceInitialized(e);
 
         this.keyboardHook = new LowLevelKeyboardHook(PresentationSource.FromVisual(this)!);
-        this.keyboardHook.LowLevelKeyUp += KeyboardHook_LowLevelKeyUp;
+        this.keyboardHook.LowLevelKeyUp += this.KeyboardHook_LowLevelKeyUp;
         this.keyboardHook.Start();
 
         // load the window placement details from the user settings.
@@ -216,9 +216,10 @@ public partial class AppChooser
         }
     }
 
-    private static void KeyboardHook_LowLevelKeyUp(object sender, KeyEventArgs e)
+    private void KeyboardHook_LowLevelKeyUp(object sender, KeyEventArgs e)
     {
-        if (Settings.Default?.GlobalHotKey?.Matches(null, e) == true)
+        if (Settings.Default?.GlobalHotKey?.Matches(null, e) == true
+            && !this.OwnedWindows.OfType<SettingsWindow>().Any(window => window.IsActive))
         {
             var thread = new Thread(AttachToForegroundWindow)
             {

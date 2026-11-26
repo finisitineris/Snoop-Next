@@ -187,11 +187,16 @@
 
     <DockPanel x:Name="WorkbenchChrome" Background="{DynamicResource SnoopNext.Brush.Background}">
         <StackPanel x:Name="WorkbenchHeader" DockPanel.Dock="Top">
-            <Menu x:Name="WorkbenchMenuBar" Padding="4 2" FontSize="13"
+            <Menu x:Name="WorkbenchMenuBar" Padding="4 2"
                   Background="{DynamicResource SnoopNext.Brush.Background}"
                   BorderBrush="{DynamicResource SnoopNext.Brush.Border}"
                   BorderThickness="0 0 0 1">
                 <MenuItem x:Name="FileMenuItem" Header="{localization:InspectorLoc Menu.File}">
+                    <MenuItem.HeaderTemplate>
+                        <DataTemplate>
+                            <AccessText Text="{localization:InspectorLoc Menu.FileAccess}" />
+                        </DataTemplate>
+                    </MenuItem.HeaderTemplate>
                     <MenuItem Header="{localization:InspectorLoc Menu.CloseWindow}"
                               Command="{x:Static ApplicationCommands.Close}" />
                 </MenuItem>
@@ -314,7 +319,7 @@
                               Header="{localization:InspectorLoc Menu.SnoopSnoop}"
                               Click="HandleSnoopSnoop_OnClick" />
                 </MenuItem>
-                <MenuItem Header="?">
+                <MenuItem Header="{localization:InspectorLoc Menu.Help}">
                     <MenuItem Click="HandleSnoopVersion_OnClick">
                         <MenuItem.Header>
                             <TextBlock x:Name="SnoopVersionHeader">
