@@ -175,7 +175,7 @@ internal static class InspectorFilterSmoke
 
             Search("NameInputResultGroupB", () => Only(leaf) && ShowsEditedHeight());
             Search("NoSuchEditedElement", () => empty.IsVisible && tree.Items.Count == 0 && ShowsEditedHeight());
-            InspectorFlyoutSmoke.Capture((FrameworkElement)inspector.FindName("WorkbenchGrid"), "workbench-tree-and-edited-property-zh-CN");
+            LauncherAppearanceSmoke.CaptureIfRequested((FrameworkElement)inspector.FindName("WorkbenchChrome"), "workbench-tree-and-edited-property-zh-CN");
             editor.Focus();
             WaitFor(() => editor.IsKeyboardFocused, "focusing the tree search for Escape");
             editor.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(editor), Environment.TickCount, Key.Escape)
