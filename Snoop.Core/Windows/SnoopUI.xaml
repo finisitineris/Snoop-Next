@@ -839,6 +839,15 @@
                             Background="{DynamicResource SnoopNext.Brush.Panel}"
                             BorderThickness="0 1 0 0"
                             ItemContainerStyle="{StaticResource SnoopNext.WorkbenchTab}">
+                    <TabControl.Style>
+                        <Style TargetType="TabControl" BasedOn="{StaticResource {x:Type TabControl}}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected, ElementName=WorkbenchEventsTab}" Value="True">
+                                    <Setter Property="Padding" Value="2 0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TabControl.Style>
                     <TabItem x:Name="WorkbenchDiagnosticsTab">
                         <TabItem.Header>
                             <TextBlock>
