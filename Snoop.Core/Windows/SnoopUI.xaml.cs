@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -1185,6 +1186,14 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         finally
         {
             this.isUpdatingTreeFilter = false;
+        }
+
+        // A cached tree peer can still expose the previous roots after a search
+        // promotes a child to the top level. Rebuild its children after layout
+        // has generated the replacement containers, including for late UIA clients.
+        if (UIElementAutomationPeer.FromElement(this.Tree) is { } treePeer)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(treePeer.ResetChildrenCache));
         }
     }
 

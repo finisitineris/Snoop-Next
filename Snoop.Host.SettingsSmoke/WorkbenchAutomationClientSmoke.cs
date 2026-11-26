@@ -2,6 +2,7 @@ namespace Snoop.Host.SettingsSmoke;
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Automation;
@@ -61,7 +62,13 @@ internal static class WorkbenchAutomationClientSmoke
     private static AutomationElement Find(AutomationElement parent, AutomationProperty property, object value)
     {
         var condition = new AndCondition(Automation.ControlViewCondition, new PropertyCondition(property, value));
-        return parent.FindFirst(TreeScope.Descendants, condition)
-            ?? throw new InvalidOperationException($"UI Automation could not find {property.ProgrammaticName} = {value} under '{parent.Current.Name}'.");
+        if (parent.FindFirst(TreeScope.Descendants, condition) is { } element)
+        {
+            return element;
+        }
+
+        var children = parent.FindAll(TreeScope.Children, Condition.TrueCondition).Cast<AutomationElement>().Take(8)
+            .Select(child => $"{child.Current.ClassName} '{child.Current.Name}' [{child.Current.AutomationId}]");
+        throw new InvalidOperationException($"UI Automation could not find {property.ProgrammaticName} = {value} under '{parent.Current.Name}'. Children: {string.Join(", ", children)}.");
     }
 }

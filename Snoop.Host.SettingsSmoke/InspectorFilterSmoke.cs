@@ -205,7 +205,8 @@ internal static class InspectorFilterSmoke
             ((IToggleProvider)UIElementAutomationPeer.CreatePeerForElement(edited).GetPattern(PatternInterface.Toggle)).Toggle();
             WaitFor(ShowsEditedHeight, "showing only the committed Height on the selected TextBlock");
 
-            Search("NameInputResultGroupB", () => Only(leaf) && ShowsEditedHeight());
+            Search("NameInputResultGroupB", () => Only(leaf) && ShowsEditedHeight()
+                && tree.ItemContainerGenerator.ContainerFromItem(leaf) is TreeViewItem { IsVisible: true });
             WorkbenchAutomationClientSmoke.VerifyEditedHeight(inspector);
             Search("NoSuchEditedElement", () => empty.IsVisible && tree.Items.Count == 0 && ShowsEditedHeight());
             LauncherAppearanceSmoke.CaptureIfRequested((FrameworkElement)inspector.FindName("WorkbenchChrome"), "workbench-tree-and-edited-property-zh-CN");
