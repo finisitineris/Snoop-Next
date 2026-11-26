@@ -69,7 +69,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Border x:Name="ToolbarBorder" Padding="10 5" Background="{DynamicResource SnoopNext.Brush.Panel}"
-                UseLayoutRounding="True" TextElement.FontSize="13" TextElement.FontFamily="Segoe UI Variable Text, Segoe UI, Global User Interface"
+                UseLayoutRounding="True" TextElement.FontSize="13" TextElement.FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
                 BorderBrush="{DynamicResource SnoopNext.Brush.Border}" BorderThickness="0 0 0 1">
             <WrapPanel>
                 <Border x:Name="ModeGroup" Height="{StaticResource ZoomCommandSize}" Margin="0 2 12 2" Padding="1" CornerRadius="4" BorderThickness="1"

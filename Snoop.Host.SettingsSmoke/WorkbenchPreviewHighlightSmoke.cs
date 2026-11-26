@@ -1,7 +1,10 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Linq;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -103,6 +106,7 @@ internal static class WorkbenchPreviewHighlightSmoke
             Require(Previewer.MagnifyCommand.CanExecute(null, preview)
                     && Previewer.ScreenshotCommand.CanExecute(null, preview),
                 "The magnifier and screenshot commands must remain available for the selected visual.");
+            VerifyBackdropControls(inspector, preview, viewport);
 
             inspector.CurrentSelection = scopedSecond;
             Arrange();
@@ -227,6 +231,60 @@ internal static class WorkbenchPreviewHighlightSmoke
             Require(outline.Visibility == Visibility.Collapsed
                     && (viewbox.Child is not Rectangle { Fill: VisualBrush brush } || !ReferenceEquals(brush.Visual, scene)),
                 "An inactive, disconnected or nonvisual selection must clear the scene outline and previous projection.");
+        }
+    }
+
+    private static void VerifyBackdropControls(SnoopUI inspector, Previewer preview, Grid viewport)
+    {
+        var slider = Find<Slider>(preview, "ColorSlider");
+        var magnify = Find<Button>(preview, "MagnifyButton");
+        var range = (IRangeValueProvider)UIElementAutomationPeer.CreatePeerForElement(slider).GetPattern(PatternInterface.RangeValue);
+        var brightness = range.Value;
+        var width = preview.MaxWidth;
+        var placement = Snoop.Core.Settings.Default.ZoomerWindowPlacement;
+        Zoomer? viewer = null;
+        try
+        {
+            Require(!viewport.IsAncestorOf(slider) && slider.IsHitTestVisible && slider.IsEnabled
+                    && ReferenceEquals(magnify.Command, Previewer.MagnifyCommand),
+                "The backdrop slider must accept input outside the preview's pick and pan surface.");
+            CheckPosition();
+            range.SetValue(0.25);
+            DrainDispatcher();
+            Require(viewport.Background is SolidColorBrush brush && Math.Abs(brush.Color.ScR - 0.25) < 0.001
+                    && brush.Color.ScG == brush.Color.ScR && brush.Color.ScB == brush.Color.ScR,
+                "The backdrop range control must change the live preview's grayscale background.");
+            LauncherAppearanceSmoke.CaptureIfRequested(preview, "preview-backdrop-controls");
+
+            preview.SetCurrentValue(FrameworkElement.MaxWidthProperty, 160d);
+            WorkbenchLayoutSmoke.Arrange(inspector);
+            CheckPosition();
+            Require(slider.ActualWidth is >= 32 and < 100, "The backdrop slider must shrink in a narrow preview.");
+            LauncherAppearanceSmoke.CaptureIfRequested(preview, "preview-backdrop-controls-narrow");
+
+            Previewer.MagnifyCommand.Execute(null, magnify);
+            viewer = Application.Current.Windows.OfType<Zoomer>().Single(window => ReferenceEquals(window.Target, preview.Target));
+            Require(Find<Slider>(viewer, "ColorSlider").Value == range.Value,
+                "Opening the magnifier must retain the selected preview backdrop.");
+        }
+        finally
+        {
+            viewer?.Close();
+            Snoop.Core.Settings.Default.ZoomerWindowPlacement = placement;
+            range.SetValue(brightness);
+            preview.SetCurrentValue(FrameworkElement.MaxWidthProperty, width);
+            WorkbenchLayoutSmoke.Arrange(inspector);
+        }
+
+        void CheckPosition()
+        {
+            var backdrop = slider.TransformToAncestor(preview).TransformBounds(new Rect(slider.RenderSize));
+            var button = magnify.TransformToAncestor(preview).TransformBounds(new Rect(magnify.RenderSize));
+            var bounds = new Rect(preview.RenderSize);
+            Require(bounds.Contains(backdrop) && bounds.Contains(button) && Math.Abs(backdrop.Right + 4 - button.Left) <= 1
+                    && Math.Abs(backdrop.Top - button.Top) <= 1 && Math.Abs(backdrop.Bottom - button.Bottom) <= 1
+                    && Math.Abs(bounds.Bottom - button.Bottom - 4) <= 1,
+                $"The backdrop slider {backdrop} must sit directly left of the magnifier {button} in the bottom toolbar of {bounds}.");
         }
     }
 

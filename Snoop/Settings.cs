@@ -180,6 +180,15 @@ public sealed class Settings : SettingsBase<Settings>
         }
     }
 
+    internal void SavePreferences(Action<Settings> edit)
+    {
+        var draft = new Settings { SettingsFile = this.SettingsFile };
+        draft.UpdateWith(this);
+        edit(draft);
+        draft.Save();
+        this.UpdateWith(draft);
+    }
+
     protected override void UpdateWith(Settings settings)
     {
         this.SetOwnerWindow = settings.SetOwnerWindow;

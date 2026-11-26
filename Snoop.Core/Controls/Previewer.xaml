@@ -15,6 +15,9 @@
              mc:Ignorable="options d">
     <UserControl.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Snoop.Core;component/Themes/FluentZoomSlider.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <DrawingBrush x:Key="previewerSnoopDogDrawingBrush"
                           Stretch="Uniform"
                           options:Freeze="True">
@@ -56,47 +59,48 @@
             </controls:ZoomerControl.Style>
         </controls:ZoomerControl>
 
-        <Button Width="28"
-                Height="28"
-                Margin="0 0 68 4"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                AutomationProperties.Name="{localization:InspectorLoc Previewer.MagnifyTip}"
-                Command="{x:Static controls:Previewer.MagnifyCommand}">
-            <Path Style="{StaticResource PreviewGlyph}" Data="M10,6 A4,4 0 1 1 2,6 A4,4 0 1 1 10,6 M9,9 L14,14" />
-            <Button.ToolTip>
-                <TextBlock MaxWidth="260"
-                           Text="{localization:InspectorLoc Previewer.MagnifyTip}"
-                           TextWrapping="Wrap" />
-            </Button.ToolTip>
-        </Button>
-
-        <ToggleButton Width="28"
-                      Height="28"
-                      Margin="0 0 36 4"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Bottom"
-                      AutomationProperties.Name="{localization:InspectorLoc Previewer.ToggleTip}"
-                      IsChecked="{Binding IsActive}">
-            <Path Style="{StaticResource PreviewGlyph}" Data="M8,1 V7 M4.5,3.5 A6,6 0 1 0 11.5,3.5" />
-            <ToggleButton.ToolTip>
-                <TextBlock MaxWidth="260"
-                           Text="{localization:InspectorLoc Previewer.ToggleTip}"
-                           TextWrapping="Wrap" />
-            </ToggleButton.ToolTip>
-        </ToggleButton>
-
-        <Button Width="28"
-                Height="28"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Margin="0 0 4 4"
-                AutomationProperties.Name="{localization:InspectorLoc Previewer.ScreenshotTip}"
-                Command="{x:Static controls:Previewer.ScreenshotCommand}">
-            <Path Style="{StaticResource PreviewGlyph}" Data="M1,5 H4 L6,2.5 H10 L12,5 H15 V13 H1 Z M11,8.5 A3,3 0 1 1 5,8.5 A3,3 0 1 1 11,8.5" />
-            <Button.ToolTip>
-                <TextBlock Text="{localization:InspectorLoc Previewer.ScreenshotTip}" />
-            </Button.ToolTip>
-        </Button>
+        <Grid x:Name="PreviewToolbar" Width="{Binding ActualWidth, ElementName=Zoomer}" MaxWidth="204"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0 0 0 4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Slider x:Name="ColorSlider" Margin="4 0" VerticalAlignment="Center"
+                    Style="{StaticResource SnoopNext.ZoomSlider}"
+                    AutomationProperties.Name="{localization:InspectorLoc Zoomer.Backdrop}"
+                    ToolTip="{localization:InspectorLoc Zoomer.BackgroundTooltip}"
+                    Minimum="0" Maximum="1"
+                    Value="{Binding BackdropBrightness, ElementName=Zoomer, Mode=TwoWay}" />
+            <Button x:Name="MagnifyButton" Grid.Column="1" Width="28" Height="28" Margin="0 0 4 0"
+                    AutomationProperties.Name="{localization:InspectorLoc Previewer.MagnifyTip}"
+                    Command="{x:Static controls:Previewer.MagnifyCommand}">
+                <Path Style="{StaticResource PreviewGlyph}" Data="M10,6 A4,4 0 1 1 2,6 A4,4 0 1 1 10,6 M9,9 L14,14" />
+                <Button.ToolTip>
+                    <TextBlock MaxWidth="260"
+                               Text="{localization:InspectorLoc Previewer.MagnifyTip}"
+                               TextWrapping="Wrap" />
+                </Button.ToolTip>
+            </Button>
+            <ToggleButton Grid.Column="2" Width="28" Height="28" Margin="0 0 4 0"
+                          AutomationProperties.Name="{localization:InspectorLoc Previewer.ToggleTip}"
+                          IsChecked="{Binding IsActive}">
+                <Path Style="{StaticResource PreviewGlyph}" Data="M8,1 V7 M4.5,3.5 A6,6 0 1 0 11.5,3.5" />
+                <ToggleButton.ToolTip>
+                    <TextBlock MaxWidth="260"
+                               Text="{localization:InspectorLoc Previewer.ToggleTip}"
+                               TextWrapping="Wrap" />
+                </ToggleButton.ToolTip>
+            </ToggleButton>
+            <Button Grid.Column="3" Width="28" Height="28" Margin="0 0 4 0"
+                    AutomationProperties.Name="{localization:InspectorLoc Previewer.ScreenshotTip}"
+                    Command="{x:Static controls:Previewer.ScreenshotCommand}">
+                <Path Style="{StaticResource PreviewGlyph}" Data="M1,5 H4 L6,2.5 H10 L12,5 H15 V13 H1 Z M11,8.5 A3,3 0 1 1 5,8.5 A3,3 0 1 1 11,8.5" />
+                <Button.ToolTip>
+                    <TextBlock Text="{localization:InspectorLoc Previewer.ScreenshotTip}" />
+                </Button.ToolTip>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>

@@ -31,7 +31,7 @@
                              d:DesignHeight="480"
                              d:DesignWidth="640"
                              DataContext="{Binding RelativeSource={RelativeSource Self}}"
-                             FontFamily="Segoe UI Variable Text, Segoe UI, Global User Interface"
+                             FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
                              Focusable="False"
                              ShowInTaskbar="True"
                              SnapsToDevicePixels="True"

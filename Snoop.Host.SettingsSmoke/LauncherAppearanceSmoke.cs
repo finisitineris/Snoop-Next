@@ -101,29 +101,14 @@ internal static class LauncherAppearanceSmoke
 
             if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR")))
             {
-                var settings = new SnoopBaseWindow();
-                settings.BeginInit();
-                settings.Content = new SettingsView();
-                settings.EndInit();
-                try
+                LocalizationManager.Default.SetLanguage("zh-CN");
+                InspectorLocalization.Default.SetLanguage("zh-CN");
+                foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 {
-                    LocalizationManager.Default.SetLanguage("zh-CN");
-                    InspectorLocalization.Default.SetLanguage("zh-CN");
-                    foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
-                    {
-                        ThemeManager.Current.ApplyTheme(mode, inspector);
-                        ThemeManager.Current.ApplyTheme(mode, settings);
-                        var chrome = (FrameworkElement)inspector.FindName("WorkbenchChrome");
-                        WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, 1280, 720));
-                        CaptureIfRequested(chrome, "inspector-" + mode);
-                        var view = (FrameworkElement)settings.Content;
-                        WorkbenchLayoutSmoke.Arrange(view, new Rect(0, 0, 560, 400));
-                        CaptureIfRequested(view, "settings-" + mode);
-                    }
-                }
-                finally
-                {
-                    settings.Close();
+                    ThemeManager.Current.ApplyTheme(mode, inspector);
+                    var chrome = (FrameworkElement)inspector.FindName("WorkbenchChrome");
+                    WorkbenchLayoutSmoke.Arrange(chrome, new Rect(0, 0, 1280, 720));
+                    CaptureIfRequested(chrome, "inspector-" + mode);
                 }
             }
         }

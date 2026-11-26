@@ -21,6 +21,8 @@
         <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Controls/ValueEditors/EditorTemplates.xaml" />
     </ResourceDictionary.MergedDictionaries>
 
+    <FontFamily x:Key="SnoopNext.FontFamily.UI">Segoe UI Variable Text, Segoe UI, Microsoft YaHei UI, Global User Interface</FontFamily>
+
     <Style x:Key="SnoopNext.FocusVisual" TargetType="{x:Type Control}">
         <Setter Property="Template">
             <Setter.Value>

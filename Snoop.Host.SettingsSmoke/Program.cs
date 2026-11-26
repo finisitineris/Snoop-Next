@@ -199,53 +199,6 @@ internal static class Program
                 Settings.Default.Save();
                 LocalizationManager.Default.SetLanguage("zh-CN");
 
-                // Instantiate the real host SettingsView on STA without showing a
-                // window or attaching Snoop to any external process. This catches
-                // runtime BAML, static resource, and selector wiring failures.
-                var settingsView = new Snoop.Views.SettingsView();
-                var languagePicker = FindRequired<System.Windows.Controls.ComboBox>(settingsView, "LanguageSelector");
-                Require(languagePicker.Items.Count == 3, "expected zh-CN/en-US/system in host picker");
-                Require(string.Equals(languagePicker.SelectedValue as string, Settings.Default.LanguageTag, StringComparison.Ordinal),
-                    "host picker selection does not match the Snoop host setting");
-                Require(Thread.CurrentThread.CurrentUICulture.Equals(originalCulture),
-                    "constructing Snoop host SettingsView modified thread UI culture");
-                Console.WriteLine("PASS: host SettingsView BAML loaded and language selector wired on STA");
-
-                // Selecting a new language is a pending edit: no settings file
-                // or live localization update occurs until Save is clicked.
-                languagePicker.SelectedValue = "en-US";
-                Require(Settings.Default.LanguageTag == "zh-CN", "language selection previewed into persisted settings");
-                Require(LocalizationManager.Default.LanguageTag == "zh-CN", "language selection previewed live before Save");
-
-                var discardButton = FindRequired<System.Windows.Controls.Button>(settingsView, "DiscardSettings");
-                discardButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                Require(languagePicker.SelectedValue as string == "zh-CN", "Discard did not restore persisted language");
-                Require(LocalizationManager.Default.LanguageTag == "zh-CN", "Discard changed live language");
-
-                languagePicker.SelectedValue = "en-US";
-                var saveButton = FindRequired<System.Windows.Controls.Button>(settingsView, "SaveSettingsAndClose");
-                saveButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                Require(Settings.Default.LanguageTag == "en-US", "Save did not commit language setting");
-                Require(LocalizationManager.Default.LanguageTag == "en-US", "Save did not apply live host language");
-                Require(File.ReadAllText(file).Contains("<LanguageTag>en-US</LanguageTag>"), "Save did not persist selected language");
-
-                // Reset changes the pending value to the default but does not
-                // persist or apply it until Save is clicked.
-                var resetView = new Snoop.Views.SettingsView();
-                var resetPicker = FindRequired<System.Windows.Controls.ComboBox>(resetView, "LanguageSelector");
-                var resetButton = FindRequired<System.Windows.Controls.Button>(resetView, "ResetAllSettings");
-                resetButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                Require(resetPicker.SelectedValue as string == "zh-CN", "Reset did not select default language");
-                Require(Settings.Default.LanguageTag == "en-US", "Reset overwrote the committed language before Save");
-                Require(LocalizationManager.Default.LanguageTag == "en-US", "Reset applied language before Save");
-                Require(File.ReadAllText(file).Contains("<LanguageTag>en-US</LanguageTag>"), "Reset unexpectedly persisted before Save");
-
-                var saveResetButton = FindRequired<System.Windows.Controls.Button>(resetView, "SaveSettingsAndClose");
-                saveResetButton.RaiseEvent(new System.Windows.RoutedEventArgs(System.Windows.Controls.Button.ClickEvent));
-                Require(LocalizationManager.Default.LanguageTag == "zh-CN", "Save after Reset did not apply default language");
-
-                Console.WriteLine("PASS: SettingsView pending selection, Save, Discard and Reset behavior");
-
                 // Exercise Snoop.Core's actual inspector XAML in this isolated
                 // process. No other WPF application is attached or injected.
                 var inspectorCulture = Thread.CurrentThread.CurrentUICulture;
@@ -297,6 +250,7 @@ internal static class Program
 
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+                    LauncherSettingsFormSmoke.Verify(file);
                     Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
                     var inspector = new SnoopUI();
                     try

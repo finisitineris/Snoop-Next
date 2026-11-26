@@ -167,6 +167,12 @@ internal static class InspectorFlyoutSmoke
     }
 
     internal static void Capture(FrameworkElement surface, string name, params FrameworkElement[] popups)
+        => Capture(surface, name, popups, requireNativeFrame: false);
+
+    internal static void CaptureFramed(FrameworkElement surface, string name, params FrameworkElement[] popups)
+        => Capture(surface, name, popups, requireNativeFrame: true);
+
+    private static void Capture(FrameworkElement surface, string name, FrameworkElement[] popups, bool requireNativeFrame)
     {
         var window = Window.GetWindow(surface);
         var hwnd = new WindowInteropHelper(window).Handle;
@@ -180,6 +186,11 @@ internal static class InspectorFlyoutSmoke
         // PointToScreen and GetWindowRect share screen pixel coordinates. Each popup
         // has its own presentation source and can be on a differently scaled monitor.
         var frame = CaptureNativeFrame(hwnd, out var bounds);
+        if (requireNativeFrame && (frame is null || surface.PointToScreen(default).Y <= bounds.Top))
+        {
+            throw new InvalidOperationException("The native frame and caption were missing from " + name);
+        }
+
         var layers = new[] { surface }.Concat(popups).Select(control =>
         {
             var scale = PresentationSource.FromVisual(control).CompositionTarget.TransformToDevice;

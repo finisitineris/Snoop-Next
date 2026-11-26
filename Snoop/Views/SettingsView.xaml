@@ -4,13 +4,14 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:Snoop.Next.Localization;assembly=Snoop.Next.Localization"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:snoop="urn:snoopwpf"
+             xmlns:data="clr-namespace:Snoop.Data;assembly=Snoop.Core"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              x:Name="Control"
              Background="{DynamicResource SnoopNext.Brush.Background}"
-             FontFamily="Segoe UI"
-             FontSize="13"
+             FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
+             FontSize="{DynamicResource SettingsBodySize}"
              Foreground="{DynamicResource SnoopNext.Brush.Text}"
-             d:DesignHeight="440"
+             d:DesignHeight="640"
              d:DesignWidth="560"
              mc:Ignorable="d">
     <UserControl.Resources>
@@ -19,12 +20,48 @@
                 <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
+            <system:Double x:Key="SettingsBodySize">13</system:Double>
+
             <!-- ComboBox projects the selected item's content template into a second presenter. -->
-            <DataTemplate x:Key="SettingsLanguageName">
+            <DataTemplate x:Key="SettingsOptionText">
                 <TextBlock Foreground="{DynamicResource SnoopNext.Brush.Text}" Text="{Binding}" />
             </DataTemplate>
 
+            <Style x:Key="SettingsOption" TargetType="ComboBoxItem" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
+                <Setter Property="FontFamily" Value="{DynamicResource SnoopNext.FontFamily.UI}" />
+                <Setter Property="FontSize" Value="{StaticResource SettingsBodySize}" />
+                <Setter Property="ContentTemplate" Value="{StaticResource SettingsOptionText}" />
+            </Style>
+            <Style x:Key="SettingsSelector" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+                <Setter Property="ItemContainerStyle" Value="{StaticResource SettingsOption}" />
+                <Setter Property="SelectedValuePath" Value="Tag" />
+                <Setter Property="MinHeight" Value="32" />
+                <Setter Property="Margin" Value="0,3" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.FocusVisual}" />
+            </Style>
+            <Style x:Key="SettingsFieldLabel" TargetType="Label" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="Padding" Value="0,2,10,2" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+            <Style x:Key="SettingsCheck" TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+                <Setter Property="MinHeight" Value="30" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="FocusVisualStyle" Value="{StaticResource SnoopNext.FocusVisual}" />
+            </Style>
+            <Style x:Key="SettingsTextInput" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+                <Setter Property="MinHeight" Value="30" />
+                <Setter Property="Padding" Value="7,3" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Margin" Value="0,3" />
+            </Style>
+            <Style x:Key="SettingsHeading" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Margin" Value="0,0,0,6" />
+            </Style>
             <Style x:Key="SettingsSection" TargetType="Border">
+                <Setter Property="Padding" Value="14,10" />
+                <Setter Property="Margin" Value="0,0,0,10" />
                 <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
                 <Setter Property="BorderThickness" Value="1" />
@@ -72,115 +109,99 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        <ScrollViewer x:Name="SettingsScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="16,14,16,4">
+                <Border Style="{StaticResource SettingsSection}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SettingsHeading}" Text="{local:Loc Settings.LauncherSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1.15*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label x:Name="LanguageLabel" Style="{StaticResource SettingsFieldLabel}"
+                                   Content="{local:Loc Settings.Language}" Target="{Binding ElementName=LanguageSelector}" />
+                            <ComboBox x:Name="LanguageSelector" Grid.Column="1" Style="{StaticResource SettingsSelector}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=LanguageLabel}">
+                                <ComboBoxItem Tag="zh-CN" Content="{local:Loc Settings.Chinese}" />
+                                <ComboBoxItem Tag="en-US" Content="{local:Loc Settings.English}" />
+                                <ComboBoxItem Tag="system" Content="{local:Loc Settings.FollowSystem}" />
+                            </ComboBox>
+                            <Label x:Name="GlobalHotKeyLabel" Grid.Row="1" Style="{StaticResource SettingsFieldLabel}"
+                                   Content="{local:Loc Settings.GlobalHotKey}" Target="{Binding ElementName=GlobalHotKeyEditor}" />
+                            <TextBox x:Name="GlobalHotKeyEditor" Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsTextInput}"
+                                     AutomationProperties.LabeledBy="{Binding ElementName=GlobalHotKeyLabel}"
+                                     AutomationProperties.HelpText="{local:Loc Settings.ShortcutHelp}" ToolTip="{local:Loc Settings.ShortcutHelp}"
+                                     TextChanged="GlobalHotKeyEditor_OnTextChanged" />
+                            <TextBlock x:Name="GlobalHotKeyError" Grid.Row="2" Grid.ColumnSpan="2" Margin="0,3"
+                                       Visibility="Collapsed" Foreground="{DynamicResource SnoopNext.Brush.Error}"
+                                       TextWrapping="Wrap" Text="{local:Loc Settings.ShortcutInvalid}" />
+                        </Grid>
+                        <CheckBox x:Name="StartAppChooserMinimizedCheckBox" Style="{StaticResource SettingsCheck}"
+                                  Content="{local:Loc Settings.StartMinimized}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SettingsSection}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SettingsHeading}" Text="{local:Loc Settings.InspectorSection}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="1.15*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label x:Name="MultipleAppDomainModeLabel" Style="{StaticResource SettingsFieldLabel}"
+                                   Content="{local:Loc Settings.MultipleAppDomains}" Target="{Binding ElementName=MultipleAppDomainModeSelector}" />
+                            <ComboBox x:Name="MultipleAppDomainModeSelector" Grid.Column="1" Style="{StaticResource SettingsSelector}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=MultipleAppDomainModeLabel}">
+                                <ComboBoxItem Tag="{x:Static data:MultipleAppDomainMode.Ask}" Content="{local:Loc Settings.ModeAsk}" />
+                                <ComboBoxItem Tag="{x:Static data:MultipleAppDomainMode.AlwaysUse}" Content="{local:Loc Settings.ModeAlways}" />
+                                <ComboBoxItem Tag="{x:Static data:MultipleAppDomainMode.NeverUse}" Content="{local:Loc Settings.ModeNever}" />
+                            </ComboBox>
+                            <Label x:Name="MultipleDispatcherModeLabel" Grid.Row="1" Style="{StaticResource SettingsFieldLabel}"
+                                   Content="{local:Loc Settings.MultipleDispatchers}" Target="{Binding ElementName=MultipleDispatcherModeSelector}" />
+                            <ComboBox x:Name="MultipleDispatcherModeSelector" Grid.Row="1" Grid.Column="1" Style="{StaticResource SettingsSelector}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=MultipleDispatcherModeLabel}">
+                                <ComboBoxItem Tag="{x:Static data:MultipleDispatcherMode.Ask}" Content="{local:Loc Settings.ModeAsk}" />
+                                <ComboBoxItem Tag="{x:Static data:MultipleDispatcherMode.AlwaysUse}" Content="{local:Loc Settings.ModeAlways}" />
+                                <ComboBoxItem Tag="{x:Static data:MultipleDispatcherMode.NeverUse}" Content="{local:Loc Settings.ModeNever}" />
+                            </ComboBox>
+                        </Grid>
+                        <CheckBox x:Name="SetOwnerWindowCheckBox" Style="{StaticResource SettingsCheck}" Content="{local:Loc Settings.SetOwnerWindow}" />
+                        <CheckBox x:Name="ShowActivatedCheckBox" Style="{StaticResource SettingsCheck}" Content="{local:Loc Settings.ShowActivated}" />
+                        <CheckBox x:Name="EnableDiagnosticsCheckBox" Style="{StaticResource SettingsCheck}" Content="{local:Loc Settings.EnableDiagnostics}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource SettingsSection}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SettingsHeading}" Text="{local:Loc Settings.ToolsSection}" />
+                        <Label x:Name="ILSpyPathLabel" Style="{StaticResource SettingsFieldLabel}"
+                               Content="{local:Loc Settings.ILSpyPath}" Target="{Binding ElementName=ILSpyPathTextBox}" />
+                        <TextBox x:Name="ILSpyPathTextBox" Style="{StaticResource SettingsTextInput}"
+                                 AutomationProperties.LabeledBy="{Binding ElementName=ILSpyPathLabel}" />
+                    </StackPanel>
+                </Border>
+                <StackPanel Orientation="Horizontal" Margin="2,0,0,6" TextElement.Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}">
+                    <TextBlock Text="{local:Loc Settings.Version}" Margin="0,0,6,0" />
+                    <TextBlock x:Name="VersionValue" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
 
-        <Border Margin="16 16 16 12" Padding="12 8" Style="{StaticResource SettingsSection}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Label x:Name="LanguageLabel"
-                       Content="{local:Loc Settings.Language}"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource SnoopNext.Brush.Text}"
-                       Padding="0"
-                       Target="{Binding ElementName=LanguageSelector}"
-                       VerticalAlignment="Center" />
-                <ComboBox x:Name="LanguageSelector"
-                          Grid.Column="1"
-                          Width="188"
-                          MinHeight="32"
-                          AutomationProperties.LabeledBy="{Binding ElementName=LanguageLabel}"
-                          FocusVisualStyle="{StaticResource SnoopNext.FocusVisual}"
-                          Foreground="{DynamicResource SnoopNext.Brush.Text}"
-                          SelectedValuePath="Tag"
-                          VerticalContentAlignment="Center">
-                    <ComboBoxItem Tag="zh-CN" Content="{local:Loc Settings.Chinese}" ContentTemplate="{StaticResource SettingsLanguageName}" />
-                    <ComboBoxItem Tag="en-US" Content="{local:Loc Settings.English}" ContentTemplate="{StaticResource SettingsLanguageName}" />
-                    <ComboBoxItem Tag="system" Content="{local:Loc Settings.FollowSystem}" ContentTemplate="{StaticResource SettingsLanguageName}" />
-                </ComboBox>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="1" Margin="16 0 16 16" Padding="1" Style="{StaticResource SettingsSection}">
-            <ListView x:Name="ListView"
-                      Background="{DynamicResource SnoopNext.Brush.Panel}"
-                      BorderThickness="0"
-                      Foreground="{DynamicResource SnoopNext.Brush.Text}"
-                      HorizontalContentAlignment="Stretch"
-                      IsSynchronizedWithCurrentItem="True"
-                      ItemsSource="{Binding ElementName=Control, Path=Properties}">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem" BasedOn="{StaticResource GridView.GridViewItemContainerStyle}">
-                        <Setter Property="FocusVisualStyle" Value="{DynamicResource SnoopNext.FocusVisual}" />
-                        <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-                        <Setter Property="MinHeight" Value="28" />
-                        <Setter Property="Template">
-                            <Setter.Value>
-                                <ControlTemplate TargetType="ListViewItem">
-                                    <Border x:Name="Row" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="4">
-                                        <Grid>
-                                            <GridViewRowPresenter Margin="4 0" VerticalAlignment="Center" />
-                                            <Border x:Name="RecentEdit" Width="2" Height="14" HorizontalAlignment="Left"
-                                                    Background="{DynamicResource SnoopNext.Brush.Accent}" CornerRadius="1"
-                                                    IsHitTestVisible="False" Visibility="Collapsed" />
-                                        </Grid>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="Row" Property="Background" Value="{DynamicResource SnoopNext.Brush.Hover}" />
-                                        </Trigger>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter TargetName="Row" Property="Background" Value="{DynamicResource SnoopNext.Brush.Pressed}" />
-                                            <Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Accent}" />
-                                        </Trigger>
-                                        <DataTrigger Binding="{Binding HasChangedRecently}" Value="True">
-                                            <Setter TargetName="RecentEdit" Property="Visibility" Value="Visible" />
-                                        </DataTrigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.View>
-                    <GridView>
-                        <GridView.ColumnHeaderContainerStyle>
-                            <Style TargetType="GridViewColumnHeader" BasedOn="{StaticResource GridViewColumnHeaderStyle}">
-                                <Setter Property="Background" Value="{DynamicResource SnoopNext.Brush.Panel}" />
-                                <Setter Property="BorderBrush" Value="{DynamicResource SnoopNext.Brush.Border}" />
-                                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
-                                <Setter Property="HorizontalContentAlignment" Value="Left" />
-                                <Setter Property="MinHeight" Value="28" />
-                                <Setter Property="Padding" Value="8 0" />
-                            </Style>
-                        </GridView.ColumnHeaderContainerStyle>
-                        <GridViewColumn Width="206">
-                            <GridViewColumn.Header>
-                                <TextBlock Text="{local:Loc Property.Name}" ToolTip="{local:Loc Property.NameDescription}" />
-                            </GridViewColumn.Header>
-                            <GridViewColumn.CellTemplate>
-                                <DataTemplate DataType="snoop:PropertyInformation">
-                                    <TextBlock Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis" ToolTip="{Binding DisplayName}" />
-                                </DataTemplate>
-                            </GridViewColumn.CellTemplate>
-                        </GridViewColumn>
-                        <GridViewColumn Width="200" CellTemplateSelector="{DynamicResource EditorSelector}">
-                            <GridViewColumn.Header>
-                                <TextBlock Text="{local:Loc Property.Value}" ToolTip="{local:Loc Property.ValueDescription}" />
-                            </GridViewColumn.Header>
-                        </GridViewColumn>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </Border>
-
+        <TextBlock x:Name="SaveError" Grid.Row="1" Margin="16,4" Visibility="Collapsed" TextWrapping="Wrap"
+                   Foreground="{DynamicResource SnoopNext.Brush.Error}" Text="{local:Loc Settings.SaveFailed}" />
         <Border Grid.Row="2"
                 Background="{DynamicResource SnoopNext.Brush.Panel}"
                 BorderBrush="{DynamicResource SnoopNext.Brush.Border}"

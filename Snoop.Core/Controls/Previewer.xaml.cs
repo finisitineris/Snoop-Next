@@ -152,7 +152,7 @@ public partial class Previewer
         {
             ColorSlider =
             {
-                Value = this.Zoomer.ColorSlider.Value
+                Value = this.Zoomer.BackdropBrightness
             }
         };
         zoomer.Inspect(this.Target);
