@@ -115,4 +115,4 @@ PR-009: SN-050..054  矩阵、发布、安全、上游同步
 
 ## 9. 任务可追溯性
 
-`traceability/acceptance-to-wpf.csv` 由 HTML v1.1 Acceptance 矩阵提取，不创造新的“原型已实现”结论。每条对应建议模块与测试场景，后续为每个 Issue 添加 PR / Commit / 结果。矩阵的 `status` 初始均为 `not_started`，不要因 HTML 模拟已通过就把 WPF 状态标成完成。
+[验收映射表](../traceability/acceptance-to-wpf.csv) 按 v1.1 清单的顺序列出 42 项交互、所属模块、证据和测试场景。状态针对该行描述的原生 WPF 场景。已有对应验收证据的场景记为 `covered`；只验证了部分行为的记为 `partial`，剩余步骤见 `test_case`。尚待实施或验证的场景记为 `planned`，仅用于演示的操作记为 `prototype_only`。修改交互时一并更新预期结果、测试和对应行。

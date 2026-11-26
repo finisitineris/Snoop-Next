@@ -1,15 +1,25 @@
 # P0 target-runtime compatibility smoke matrix
 
-**Every cell is NOT RUN until evidence is attached from an actual Windows machine.** The goal is future support of .NET Framework 4.6.2 through .NET 11; existing compilation settings alone are not proof of support.
+The CI column records WPF fixture builds. Runtime results come from tester reports for the linked Snoop and fixture builds. `NOT RUN` means this matrix has no recorded result for that check.
 
-| WPF target runtime | Bitness | Build | Attach + inspect | Exit/re-attach | Bindings/property origins |
-|---|---|---|---|---|---|
-| net462 | x86 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net462 | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net6 | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net8 | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net10 | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net11 | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| WPF fixture target | Bitness | Fixture build (CI) | Attach and inspect (manual) | Reattach to same PID | Restart target and reject stale handles | Inspect bindings and property origins |
+|---|---|---|---|---|---|---|
+| net462 (CLR4) | x86 | PASS | PASS · read both window titles | PASS | NOT RUN | NOT RUN |
+| net462 (CLR4) | x64 | PASS | PASS · opened both inspectors | PASS | NOT RUN | NOT RUN |
+| net6.0-windows | x64 | PASS · BasicTestHarness | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| net8.0-windows | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| net10.0-windows | x64 | PASS | PASS · read both window titles | PASS | NOT RUN | NOT RUN |
+| net11.0-windows | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+
+Windows CI built nine fixture configurations and checked the CLR4 executable architectures against their PE headers and CLR flags at `ac3ef8f`. The workflow includes the .NET 6 x64 BasicTestHarness. Its manifest records compilation separately from interactive checks. [Harness CI](https://github.com/finisitineris/Snoop-Next/actions/runs/45096083280/job/137436074864) · [Build matrix at the tested commit](https://github.com/finisitineris/Snoop-Next/blob/ac3ef8ffe52d917ca374694e6a9dae59384965c3/scripts/next/Build-SnoopHarnesses.ps1)
+
+The following Windows desktop runs account for the manual results.
+
+- **CLR4 x86.** The net462 fixture showed two 32-bit windows. After reattaching to the same process, the tester read each window's `Title`, saw both inspectors switch to Chinese, and confirmed the target cultures and resources stayed unchanged. [PR #27](https://github.com/finisitineris/Snoop-Next/pull/27)
+- **CLR4 x64.** The tester confirmed Chinese on reattach in two AppDomains using HelloWorld and, in a separate run, in two dispatchers using MultipleDispatchers. Both runs preserved the observed target cultures and resources. The reports identify CLR4 and the net462 build target. The exact .NET Framework installation on the tester's machine was not recorded. [PR #23](https://github.com/finisitineris/Snoop-Next/pull/23) · [PR #25](https://github.com/finisitineris/Snoop-Next/pull/25)
+- **.NET 10 x64.** The tester confirmed same-PID reattach, read each window's `Title`, and observed the expected language switch with target cultures and resources preserved. The separate fixture launch check recorded Desktop Runtime 10.0.15. [PR #26](https://github.com/finisitineris/Snoop-Next/pull/26)
+
+For [SN-004](https://github.com/finisitineris/Snoop-Next/issues/5), the outstanding desktop checks include closing the target process, launching a fresh instance and checking stale handles, and inspecting known bindings and their property value origins on each runtime. The .NET 6 and .NET 8 x64 lanes still need interactive results. Record .NET 11 results when a corresponding WPF fixture and runtime are available.
 
 The full matrix will later include .NET 7/9, available x86/ARM64 paths, DPI and launcher compatibility. Upstream documents a restriction on self-contained single-file WPF processes; do not assume support without a tested design.
 
@@ -37,16 +47,16 @@ Use the repository-owned CLR4 x64 `sn009-clr4-multi-dispatcher-harness` artifact
 3. Close both workbenches while leaving both fixture windows open. Save Simplified Chinese in Snoop and reattach to the same PID in multiple Dispatcher mode. Both workbenches should now show **文件** and still inspect the separate target windows.
 4. Select **Refresh target state** on both fixture windows. Compare cultures and Primary's shared application resource marker and counts with step 1. Confirm both targets remain responsive, then close the workbenches and fixture windows.
 
-Record the MSI and fixture artifact links, Windows and CLR versions, same PID and AppDomain, distinct thread IDs, both workbench languages, and the culture and resource comparison. Keep the manual result pending until the real attach and reattach sequence is complete.
+For each repeat run, record the MSI and fixture artifact links, Windows and CLR versions, same PID and AppDomain, distinct thread IDs, both workbench languages, and the culture and resource comparison.
 
 ## .NET 10 x64 target load and language reattach
 
 On a Windows x64 machine with the .NET 10 Desktop Runtime (x64), extract all files from the framework-dependent `sn009-net10-x64-multi-dispatcher-harness` artifact. Run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that both windows report `Runtime: 10.0.x (64-bit)`, share a PID and AppDomain ID, and have distinct STA thread IDs.
 
-Use the same attach and reattach sequence and target-state comparison as the CLR4 multi-Dispatcher case above. In each workbench, select the target root window and confirm that its `Title` property matches the corresponding fixture window. Record the actual runtime version, both workbench languages, and the before and after target state. Keep the .NET 10 attach and reattach results pending until those steps are run against this target.
+Use the same attach and reattach sequence and target-state comparison as the CLR4 multi-Dispatcher case above. In each workbench, select the target root window and confirm that its `Title` property matches the corresponding fixture window. Record the actual runtime version, both workbench languages, and the before and after target state.
 
 ## net462 x86 target load and language reattach
 
 Extract the `sn009-clr4-x86-multi-dispatcher-harness` artifact on the Windows test machine and run `./MultipleDispatchers.exe --multi-dispatcher`. Confirm that both windows report CLR 4 and `32-bit`, with one PID and AppDomain ID and distinct STA thread IDs. Record the installed .NET Framework version separately from the net462 build target.
 
-Repeat the CLR4 multi-Dispatcher attach and same-PID reattach sequence above with the x86 target. Check that each workbench reads the `Title` of its corresponding window, that both menus switch from **File** to **文件**, and that the target cultures and application resources stay unchanged. Keep the x86 attach and reattach results pending until those steps are run.
+Repeat the CLR4 multi-Dispatcher attach and same-PID reattach sequence above with the x86 target. Check that each workbench reads the `Title` of its corresponding window, that both menus switch from **File** to **文件**, and that the target cultures and application resources stay unchanged.

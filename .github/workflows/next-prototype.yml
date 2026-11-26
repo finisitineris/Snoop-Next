@@ -1,0 +1,58 @@
+name: next-prototype
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.github/workflows/next-prototype.yml'
+      - 'docs/next/prototype/**'
+      - 'docs/next/traceability/acceptance-to-wpf.csv'
+      - 'scripts/next/verify-offline-prototype.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-prototype:
+    name: Windows Edge offline prototype
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the WPF mapping against the v1.1 acceptance table
+        shell: pwsh
+        run: |
+          $source = Get-Content 'docs/next/prototype/Snoop_Next_Prototype_Acceptance_v1.1.md'
+          $rows = @(Import-Csv 'docs/next/traceability/acceptance-to-wpf.csv')
+          $expected = @($source | ForEach-Object {
+            if ($_ -match '^\|\s*([PTADMS]-\d{2})\s*\|.*\|\s*([^|]+?)\s*\|\s*$') {
+              [PSCustomObject]@{ id = $Matches[1]; module = $Matches[2] }
+            }
+          })
+          if ($expected.Count -ne 42 -or ($expected.id | Sort-Object -Unique).Count -ne 42 -or $rows.Count -ne $expected.Count) {
+            throw "Expected 42 unique v1.1 criteria. Source: $($expected.Count), mapping: $($rows.Count)."
+          }
+          for ($i = 0; $i -lt $rows.Count; $i++) {
+            $row = $rows[$i]
+            if ($row.id -cne $expected[$i].id -or $row.module -cne $expected[$i].module) {
+              throw "Mapping row $($i + 1) must match $($expected[$i].id) / $($expected[$i].module)."
+            }
+            if (!$row.test_case -or $row.status -notin @('covered', 'partial', 'planned', 'prototype_only') -or
+                ($row.status -in @('covered', 'partial') -and !$row.evidence)) {
+              throw "Missing test scenario, status or supporting evidence for $($row.id)."
+            }
+          }
+          Write-Host 'All 42 acceptance IDs and module names match.'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install the browser test driver
+        run: npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright-core@1.65.1
+      - name: Open the local prototype in Edge with networking disabled
+        run: node scripts/next/verify-offline-prototype.mjs
+      - uses: actions/upload-artifact@v7
+        with:
+          name: prototype-windows-edge
+          path: output/next-prototype-previews/*.png
+          if-no-files-found: error

@@ -76,8 +76,7 @@
 2. **视觉基准**：以高保真原型与已确认的混合草图为准，WPF 使用 Design Tokens；重大界面差异留设计变更记录。
 3. **国际化**：正式实现 RESX + 自定义轻量动态 WPF 绑定层。保留 `zh-CN`、`en-US`、Key、运行时切换能力。
 4. **框架兼容**：正式 Fork 目标 .NET Framework 4.6.2 ～ .NET 11；现代 C# 语言能力可使用，但不引入无法 polyfill 的运行时要求；`PolyfillLib` 作为编译/兼容依赖审查。
-5. **测试命令**：`node --test prototype/tests/*.test.cjs`；`node prototype/scripts/build.mjs`；`node --check prototype/src/js/model.js` 等。
-6. **浏览器端 E2E**：在具备本地 HTML 访问权限的 Windows Runner 中安装 Playwright 后，运行 `RUN_BROWSER_E2E=1 node --test prototype/tests/e2e.spec.cjs`（Windows 环境可设置 `CHROME_PATH` 指向 Edge/Chrome）。
+5. 初版原型源包的 Node 和浏览器测试结果见下方历史记录。本仓库保存发布版单文件 HTML，复跑命令见“仓库内的 Windows 离线复验”。
 
 ### 本次交付的验证边界（2026-11-20 更新）
 
@@ -86,6 +85,28 @@
 - 浏览器代码未访问网络，测试中没有启动 MCP HTTP 服务；该方法验证的是 **HTML/CSS/JS 的真实浏览器交互**，而非直接打开 `file://` 文件。
 - 受管图形浏览器仍限制直接 `file://` 访问，因此 **未在此受管浏览器中验证双击 HTML 打开的体验**。建议仍在用户的 Windows Edge/Chrome 中执行一次最终离线打开复验。
 - 为防止输入中重绘引发焦点/DOM 错误，输入值在模型中同步更新，搜索过滤在下一动画帧重新渲染；该问题由实际 Chromium 测试发现并修正。
+
+### 仓库内的 Windows 离线复验
+
+在装有 Microsoft Edge 和 Node.js 24 的 Windows 机器上，从仓库根目录运行以下命令。第一条命令安装测试驱动。第二条命令直接打开本地 HTML 文件，并在浏览器离线状态下执行。
+
+```powershell
+npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund playwright-core@1.65.1
+node scripts/next/verify-offline-prototype.mjs
+```
+
+测试覆盖初始进程列表、模拟权限错误和恢复、浅色与深色工作台、1280×720 下的三栏边界，以及 Ctrl+K 打开命令面板、在查询中间插入字符、Esc 返回原输入框。Windows Edge 工作流上传本次运行的 PNG，并校验 42 项验收 ID 和模块。截图默认写入 `output/next-prototype-previews/`。[WPF 验收映射表](../traceability/acceptance-to-wpf.csv)
+
+以下参考图取自同一离线测试在 Chromium 158 下的运行，保留原始像素尺寸与内容。
+
+| 参考状态 | 截图 |
+|---|---|
+| 浅色工作台，1440×900 | [目标、预览和属性](screenshots/workbench-light-1440x900.webp) |
+| 深色工作台，1280×720 | [最小视口下的三栏布局](screenshots/workbench-dark-1280x720.webp) |
+| 键盘操作，1280×720 | [命令面板查询及焦点](screenshots/command-keyboard-1280x720.webp) |
+| 模拟挂载失败，1440×900 | [权限错误对话框](screenshots/attach-error-1440x900.webp) |
+
+**D-06 键盘修正（2026-11-26）。** 查询框在输入后随页面重绘，旧版会把光标移到开头。修正后，首次打开命令面板仍自动聚焦，继续输入时保留光标与已选文本范围。可输入 `MP`，按左方向键再输入 `C`，确认查询为 `MCP` 且光标位于 `C` 后，按 Esc 回到打开面板前的输入框。按 LF 换行计算，修正后的 HTML SHA-256 为 `11126b66e92c335e31ed477ddde56df4e6a0a60b45543fc9efe893e073c59e89`，初版为 `8fccff3976ffed6d81cfa8364a7275ec9797f2f9c50d3f862656ae39452d3d7c`。
 
 ### v1.1 修订记录
 
