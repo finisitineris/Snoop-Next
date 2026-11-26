@@ -136,8 +136,12 @@ internal static class PropertyEditFeedbackSmoke
             Require(target.Width == 144 && width.IsValueChangedByUser, "A later rejection must preserve the successful edit.");
 
             var constrained = new ConstrainedWidth();
+            // The inspector classifies dependency properties owned by a Snoop namespace as uncommon.
+            inspector.ShowUncommonProperties = true;
             inspector.RootTarget = constrained;
-            Drain();
+            Await(() => list.Items.OfType<PropertyInformation>().Any(row => row.DependencyProperty == ConstrainedWidth.WidthLimitProperty)
+                        && list.Items.OfType<PropertyInformation>().Any(row => ReferenceEquals(row.Target, constrained) && row.Name == nameof(ConstrainedWidth.Width)),
+                "The property table must load both WidthLimit and Width for the constrained target.");
             var limit = Row(ConstrainedWidth.WidthLimitProperty);
             SelectTextEditor(list, limit);
             ExpectFeedback(limit, "PropertyGrid.ReadOnlyHint");
