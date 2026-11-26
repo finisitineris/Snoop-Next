@@ -144,6 +144,7 @@ internal static class WorkbenchPropertyPreviewSmoke
         {
             Invoke(undo);
         }
+
         ExpectHistory(false, false);
         application.Content = "已同步";
         Await(() => ReferenceEquals(binding, BindingOperations.GetBindingExpressionBase(button, ContentControl.ContentProperty))
@@ -161,6 +162,7 @@ internal static class WorkbenchPropertyPreviewSmoke
         {
             Invoke(undo);
         }
+
         ExpectHistory(false, false);
         Await(() => button.Width == 152 && widthEditor.Text == "152",
             "The target application's new local Width must survive an attempted undo of an earlier edit.");
