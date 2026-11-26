@@ -109,8 +109,7 @@ internal static class PropertyOriginFilterSmoke
             toggle.Toggle();
             ExpectRows("Turn off Edited only", fixtureRows);
 
-            var container = SelectRow(list, localRow);
-            var value = InspectorTableSmoke.Descendants(container).OfType<EditTextBox>().Single();
+            var value = SelectTextEditor(list, localRow);
             CommitText(value, "036");
             Require(target.Height == 36 && !localRow.IsValueChangedByUser, "An equivalent numeric edit must remain unmarked.");
             CommitText(value, "-1");
@@ -176,7 +175,7 @@ internal static class PropertyOriginFilterSmoke
         Console.WriteLine("PASS: property origin and edited-only controls filter real WPF rows, preserve bindings and isolate edits by target.");
     }
 
-    private static bool ViewportMatchesItems(ListView list)
+    internal static bool ViewportMatchesItems(ListView list)
     {
         // Check the rendered name cells: ListCollectionView can rebuild its internal
         // list without telling the virtualized ListView to replace its row containers.
@@ -208,7 +207,10 @@ internal static class PropertyOriginFilterSmoke
         return (ListViewItem)list.ItemContainerGenerator.ContainerFromItem(row);
     }
 
-    private static void CommitText(EditTextBox editor, string text)
+    internal static EditTextBox SelectTextEditor(ListView list, PropertyInformation row) =>
+        InspectorTableSmoke.Descendants(SelectRow(list, row)).OfType<EditTextBox>().Single();
+
+    internal static void CommitText(EditTextBox editor, string text)
     {
         editor.SetCurrentValue(TextBox.TextProperty, text);
         editor.RaiseEvent(new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(editor), Environment.TickCount, Key.Enter)

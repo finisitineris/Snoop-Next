@@ -330,6 +330,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.OnPropertyChanged(nameof(this.Filter));
     }
 
+    public bool IsTreeFilterEmpty { get; private set; }
+
+    internal bool IsTreeFilterApplied { get; private set; }
+
+    private bool isUpdatingTreeFilter;
     private string filter = string.Empty;
 
     #endregion
@@ -421,34 +426,40 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     #region Public Methods
 
-    public void ApplyReduceDepthFilter(TreeItem? newRoot)
+    public void ApplyReduceDepthFilter(TreeItem? newRoot) => this.ApplyReduceDepthFilter(newRoot, null);
+
+    internal void ApplyReduceDepthFilter(TreeItem? newRoot, TreeItem? displayedRoot)
     {
-        if (this.reducedDepthRoot == newRoot)
+        this.depthAdjustment?.Abort();
+        this.depthAdjustment = null;
+        if (newRoot is null)
         {
             return;
         }
 
-        // Check if we already have a scheduled reduce in progress
-        if (this.IsReduceInProgress == false)
+        this.depthAdjustment = this.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
         {
-            this.RunInDispatcherAsync(
-                () =>
+            this.depthAdjustment = null;
+            this.UpdateDisplayedTreeItems(() =>
+            {
+                if (displayedRoot is null)
                 {
                     this.TreeItems.Clear();
-
-                    if (this.reducedDepthRoot is not null)
+                    this.TreeItems.Add(newRoot);
+                }
+                else
+                {
+                    var index = this.TreeItems.IndexOf(displayedRoot);
+                    if (index >= 0)
                     {
-                        this.TreeItems.Add(this.reducedDepthRoot);
+                        this.TreeItems[index] = newRoot;
                     }
-
-                    this.reducedDepthRoot = null;
-                }, DispatcherPriority.Background);
-        }
-
-        this.reducedDepthRoot = newRoot;
+                }
+            });
+        }));
     }
 
-    public bool IsReduceInProgress => this.reducedDepthRoot is not null;
+    public bool IsReduceInProgress => this.depthAdjustment is not null;
 
     /// <summary>
     /// Loop through the properties in the current PropertyGrid and save away any properties
@@ -503,6 +514,8 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     {
         this.WorkbenchCommandPalette.IsOpen = false;
         this.isShuttingDown = true;
+        this.depthAdjustment?.Abort();
+        this.depthAdjustment = null;
         this.CurrentSelection = null;
 
         this.TreeService?.Dispose();
@@ -726,8 +739,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         // A preview pick can reveal an element hidden by the tree filter without rebuilding the inspected tree.
-        this.filterComboBox.SelectedIndex = -1;
-        this.SetFilter(string.Empty);
+        this.ClearTreeFilter();
         var selection = this.CurrentSelection;
         this.RunInDispatcherAsync(() =>
         {
@@ -817,8 +829,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
 
         // Rebuild only the displayed roots. Refresh would replace the inspected tree.
-        this.filterComboBox.SelectedIndex = -1;
-        this.SetFilter(string.Empty);
+        this.ClearTreeFilter();
         this.RunInDispatcherAsync(() =>
         {
             if (this.GetDiagnosticTreeItem(diagnostic) is { } current && this.IsTreeItemDisplayed(current))
@@ -872,6 +883,23 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         {
             this.PropertyInspector.FilterString = string.Empty;
         }
+        else if (this.filterComboBox.IsKeyboardFocusWithin && !this.filterComboBox.IsDropDownOpen)
+        {
+            this.ClearTreeFilter();
+        }
+    }
+
+    private void ClearTreeFilter_Click(object sender, RoutedEventArgs e)
+    {
+        this.ClearTreeFilter();
+        this.filterComboBox.Focus();
+    }
+
+    private void ClearTreeFilter()
+    {
+        this.filterComboBox.SelectedIndex = -1;
+        this.filterTimer.Stop();
+        this.SetFilter(string.Empty);
     }
 
     private void CopyPropertyChangesHandler(object sender, ExecutedRoutedEventArgs e)
@@ -1081,7 +1109,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private void HandleTreeSelectedItemChanged(object sender, EventArgs e)
     {
-        if (this.Tree.SelectedItem is TreeItem item)
+        if (!this.isUpdatingTreeFilter && this.Tree.SelectedItem is TreeItem item)
         {
             this.CurrentSelection = item;
         }
@@ -1096,53 +1124,87 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             return;
         }
 
-        this.TreeItems.Clear();
+        if (this.isShuttingDown)
+        {
+            return;
+        }
 
         if (this.filterComboBox.SelectedItem == this.ClearTreeFilterItem)
         {
-            this.SetFilter(string.Empty);
+            this.ClearTreeFilter();
+            return;
         }
-        else if (this.filterComboBox.SelectedItem == this.BindingErrorsFilterItem)
+
+        var bindingErrors = this.filterComboBox.SelectedItem == this.BindingErrorsFilterItem;
+        this.IsTreeFilterApplied = bindingErrors || this.filter.Length != 0;
+        // A queued depth adjustment belongs to the old set of displayed roots.
+        this.depthAdjustment?.Abort();
+        this.depthAdjustment = null;
+        this.UpdateDisplayedTreeItems(() =>
         {
-            this.FilterBindings(this.RootTreeItem!);
-        }
-        else if (this.filter.Length == 0)
+            this.TreeItems.Clear();
+            if (this.RootTreeItem is { } root)
+            {
+                if (this.IsTreeFilterApplied)
+                {
+                    var query = this.filter;
+                    this.AddMatchingRoots(root, bindingErrors ? item => item.HasBindingError : item => item.Filter(query));
+                }
+                else
+                {
+                    if (this.SystemResourcesTreeItem is { } resources)
+                    {
+                        this.TreeItems.Add(resources);
+                    }
+
+                    this.TreeItems.Add(root);
+                }
+            }
+        });
+
+        var empty = this.RootTreeItem is not null && this.IsTreeFilterApplied && this.TreeItems.Count == 0;
+        if (this.IsTreeFilterEmpty != empty)
         {
-            this.TreeItems.Add(this.SystemResourcesTreeItem!);
-            this.TreeItems.Add(this.RootTreeItem!);
-        }
-        else
-        {
-            this.FilterTree(this.RootTreeItem!, this.filter.ToLower());
+            this.IsTreeFilterEmpty = empty;
+            this.OnPropertyChanged(nameof(this.IsTreeFilterEmpty));
         }
     }
 
-    private void FilterTree(TreeItem node, string currentFilter)
+    private void UpdateDisplayedTreeItems(Action update)
     {
-        foreach (var child in node.Children)
+        // Replacing rows can deselect their WPF containers. Keep the inspected object and its highlight.
+        this.isUpdatingTreeFilter = true;
+        try
         {
-            if (child.Filter(currentFilter))
+            update();
+            if (this.CurrentSelection is { } selection)
             {
-                this.TreeItems.Add(child);
+                selection.IsSelected = true;
             }
-            else
-            {
-                this.FilterTree(child, currentFilter);
-            }
+        }
+        finally
+        {
+            this.isUpdatingTreeFilter = false;
         }
     }
 
-    private void FilterBindings(TreeItem node)
+    private void AddMatchingRoots(TreeItem root, Func<TreeItem, bool> matches)
     {
-        foreach (var child in node.Children)
+        var remaining = new Stack<TreeItem>();
+        remaining.Push(root);
+        while (remaining.Count > 0)
         {
-            if (child.HasBindingError)
+            var item = remaining.Pop();
+            if (matches(item))
             {
-                this.TreeItems.Add(child);
+                // Its descendants are already available by expanding this result.
+                this.TreeItems.Add(item);
+                continue;
             }
-            else
+
+            for (var i = item.Children.Count - 1; i >= 0; i--)
             {
-                this.FilterBindings(child);
+                remaining.Push(item.Children[i]);
             }
         }
     }
@@ -1194,7 +1256,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private readonly DelayedCall filterCall;
 
-    private TreeItem? reducedDepthRoot;
+    private DispatcherOperation? depthAdjustment;
 
     private IInputElement? currentFocus;
     private IInputElement? previousFocus;
