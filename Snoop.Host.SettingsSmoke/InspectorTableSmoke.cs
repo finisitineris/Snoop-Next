@@ -156,6 +156,7 @@ internal static class InspectorTableSmoke
 
         VerifyWidth(numeric, 48);
         LauncherAppearanceSmoke.CaptureIfRequested(grid, "property-value-editor-zh-CN");
+        grid.HorizontalAlignment = HorizontalAlignment.Left;
         grid.Width = 354;
         VerifyWidth(numeric, 48);
         var narrowBounds = numeric.TransformToAncestor(list).TransformBounds(new Rect(numeric.RenderSize));
@@ -166,6 +167,7 @@ internal static class InspectorTableSmoke
 
         LauncherAppearanceSmoke.CaptureIfRequested(grid, "property-value-editor-narrow-zh-CN");
         grid.Width = double.NaN;
+        grid.HorizontalAlignment = HorizontalAlignment.Stretch;
         foreach (var width in new[] { 104d, 320d })
         {
             column.Width = width;

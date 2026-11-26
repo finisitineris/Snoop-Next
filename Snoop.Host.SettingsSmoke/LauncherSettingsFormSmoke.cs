@@ -402,8 +402,8 @@ internal static class LauncherSettingsFormSmoke
             Require(SetKeyboardState(state), "Unable to set the smoke thread's modifier state.");
             var input = new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(element), Environment.TickCount, key)
             {
-                Source = element,
-                RoutedEvent = release ? Keyboard.PreviewKeyUpEvent : Keyboard.PreviewKeyDownEvent
+                RoutedEvent = release ? Keyboard.PreviewKeyUpEvent : Keyboard.PreviewKeyDownEvent,
+                Source = element
             };
             InputManager.Current.ProcessInput(input);
         }

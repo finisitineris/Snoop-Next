@@ -100,18 +100,26 @@ internal static class InspectorPropertyAndDebugSmoke
 
             var filter = new SnoopSingleFilter { FilterType = FilterType.RegularExpression, Text = "^trace:[0-9]+$" };
             model.InitializeFilters(new[] { filter });
-            // An empty dialog session closes without a save prompt. The template
-            // and listener each exercise a separate filter below.
-            var dialog = new SetFiltersWindow(new FiltersViewModel(Array.Empty<SnoopSingleFilter>()));
+            var dialogModel = new FiltersViewModel(new[]
+            {
+                new SnoopSingleFilter { IsInverse = true, FilterType = FilterType.RegularExpression, Text = "^X$" }
+            });
+            var dialog = new SetFiltersWindow(dialogModel);
             try
             {
                 var apply = (TextBlock)Find<Button>(dialog, "buttonSetFilter").Content;
                 var output = Find<TextBox>(listener, "textBoxDebugContent");
-                var filterRow = (Grid)Find<ListBox>(dialog, "listBoxFilters").ItemTemplate.LoadContent();
-                filterRow.DataContext = new SnoopSingleFilter { IsInverse = true, FilterType = FilterType.RegularExpression, Text = "^X$" };
+                dialog.Show();
+                DrainDispatcher();
+                var row = (ListBoxItem)Find<ListBox>(dialog, "listBoxFilters").ItemContainerGenerator.ContainerFromIndex(0);
+                var pattern = InspectorTableSmoke.Descendants(row).OfType<TextBox>().Single(editor => editor.Name == "textBlockFilter");
+                var filterRow = (Grid)pattern.Parent;
                 var inverse = (TextBlock)filterRow.Children[0];
                 var matchType = (ComboBox)filterRow.Children[1];
-                var pattern = (TextBox)filterRow.Children[2];
+                Require(pattern.ActualWidth >= 180 && pattern.ActualHeight >= 28
+                        && inverse.FontSize == pattern.FontSize && inverse.FontFamily.Equals(pattern.FontFamily),
+                    $"Debug filters need a full-width text input and a readable inverse label. Editor {pattern.RenderSize}.");
+                InspectorFlyoutSmoke.CaptureFramed((FrameworkElement)dialog.Content, "debug-filter-settings-zh-CN");
                 traceLevels.SelectedItem = errorLevel;
                 listener.Write("ignored");
                 listener.Write("Trace:42");
@@ -143,6 +151,7 @@ internal static class InspectorPropertyAndDebugSmoke
             }
             finally
             {
+                dialogModel.ResetDirtyFlag();
                 dialog.Close();
             }
         }

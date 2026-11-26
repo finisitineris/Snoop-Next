@@ -30,7 +30,7 @@ public partial class SettingsView
         this.ShowActivatedCheckBox.IsChecked = settings.ShowActivated;
         this.EnableDiagnosticsCheckBox.IsChecked = settings.EnableDiagnostics;
         this.StartAppChooserMinimizedCheckBox.IsChecked = settings.StartAppChooserMinimized;
-        this.SetPendingShortcut(settings.GlobalHotKey);
+        this.SetPendingShortcut(settings.GlobalHotKey ?? new KeyGestureEx(Key.None));
         this.ILSpyPathTextBox.Text = settings.ILSpyPath ?? string.Empty;
         this.SaveError.Visibility = Visibility.Collapsed;
     }

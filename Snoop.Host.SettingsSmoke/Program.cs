@@ -250,8 +250,9 @@ internal static class Program
 
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
-                    LauncherSettingsFormSmoke.Verify(file);
-                    HighlightSettingsFormSmoke.Verify();
+                    var surfaceFailures = new List<Exception>();
+                    CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));
+                    CheckSurface(HighlightSettingsFormSmoke.Verify);
                     Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
                     var inspector = new SnoopUI();
                     try
@@ -290,7 +291,6 @@ internal static class Program
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
-                        var surfaceFailures = new List<Exception>();
                         CheckSurface(() => WorkbenchLayoutSmoke.Verify(inspector, Path.GetDirectoryName(file)!));
                         WorkbenchPaneSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
                         WorkbenchLayoutPresetSmoke.Verify(inspector, Path.GetDirectoryName(file)!);
@@ -306,10 +306,10 @@ internal static class Program
                         WorkbenchDiagnosticLocationSmoke.Verify();
                         WorkbenchBindingDiagnosticsSmoke.Verify();
                         InspectorAuxiliaryViewSmoke.Verify();
-                        InspectorPropertyAndDebugSmoke.Verify();
+                        CheckSurface(InspectorPropertyAndDebugSmoke.Verify);
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
-                        InspectorFlyoutSmoke.Verify(inspector);
+                        CheckSurface(() => InspectorFlyoutSmoke.Verify(inspector));
                         CheckSurface(InspectorTableSmoke.Verify);
                         CheckSurface(PropertyOriginSmoke.Verify);
                         CheckSurface(PropertyOriginFilterSmoke.Verify);
@@ -318,19 +318,6 @@ internal static class Program
                         if (surfaceFailures.Count > 0)
                         {
                             throw new AggregateException("Inspector surface checks failed.", surfaceFailures);
-                        }
-
-                        void CheckSurface(Action check)
-                        {
-                            try
-                            {
-                                check();
-                            }
-                            catch (Exception exception)
-                            {
-                                Console.Error.WriteLine(exception);
-                                surfaceFailures.Add(exception);
-                            }
                         }
                     }
                     finally
@@ -341,6 +328,19 @@ internal static class Program
 
                     Thread.CurrentThread.CurrentUICulture = inspectorCulture;
                     Console.WriteLine("PASS: SnoopUI embedded EN/ZH resources, live bindings and target thread culture isolation");
+
+                    void CheckSurface(Action check)
+                    {
+                        try
+                        {
+                            check();
+                        }
+                        catch (Exception exception)
+                        {
+                            Console.Error.WriteLine(exception);
+                            surfaceFailures.Add(exception);
+                        }
+                    }
                 }
                 finally
                 {
