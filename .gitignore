@@ -4,6 +4,7 @@ Intermediate/
 bin/
 obj/
 output/
+/node_modules/
 temp/
 artifacts/
 Debug/

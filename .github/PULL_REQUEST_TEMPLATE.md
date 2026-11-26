@@ -2,6 +2,7 @@
 
 - Related issue: <!-- SN-xxx / #... -->
 - Approved HTML prototype acceptance IDs (if UI/MCP): <!-- e.g. A-03, M-09 -->
+- For a change to an approved interaction, describe the new expected behavior and update the corresponding acceptance row.
 - Changes to original upstream XAML, injector or launcher? Explain conflict surface:
 - Design screenshots Light/Dark, or N/A:
 

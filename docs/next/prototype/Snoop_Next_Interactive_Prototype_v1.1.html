@@ -383,7 +383,8 @@ function start(root){
         el?.focus?.({preventScroll:true});
         if(el&&target.kind==='field'&&typeof el.setSelectionRange==='function'&&typeof target.start==='number')try{el.setSelectionRange(target.start,target.end);}catch(_err){}
       };
-      if(state.ui.commandOpen)root.querySelector?.('[data-field="commandQuery"]')?.focus({preventScroll:true});
+      if(state.ui.commandOpen&&focus?.kind==='field'&&focus.field==='commandQuery')restore(focus);
+      else if(state.ui.commandOpen)root.querySelector?.('[data-field="commandQuery"]')?.focus({preventScroll:true});
       else if(state.ui.modal)root.querySelector?.('[role="dialog"] button')?.focus({preventScroll:true});
       else if(previousModal)restore(lastWorkbenchFocus);
       else restore(focus);
