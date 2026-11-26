@@ -651,6 +651,38 @@ public partial class PropertyInspector : INotifyPropertyChanged
         }
     }
 
+    public PropertyOriginFilter OriginFilter
+    {
+        get => this.propertyFilter.OriginFilter;
+        set
+        {
+            if (this.propertyFilter.OriginFilter == value)
+            {
+                return;
+            }
+
+            this.propertyFilter.OriginFilter = value;
+            this.inspector.Filter = this.propertyFilter;
+            this.OnPropertyChanged(nameof(this.OriginFilter));
+        }
+    }
+
+    public bool EditedOnly
+    {
+        get => this.propertyFilter.EditedOnly;
+        set
+        {
+            if (this.propertyFilter.EditedOnly == value)
+            {
+                return;
+            }
+
+            this.propertyFilter.EditedOnly = value;
+            this.inspector.Filter = this.propertyFilter;
+            this.OnPropertyChanged(nameof(this.EditedOnly));
+        }
+    }
+
     /// <summary>
     /// Looking for "browse back" mouse button.
     /// Pop properties context when clicked.

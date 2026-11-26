@@ -104,6 +104,12 @@
   <data name="zh-CN.Tree.Logical" xml:space="preserve"><value>逻辑</value></data>
   <data name="en-US.Tree.Automation" xml:space="preserve"><value>Automation</value></data>
   <data name="zh-CN.Tree.Automation" xml:space="preserve"><value>自动化</value></data>
+  <data name="en-US.Tree.FilterNoMatches" xml:space="preserve"><value>No elements match this filter.</value></data>
+  <data name="zh-CN.Tree.FilterNoMatches" xml:space="preserve"><value>没有匹配此筛选条件的元素。</value></data>
+  <data name="en-US.Tree.FilterNoBindingErrors" xml:space="preserve"><value>No elements in this tree have binding errors.</value></data>
+  <data name="zh-CN.Tree.FilterNoBindingErrors" xml:space="preserve"><value>当前树中的元素均无绑定错误。</value></data>
+  <data name="en-US.Tree.ClearFilter" xml:space="preserve"><value>Clear filter</value></data>
+  <data name="zh-CN.Tree.ClearFilter" xml:space="preserve"><value>清除筛选</value></data>
   <data name="en-US.Density.Label" xml:space="preserve"><value>Density</value></data>
   <data name="zh-CN.Density.Label" xml:space="preserve"><value>界面密度</value></data>
   <data name="en-US.Density.Comfortable" xml:space="preserve"><value>Comfortable</value></data>
@@ -344,8 +350,22 @@
   <data name="zh-CN.PropertyInspector.ShowUncommonTip" xml:space="preserve"><value>显示 WPF 应用程序中不常用的属性。</value></data>
   <data name="en-US.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>Filter properties</value></data>
   <data name="zh-CN.PropertyInspector.FilterPlaceholder" xml:space="preserve"><value>筛选属性</value></data>
-  <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name or type name. Press Esc to clear.</value></data>
-  <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称或属性类型名称筛选。按 Esc 清空。</value></data>
+  <data name="en-US.PropertyInspector.FilterTip" xml:space="preserve"><value>Filter by property name, type, or value. Press Esc to clear.</value></data>
+  <data name="zh-CN.PropertyInspector.FilterTip" xml:space="preserve"><value>按属性名称、类型或值筛选。按 Esc 清空。</value></data>
+  <data name="en-US.PropertyInspector.FilterByOrigin" xml:space="preserve"><value>Filter by value source</value></data>
+  <data name="zh-CN.PropertyInspector.FilterByOrigin" xml:space="preserve"><value>按值来源筛选</value></data>
+  <data name="en-US.PropertyInspector.AllOrigins" xml:space="preserve"><value>All sources</value></data>
+  <data name="zh-CN.PropertyInspector.AllOrigins" xml:space="preserve"><value>全部来源</value></data>
+  <data name="en-US.PropertyInspector.BindingOrigin" xml:space="preserve"><value>Binding</value></data>
+  <data name="zh-CN.PropertyInspector.BindingOrigin" xml:space="preserve"><value>绑定</value></data>
+  <data name="en-US.PropertyInspector.LocalOrigin" xml:space="preserve"><value>Local</value></data>
+  <data name="zh-CN.PropertyInspector.LocalOrigin" xml:space="preserve"><value>本地值</value></data>
+  <data name="en-US.PropertyInspector.StyleOrigin" xml:space="preserve"><value>Style</value></data>
+  <data name="zh-CN.PropertyInspector.StyleOrigin" xml:space="preserve"><value>样式</value></data>
+  <data name="en-US.PropertyInspector.EditedOnly" xml:space="preserve"><value>Edited only</value></data>
+  <data name="zh-CN.PropertyInspector.EditedOnly" xml:space="preserve"><value>仅已编辑</value></data>
+  <data name="en-US.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>Show only properties edited in Snoop.</value></data>
+  <data name="zh-CN.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>仅显示在 Snoop 中编辑过的属性。</value></data>
   <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>
   <data name="zh-CN.PropertyInspector.NullTarget" xml:space="preserve"><value>目标对象为 NULL</value></data>
   <data name="en-US.PropertyInspector.FilterDefault" xml:space="preserve"><value>(Default)</value></data>
@@ -386,6 +406,36 @@
   <data name="zh-CN.PropertyGrid.ColumnValueTip" xml:space="preserve"><value>属性的值</value></data>
   <data name="en-US.PropertyGrid.ColumnValueSource" xml:space="preserve"><value>Value Source</value></data>
   <data name="zh-CN.PropertyGrid.ColumnValueSource" xml:space="preserve"><value>值来源</value></data>
+  <data name="en-US.PropertyGrid.ShowOrigin" xml:space="preserve"><value>Show value source details</value></data>
+  <data name="zh-CN.PropertyGrid.ShowOrigin" xml:space="preserve"><value>查看属性值来源</value></data>
+  <data name="en-US.PropertyOrigin.BaseSource" xml:space="preserve"><value>Base value source: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.BaseSource" xml:space="preserve"><value>基础值来源：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Modifiers" xml:space="preserve"><value>IsExpression: {0}, IsAnimated: {1}, IsCoerced: {2}</value></data>
+  <data name="zh-CN.PropertyOrigin.Modifiers" xml:space="preserve"><value>表达式 (IsExpression)：{0}，动画 (IsAnimated)：{1}，强制值 (IsCoerced)：{2}</value></data>
+  <data name="en-US.PropertyOrigin.LocalValue" xml:space="preserve"><value>Local value: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.LocalValue" xml:space="preserve"><value>本地值：{0}</value></data>
+  <data name="en-US.PropertyOrigin.EffectiveValue" xml:space="preserve"><value>Effective value: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.EffectiveValue" xml:space="preserve"><value>生效值：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Binding" xml:space="preserve"><value>Binding type: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.Binding" xml:space="preserve"><value>绑定类型：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Path" xml:space="preserve"><value>Path: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.Path" xml:space="preserve"><value>路径：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Source" xml:space="preserve"><value>Source: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.Source" xml:space="preserve"><value>数据源：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Status" xml:space="preserve"><value>Status: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.Status" xml:space="preserve"><value>状态：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Child" xml:space="preserve"><value>Binding {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.Child" xml:space="preserve"><value>子绑定 {0}</value></data>
+  <data name="en-US.PropertyOrigin.ActiveChild" xml:space="preserve"><value>Binding {0} (active)</value></data>
+  <data name="zh-CN.PropertyOrigin.ActiveChild" xml:space="preserve"><value>子绑定 {0}（当前生效）</value></data>
+  <data name="en-US.PropertyOrigin.RemainingChildren" xml:space="preserve"><value>Additional bindings: {0}</value></data>
+  <data name="zh-CN.PropertyOrigin.RemainingChildren" xml:space="preserve"><value>其他子绑定：{0}</value></data>
+  <data name="en-US.PropertyOrigin.Unavailable" xml:space="preserve"><value>Unavailable</value></data>
+  <data name="zh-CN.PropertyOrigin.Unavailable" xml:space="preserve"><value>无法获取</value></data>
+  <data name="en-US.PropertyOrigin.Clr" xml:space="preserve"><value>CLR property</value></data>
+  <data name="zh-CN.PropertyOrigin.Clr" xml:space="preserve"><value>CLR 属性</value></data>
+  <data name="en-US.PropertyOrigin.NoDependencyProperty" xml:space="preserve"><value>No dependency property information is available for this item.</value></data>
+  <data name="zh-CN.PropertyOrigin.NoDependencyProperty" xml:space="preserve"><value>此项没有可显示的依赖属性来源信息。</value></data>
   <data name="en-US.PropertyGrid.ColumnValueSourceTip" xml:space="preserve"><value>Shows where the property gets its value.</value></data>
   <data name="zh-CN.PropertyGrid.ColumnValueSourceTip" xml:space="preserve"><value>显示属性值的来源。</value></data>
   <data name="en-US.PropertyGrid.ColumnBindingErrors" xml:space="preserve"><value>Binding Errors</value></data>

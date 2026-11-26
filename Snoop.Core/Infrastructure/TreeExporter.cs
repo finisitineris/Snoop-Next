@@ -140,6 +140,7 @@ public class XMLTreeExporter
             if (filter is not null
                 && filter.ShouldShow(propertyInformation) == false)
             {
+                propertyInformation.Teardown();
                 continue;
             }
 

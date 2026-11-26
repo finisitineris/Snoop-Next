@@ -12,6 +12,8 @@ public class StringValueEditor : StandardValueEditor
     public static readonly DependencyProperty StringValueForDetailsEditorProperty = DependencyProperty.Register(
         nameof(StringValueForDetailsEditor), typeof(string), typeof(StringValueEditor), new PropertyMetadata(default(string)));
 
+    private string? originalDetailsValue;
+
     public StringValueEditor()
     {
         this.SupportsDetailsEditor = true;
@@ -27,13 +29,17 @@ public class StringValueEditor : StandardValueEditor
     {
         base.PrepareForDetailsEditor();
 
-        this.StringValueForDetailsEditor = this.StringValue;
+        this.originalDetailsValue = this.StringValue;
+        this.StringValueForDetailsEditor = this.originalDetailsValue;
     }
 
     public override void AcceptValueFromDetailsEditor()
     {
         base.AcceptValueFromDetailsEditor();
 
-        this.StringValue = this.StringValueForDetailsEditor;
+        if (this.IsEditable && this.StringValueForDetailsEditor != this.originalDetailsValue)
+        {
+            this.StringValue = this.StringValueForDetailsEditor;
+        }
     }
 }

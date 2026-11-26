@@ -36,54 +36,58 @@ public static class StringValueConverter
 
     public static object? ConvertFromString(Type? targetType, string? value)
     {
+        TryConvertFromString(targetType, value, out var converted);
+        return converted;
+    }
+
+    internal static bool TryConvertFromString(Type? targetType, string? value, out object? converted)
+    {
+        converted = null;
         if (targetType is null)
         {
-            return null;
+            return false;
         }
 
         if (targetType.IsAssignableFrom(typeof(string)))
         {
-            return value;
+            converted = value;
+            return true;
         }
 
         var converter = TypeDescriptor.GetConverter(targetType);
-
-        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
         if (converter is null)
         {
-            return null;
+            return false;
         }
 
-        if (converter.CanConvertFrom(typeof(string)) == false)
+        if (!converter.CanConvertFrom(typeof(string)))
         {
-            return value;
+            // Preserve the raw-text fallback used by ConvertFromString.
+            converted = value;
+            return false;
         }
-
-        // ReSharper restore HeuristicUnreachableCode
-        // ReSharper restore ConditionIsAlwaysTrueOrFalse
 
         try
         {
             using (new InvariantThreadCultureScope())
             {
-                return GetValueFromConverter(value, converter, true);
+                converted = GetValueFromConverter(value, converter, true);
+                return true;
             }
         }
         catch
         {
-            // If we land here the problem might have been related to the threads culture.
-            // If the user entered data that was culture specific, we try setting it again using the original culture and not an invariant.
+            // Retry with the user's culture, as with other property edits.
             try
             {
-                return GetValueFromConverter(value, converter, false);
+                converted = GetValueFromConverter(value, converter, false);
+                return true;
             }
             catch
             {
-                // todo: How should we notify the user about failures?
+                return false;
             }
         }
-
-        return null;
     }
 
     public static string? ConvertToString(object? value)

@@ -7,6 +7,7 @@ namespace Snoop.Controls.ValueEditors;
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Input;
 using Snoop.Controls.ValueEditors.Details;
 using Snoop.Infrastructure;
@@ -142,9 +143,32 @@ public abstract class ValueEditor : ContentControl
 
     public virtual void AcceptValueFromDetailsEditor()
     {
-        if (this.PropertyInfo is not null)
+    }
+
+    internal static void CommitUserValue(PropertyInformation? property, object? value)
+    {
+        if (property is not { CanEdit: true, Property: not null }
+            || BindingOperations.GetBindingExpressionBase(property, PropertyInformation.ValueProperty) is not { } binding)
         {
-            this.PropertyInfo.IsValueChangedByUser = true;
+            return;
+        }
+
+        var previous = property.Value;
+        if (Equals(previous, value))
+        {
+            return;
+        }
+
+        property.SetCurrentValue(PropertyInformation.ValueProperty, value);
+        // A target setter can reject, coerce or normalize the proposed value.
+        // Read it back through the same binding that the property grid displays.
+        if (binding.Status != BindingStatus.Detached)
+        {
+            binding.UpdateTarget();
+            if (binding.Status == BindingStatus.Active && !Equals(previous, property.Value))
+            {
+                property.IsValueChangedByUser = true;
+            }
         }
     }
 }
