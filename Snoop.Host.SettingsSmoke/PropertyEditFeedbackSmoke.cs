@@ -27,6 +27,7 @@ internal static class PropertyEditFeedbackSmoke
             new Binding(nameof(FrameworkElement.Width)) { Source = source, Mode = BindingMode.OneWay });
         var inspector = new PropertyInspector { Width = 354, FilterString = "Width", ShowDefaults = true };
         var panel = new DockPanel();
+        panel.SetResourceReference(Panel.BackgroundProperty, "SnoopNext.Brush.Panel");
         DockPanel.SetDock(target, Dock.Top);
         panel.Children.Add(target);
         panel.Children.Add(inspector);
@@ -58,9 +59,10 @@ internal static class PropertyEditFeedbackSmoke
                 Require(feedback.IsVisible && !string.IsNullOrWhiteSpace(message) && !message.StartsWith("[Missing:", StringComparison.Ordinal)
                         && feedback.Text == message && rowPeer.GetHelpText() == message,
                     "The selected row and visible feedback must explain " + resource + " in " + localization.LanguageTag);
-                var bounds = feedback.TransformToAncestor(grid).TransformBounds(new Rect(feedback.RenderSize));
+                panel.UpdateLayout();
+                var bounds = feedback.TransformToAncestor(panel).TransformBounds(new Rect(feedback.RenderSize));
                 Require(bounds.Width > 0 && bounds.Height > 0 && bounds.Left >= -1 && bounds.Top >= -1
-                        && bounds.Right <= grid.ActualWidth + 1 && bounds.Bottom <= grid.ActualHeight + 1,
+                        && bounds.Right <= panel.ActualWidth + 1 && bounds.Bottom <= panel.ActualHeight + 1,
                     "The full feedback text must fit in the default-width Properties pane.");
             }
 
@@ -69,7 +71,7 @@ internal static class PropertyEditFeedbackSmoke
             ExpectFeedback(width, "ValueEditor.RejectedValue");
             Require(editor.Text == "-1" && target.Width == 120 && Equals(width.Value, 120d) && !width.IsValueChangedByUser,
                 "A rejected negative Width must preserve the value and leave edit history empty.");
-            InspectorFlyoutSmoke.Capture(inspector, "property-invalid-width-en-US");
+            LauncherAppearanceSmoke.CaptureIfRequested(panel, "property-invalid-width-en-US");
             var englishRejection = feedback.Text;
             localization.SetLanguage("zh-CN");
             ExpectFeedback(width, "ValueEditor.RejectedValue");
@@ -114,7 +116,7 @@ internal static class PropertyEditFeedbackSmoke
 
             Require(target.ActualWidth == layoutWidth && target.Width == 120 && !actualWidth.IsValueChangedByUser,
                 "An attempted read-only edit must preserve the target layout and edit history.");
-            InspectorFlyoutSmoke.Capture(inspector, "property-readonly-zh-CN");
+            LauncherAppearanceSmoke.CaptureIfRequested(panel, "property-readonly-zh-CN");
             var chineseExplanation = feedback.Text;
             localization.SetLanguage("en-US");
             ExpectFeedback(actualWidth, "PropertyGrid.ReadOnlyHint");
