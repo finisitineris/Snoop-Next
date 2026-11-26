@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
@@ -86,6 +87,9 @@ internal static class InspectorFilterSmoke
         var message = (TextBlock)inspector.FindName("TreeFilterEmptyText");
         var clear = (Button)inspector.FindName("ClearEmptyTreeFilterButton");
         var properties = (PropertyInspector)inspector.FindName("PropertyInspector");
+        var treePeer = UIElementAutomationPeer.CreatePeerForElement(tree);
+        var filterPeer = UIElementAutomationPeer.CreatePeerForElement(filter);
+        var filterValue = (IValueProvider)filterPeer.GetPattern(PatternInterface.Value);
         var localization = InspectorLocalization.Default;
         var originalLanguage = localization.LanguageTag;
         var originalCulture = Thread.CurrentThread.CurrentCulture;
@@ -94,7 +98,8 @@ internal static class InspectorFilterSmoke
             // Both the tree and its query must use ordinal matching even inside a Turkish inspectee.
             Thread.CurrentThread.CurrentCulture = CultureInfo.GetCultureInfo("tr-TR");
             var scope = new Grid { Name = "SearchScope" };
-            var nested = new Border { Name = "NestedContent" };
+            var nested = new Border();
+            AutomationProperties.SetAutomationId(nested, "NestedContent");
             var firstGroup = new Border { Name = "ResultGroupA", Child = nested, Height = 48 };
             var input = new TextBlock { Name = "NameInputResultGroupB", Text = "Selected field", Height = 36 };
             scope.Children.Add(firstGroup);
@@ -107,7 +112,22 @@ internal static class InspectorFilterSmoke
             root.IsExpanded = true;
             WaitFor(() => LeafRow() is not null, "realizing the initial tree row");
             Require(!empty.IsVisible, "An unfiltered tree must not show a search message.");
-            LeafRow()!.IsSelected = true;
+            var rootPeer = FindTreeItem(treePeer, scope.Name);
+            var groupPeer = FindTreeItem(rootPeer, firstGroup.Name);
+            var expand = (IExpandCollapseProvider)groupPeer.GetPattern(PatternInterface.ExpandCollapse);
+            var wasCollapsed = expand.ExpandCollapseState == ExpandCollapseState.Collapsed;
+            expand.Expand();
+            inspector.UpdateLayout();
+            Require(FindTreeItem(groupPeer, "NestedContent").GetName() == root.FindNode(nested)?.ToString(),
+                "A node identified only by its target AutomationId must expose its rendered caption.");
+            if (wasCollapsed)
+            {
+                expand.Collapse();
+            }
+
+            var leafPeer = FindTreeItem(rootPeer, input.Name);
+            Require(leafPeer.GetName() == leaf.ToString(), "The named tree row must expose its rendered caption.");
+            ((ISelectionItemProvider)leafPeer.GetPattern(PatternInterface.SelectionItem)).Select();
             WaitFor(() => ReferenceEquals(inspector.CurrentSelection, leaf), "selecting the leaf in its tree row");
 
             Search("textBLOCK", () => Only(leaf));
@@ -140,6 +160,17 @@ internal static class InspectorFilterSmoke
             {
                 localization.SetLanguage(language);
                 ThemeManager.Current.ApplyTheme(language == "en-US" ? ThemeMode.Light : ThemeMode.Dark, inspector);
+                Require(treePeer.GetAutomationControlType() == AutomationControlType.Tree
+                        && treePeer.GetAutomationId() == "Tree" && treePeer.GetName() == localization["Workbench.ShowTree"]
+                        && treePeer.GetPattern(PatternInterface.Selection) is ISelectionProvider,
+                    "The element tree must expose its stable ID, localized name and selection in " + language);
+                Require(filterPeer.GetAutomationControlType() == AutomationControlType.ComboBox
+                        && filterPeer.GetAutomationId() == "filterComboBox" && filterPeer.GetName() == localization["Tree.FilterName"]
+                        && filterPeer.GetHelpText() == localization["Tooltip.FilterByNameOrType"] && !filterValue.IsReadOnly,
+                    "Tree search must expose its stable ID, localized name and help, and writable value in " + language);
+                var editPeer = filterPeer.GetChildren().Single(peer => peer.GetAutomationControlType() == AutomationControlType.Edit);
+                Require(editPeer.GetName() == filterPeer.GetName() && editPeer.GetHelpText() == filterPeer.GetHelpText(),
+                    "The tree search edit field must retain its accessible name and instructions when it receives focus in " + language);
                 Search("NoSuchTreeElement", () => empty.IsVisible && tree.Items.Count == 0);
                 Require(message.Text == localization["Tree.FilterNoMatches"] && clear.IsVisible && clear.IsEnabled
                         && Equals(clear.Content, localization["Tree.ClearFilter"]),
@@ -159,6 +190,7 @@ internal static class InspectorFilterSmoke
             }
 
             Console.WriteLine("PASS: tree search matches names, types and the scoped root, and clearing either empty state restores the selected WPF row in EN/ZH.");
+            Console.WriteLine("PASS: native tree automation peers expose EN/ZH names and support search, row expansion and selection.");
 
             var grid = (PropertyGrid2)properties.FindName("PropertyGrid");
             var list = (ListView)grid.FindName("ListView");
@@ -173,7 +205,9 @@ internal static class InspectorFilterSmoke
             ((IToggleProvider)UIElementAutomationPeer.CreatePeerForElement(edited).GetPattern(PatternInterface.Toggle)).Toggle();
             WaitFor(ShowsEditedHeight, "showing only the committed Height on the selected TextBlock");
 
-            Search("NameInputResultGroupB", () => Only(leaf) && ShowsEditedHeight());
+            Search("NameInputResultGroupB", () => Only(leaf) && ShowsEditedHeight()
+                && tree.ItemContainerGenerator.ContainerFromItem(leaf) is TreeViewItem { IsVisible: true });
+            WorkbenchAutomationClientSmoke.VerifyEditedHeight(inspector);
             Search("NoSuchEditedElement", () => empty.IsVisible && tree.Items.Count == 0 && ShowsEditedHeight());
             LauncherAppearanceSmoke.CaptureIfRequested((FrameworkElement)inspector.FindName("WorkbenchChrome"), "workbench-tree-and-edited-property-zh-CN");
             editor.Focus();
@@ -212,7 +246,7 @@ internal static class InspectorFilterSmoke
 
             void Search(string query, Func<bool> result)
             {
-                editor.SetCurrentValue(TextBox.TextProperty, query);
+                filterValue.SetValue(query);
                 WaitFor(() => inspector.Filter == query && result(), "applying query '" + query + "'");
             }
 
@@ -250,6 +284,13 @@ internal static class InspectorFilterSmoke
 
             throw new InvalidOperationException($"Timed out {operation}. Filter '{inspector.Filter}', {tree.Items.Count} roots, selected row '{tree.SelectedItem}', message '{message.Text}'.");
         }
+    }
+
+    private static AutomationPeer FindTreeItem(AutomationPeer parent, string automationId)
+    {
+        return parent.GetChildren()?.SingleOrDefault(peer => peer.GetAutomationControlType() == AutomationControlType.TreeItem
+                && peer.GetAutomationId() == automationId)
+            ?? throw new InvalidOperationException($"Tree row '{automationId}' was not exposed under '{parent.GetName()}'.");
     }
 
     private static void SetRoot(SnoopUI inspector, string propertyName, TreeItem root)

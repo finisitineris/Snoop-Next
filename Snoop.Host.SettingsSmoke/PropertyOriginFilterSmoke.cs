@@ -1,6 +1,7 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
@@ -84,16 +85,18 @@ internal static class PropertyOriginFilterSmoke
             ExpectRows("Restoring the literal while Binding is selected", bindingRow);
             Await(() => list.Items.Count == 1 && ReferenceEquals(list.Items[0], bindingRow) && ViewportMatchesItems(list),
                 "The English Binding screenshot must display a single realized MaxWidth row.");
+            VerifyPropertyAutomation(list, search, bindingRow);
             InspectorFlyoutSmoke.Capture(inspector, "property-filters-binding-en-US");
             SelectOrigin(PropertyOriginFilter.Style);
             ExpectRows("Style", styleRow);
             SelectOrigin(PropertyOriginFilter.Local);
             ExpectRows("Local", localRow, resourceRow);
-            search.SetCurrentValue(TextBox.TextProperty, "Width");
+            var searchProvider = (IValueProvider)UIElementAutomationPeer.CreatePeerForElement(search).GetPattern(PatternInterface.Value);
+            searchProvider.SetValue("Width");
             ExpectRows("Local with Width search", resourceRow);
             SelectOrigin(PropertyOriginFilter.All);
             ExpectRows("All with Width search", bindingRow, styleRow, resourceRow);
-            search.SetCurrentValue(TextBox.TextProperty, string.Empty);
+            searchProvider.SetValue(string.Empty);
             ExpectRows("Clear search and origin", fixtureRows);
 
             // Realize the enum editor before changing its target, so the source-to-editor binding runs.
@@ -133,6 +136,7 @@ internal static class PropertyOriginFilterSmoke
             Require(Equals(origins.SelectedValue, PropertyOriginFilter.Local) && edited.IsChecked == true && OnlyHeight()
                     && !Equals(((ComboBoxItem)origins.SelectedItem).Content, englishLocal) && !Equals(edited.Content, englishEdited),
                 "Switching languages must translate both controls and preserve the active filters and edited result.");
+            VerifyPropertyAutomation(list, search, localRow);
             InspectorFlyoutSmoke.Capture(inspector, "property-filters-edited-zh-CN");
             VerifyEditedExport(inspector.PropertyFilter, target);
 
@@ -173,6 +177,48 @@ internal static class PropertyOriginFilterSmoke
         }
 
         Console.WriteLine("PASS: property origin and edited-only controls filter real WPF rows, preserve bindings and isolate edits by target.");
+    }
+
+    private static void VerifyPropertyAutomation(ListView list, TextBox filter, PropertyInformation expected)
+    {
+        var filterPeer = UIElementAutomationPeer.CreatePeerForElement(filter);
+        Require(filterPeer.GetAutomationControlType() == AutomationControlType.Edit && filterPeer.GetAutomationId() == "PropertiesFilter"
+                && filterPeer.GetName() == InspectorLocalization.Default["PropertyInspector.FilterPlaceholder"]
+                && filterPeer.GetPattern(PatternInterface.Value) is IValueProvider { IsReadOnly: false },
+            "The property search must expose its localized name, stable ID and editable value.");
+
+        var table = UIElementAutomationPeer.CreatePeerForElement(list);
+        Require(table.GetAutomationControlType() == AutomationControlType.DataGrid && table.GetAutomationId() == "ListView"
+                && table.GetName() == InspectorLocalization.Default["Tab.Properties"]
+                && table.GetPattern(PatternInterface.Grid) is IGridProvider { RowCount: 1 }
+                && table.GetPattern(PatternInterface.Selection) is ISelectionProvider,
+            "The filtered property table must be identifiable and expose its native grid and selection patterns.");
+        var row = table.GetChildren().SingleOrDefault(peer => peer.GetAutomationControlType() == AutomationControlType.DataItem
+                                                             && peer.GetAutomationId() == expected.Name);
+        if (row is null || row.GetName() != expected.DisplayName || row.GetPattern(PatternInterface.SelectionItem) is not ISelectionItemProvider selection)
+        {
+            throw new InvalidOperationException("The property table must expose a selectable, named row for " + expected.Name);
+        }
+
+        selection.Select();
+        Drain();
+        var valueCell = row.GetChildren().Single(cell => cell.GetPattern(PatternInterface.GridItem) is IGridItemProvider { Column: 2 });
+        Require(selection.IsSelected && ReferenceEquals(list.SelectedItem, expected)
+                && DescendantPeers(valueCell).Any(peer => peer.GetAutomationControlType() == AutomationControlType.Edit
+                    && peer.GetPattern(PatternInterface.Value) is IValueProvider value && value.Value == expected.StringValue),
+            "Automation must be able to select the property and read its current numeric value: " + expected.Name);
+    }
+
+    private static IEnumerable<AutomationPeer> DescendantPeers(AutomationPeer parent)
+    {
+        foreach (var child in parent.GetChildren() ?? Enumerable.Empty<AutomationPeer>())
+        {
+            yield return child;
+            foreach (var peer in DescendantPeers(child))
+            {
+                yield return peer;
+            }
+        }
     }
 
     internal static bool ViewportMatchesItems(ListView list)

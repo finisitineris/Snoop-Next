@@ -302,6 +302,8 @@
                                           ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
                                           ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}" />
                         <TextBox x:Name="PART_EditableTextBox" Margin="1" Padding="{TemplateBinding Padding}" Visibility="Collapsed"
+                                 AutomationProperties.Name="{TemplateBinding AutomationProperties.Name}"
+                                 AutomationProperties.HelpText="{TemplateBinding AutomationProperties.HelpText}"
                                  Background="Transparent" BorderThickness="0" Foreground="{TemplateBinding Foreground}"
                                  FocusVisualStyle="{x:Null}" IsReadOnly="{TemplateBinding IsReadOnly}"
                                  VerticalContentAlignment="Center" HorizontalScrollBarVisibility="Hidden">

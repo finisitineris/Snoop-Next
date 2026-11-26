@@ -515,7 +515,8 @@
                 <ComboBox x:Name="filterComboBox"
                           MinHeight="28"
                           Margin="4"
-                          AutomationProperties.Name="{localization:InspectorLoc Tooltip.FilterByNameOrType}"
+                          AutomationProperties.Name="{localization:InspectorLoc Tree.FilterName}"
+                          AutomationProperties.HelpText="{localization:InspectorLoc Tooltip.FilterByNameOrType}"
                           infrastructure:ComboBoxSettings.RegisterAsSnoopPart="True"
                           IsEditable="True"
                           Text="{Binding Filter, UpdateSourceTrigger=PropertyChanged}">
@@ -531,6 +532,7 @@
                 <!-- Visual Tree TreeView -->
                 <controls:ProperTreeView x:Name="Tree"
                                          Style="{DynamicResource Snoop.Styles.ProperTreeView}"
+                                         AutomationProperties.Name="{localization:InspectorLoc Workbench.ShowTree}"
                                          Grid.Row="1"
                                          MinWidth="0"
                                          MinHeight="0"
@@ -550,8 +552,8 @@
                     <TreeView.ItemContainerStyle>
                         <Style TargetType="{x:Type controls:ProperTreeViewItem}"
                                BasedOn="{StaticResource ProperTreeViewItemStyle}">
-                            <!-- <Setter Property="Background" Value="{Binding TreeBackgroundBrush}" /> -->
-
+                            <Setter Property="AutomationProperties.AutomationId" Value="{Binding Name}" />
+                            <Setter Property="AutomationProperties.Name" Value="{Binding}" />
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
                                     <ContextMenu ItemsSource="{Binding PlacementTarget.DataContext.MenuItems, RelativeSource={RelativeSource Self}}" />
