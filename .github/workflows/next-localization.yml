@@ -92,6 +92,7 @@ jobs:
           dotnet build Snoop.Next.Localization.Demo/Snoop.Next.Localization.Demo.csproj -c Release --nologo
           if ($LASTEXITCODE -ne 0) { throw 'WPF localization demo compilation failed' }
       - name: Build and run host/inspector UI smoke (CLR4, no external injection)
+        timeout-minutes: 6
         env:
           SNOOP_UI_PREVIEW_DIR: output/next-ui-previews
         shell: pwsh

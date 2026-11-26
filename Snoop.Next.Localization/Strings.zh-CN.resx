@@ -28,7 +28,7 @@
   <data name="Settings.InspectorSection" xml:space="preserve"><value>检查选项</value></data>
   <data name="Settings.ToolsSection" xml:space="preserve"><value>外部工具</value></data>
   <data name="Settings.GlobalHotKey" xml:space="preserve"><value>全局快捷键</value></data>
-  <data name="Settings.ShortcutHelp" xml:space="preserve"><value>选择快捷键后，按下新的组合键。</value></data>
+  <data name="Settings.ShortcutHelp" xml:space="preserve"><value>选择快捷键后，按下新的组合键，例如 Ctrl+Shift+F8。</value></data>
   <data name="Settings.ShortcutListening" xml:space="preserve"><value>请按组合键…</value></data>
   <data name="Settings.ShortcutRecordingHelp" xml:space="preserve"><value>请按下组合键，例如 Ctrl+Shift+F8。按 Esc 取消。</value></data>
   <data name="Settings.ShortcutNeedsModifier" xml:space="preserve"><value>请按住修饰键，再按另一个键，例如 Ctrl+Shift+F8。</value></data>
@@ -37,7 +37,7 @@
   <data name="Settings.ShortcutWindows" xml:space="preserve"><value>使用 Win 键时，请同时按住 Ctrl 或 Shift。</value></data>
   <data name="Settings.ShortcutAlt" xml:space="preserve"><value>使用 Alt 键时，请同时按住 Ctrl，例如 Ctrl+Alt+F8。</value></data>
   <data name="Settings.ShortcutUnsupported" xml:space="preserve"><value>无法录制此键，请选择其他按键。</value></data>
-  <data name="Settings.ShortcutReset" xml:space="preserve"><value>重置</value></data>
+  <data name="Settings.ShortcutReset" xml:space="preserve"><value>恢复默认</value></data>
   <data name="Settings.ShortcutDisable" xml:space="preserve"><value>禁用</value></data>
   <data name="Settings.ShortcutDisabled" xml:space="preserve"><value>已禁用</value></data>
   <data name="Settings.StartMinimized" xml:space="preserve"><value>启动时最小化启动器</value></data>

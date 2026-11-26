@@ -185,9 +185,11 @@ public partial class SettingsView
 
         var reserved = modifiers switch
         {
-            ModifierKeys.Control => key is Key.A or Key.C or Key.F or Key.H or Key.N or Key.O or Key.P or Key.S or Key.T or Key.V
-                                        or Key.W or Key.X or Key.Y or Key.Z or Key.Insert or Key.Back or Key.Delete or Key.Tab
-                                        or Key.Escape or Key.Home or Key.End or Key.Left or Key.Right or Key.F4,
+            ModifierKeys.Control => key is >= Key.D1 and <= Key.D9
+                                        or Key.A or Key.B or Key.C or Key.F or Key.H or Key.I or Key.K or Key.L or Key.N or Key.O
+                                        or Key.P or Key.R or Key.S or Key.T or Key.U or Key.V or Key.W or Key.X or Key.Y or Key.Z
+                                        or Key.Insert or Key.Back or Key.Delete or Key.Tab or Key.Escape or Key.Home or Key.End
+                                        or Key.Left or Key.Right or Key.F4,
             ModifierKeys.Control | ModifierKeys.Shift => key is Key.Escape or Key.Tab or Key.Z or Key.S or Key.T or Key.N
                                                              or Key.V or Key.W or Key.Home or Key.End or Key.Left or Key.Right,
             ModifierKeys.Alt => key is Key.F4 or Key.Tab or Key.Escape or Key.Space or Key.Left or Key.Right or Key.Return,

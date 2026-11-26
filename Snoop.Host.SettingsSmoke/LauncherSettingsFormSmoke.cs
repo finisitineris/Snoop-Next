@@ -329,6 +329,8 @@ internal static class LauncherSettingsFormSmoke
         Require(hint.Text == text["Settings.ShortcutNeedsKey"], "A lone modifier must explain the missing second key.");
         foreach (var gesture in new KeyGestureEx[]
                  {
+                     new(Key.D5, ModifierKeys.Control),
+                     new(Key.B, ModifierKeys.Control),
                      new(Key.C, ModifierKeys.Control),
                      new(Key.V, ModifierKeys.Control),
                      new(Key.Z, ModifierKeys.Control),

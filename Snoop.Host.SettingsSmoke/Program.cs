@@ -331,6 +331,7 @@ internal static class Program
 
                     void CheckSurface(Action check)
                     {
+                        Console.WriteLine("Checking " + check.Method.Name);
                         try
                         {
                             check();

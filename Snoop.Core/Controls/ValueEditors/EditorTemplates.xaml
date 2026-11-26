@@ -65,12 +65,8 @@
 
             <DataTemplate x:Key="SelectedValueTemplate"
                           DataType="valueEditors:StandardValueEditor">
-                <controls:EditTextBox Height="Auto"
-                                      Padding="1"
+                <controls:EditTextBox Style="{DynamicResource SnoopNext.PropertyValueInput}"
                                       AutomationProperties.HelpText="{Binding Path=(AutomationProperties.HelpText), RelativeSource={RelativeSource AncestorType=ListViewItem}}"
-                                      HorizontalAlignment="Stretch"
-                                      VerticalContentAlignment="Center"
-                                      BorderThickness="0"
                                       IsReadOnly="{Binding IsEditable, Converter={x:Static converters:InvertBoolConverter.DefaultInstance}}"
                                       IsReadOnlyCaretVisible="True"
                                       Text="{Binding StringValue}" />
@@ -245,9 +241,7 @@
 
                     <controls:EditTextBox Grid.Column="1"
                                           Margin="3 0 0 0"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalContentAlignment="Center"
-                                          BorderThickness="0"
+                                          Style="{DynamicResource SnoopNext.PropertyValueInput}"
                                           IsReadOnly="{Binding IsEditable, Converter={x:Static converters:InvertBoolConverter.DefaultInstance}}"
                                           IsReadOnlyCaretVisible="True"
                                           Text="{Binding StringValue}" />
@@ -315,11 +309,7 @@
                                StrokeThickness="1" />
 
                     <controls:EditTextBox Grid.Column="1"
-                                          Height="Auto"
-                                          Padding="1"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalContentAlignment="Center"
-                                          BorderThickness="0"
+                                          Style="{DynamicResource SnoopNext.PropertyValueInput}"
                                           IsReadOnly="{Binding IsEditable, Converter={x:Static converters:InvertBoolConverter.DefaultInstance}}"
                                           IsReadOnlyCaretVisible="True"
                                           Text="{Binding StringValue}" />

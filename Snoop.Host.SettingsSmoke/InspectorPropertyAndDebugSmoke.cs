@@ -151,6 +151,8 @@ internal static class InspectorPropertyAndDebugSmoke
             }
             finally
             {
+                Find<Button>(dialog, "buttonSetFilter").Focus();
+                DrainDispatcher();
                 dialogModel.ResetDirtyFlag();
                 dialog.Close();
             }

@@ -18,6 +18,7 @@ using Snoop.Infrastructure.Diagnostics;
 using Snoop.Localization;
 using Snoop.Views;
 using Snoop.Windows;
+using CoreSettings = Snoop.Core.Settings;
 
 internal static class InspectorTableSmoke
 {
@@ -146,6 +147,12 @@ internal static class InspectorTableSmoke
             {
                 throw new InvalidOperationException($"The {input.GetType().Name} must use the available value column. Field {field}, column {cell}.");
             }
+
+            var minimumHeight = CoreSettings.Default.WorkbenchDensity == CoreSettings.CompactDensity ? 22 : 24;
+            if (input is EditTextBox editor && (editor.FontSize != 13 || editor.Padding.Left < 4 || editor.ActualHeight < minimumHeight))
+            {
+                throw new InvalidOperationException($"The property input must provide a readable font and room to type. Height {field.Height}, font {editor.FontSize}, padding {editor.Padding}.");
+            }
         }
 
         var numeric = PropertyOriginFilterSmoke.SelectTextEditor(list, Row(FrameworkElement.MinWidthProperty));
@@ -154,7 +161,27 @@ internal static class InspectorTableSmoke
             throw new InvalidOperationException("The numeric width fixture must start with a single digit.");
         }
 
-        VerifyWidth(numeric, 48);
+        var originalDensity = CoreSettings.Default.WorkbenchDensity;
+        try
+        {
+            foreach (var density in new[] { CoreSettings.ComfortableDensity, CoreSettings.CompactDensity })
+            {
+                CoreSettings.Default.WorkbenchDensity = density;
+                Drain();
+                VerifyWidth(numeric, 48);
+                var row = (ListViewItem)list.ItemContainerGenerator.ContainerFromItem(list.SelectedItem);
+                if (row.ActualHeight > row.MinHeight + 1 || numeric.ActualHeight > row.ActualHeight)
+                {
+                    throw new InvalidOperationException($"The numeric editor must fit the {density} row. Field {numeric.ActualHeight}, row {row.ActualHeight}.");
+                }
+            }
+        }
+        finally
+        {
+            CoreSettings.Default.WorkbenchDensity = originalDensity;
+            Drain();
+        }
+
         LauncherAppearanceSmoke.CaptureIfRequested(grid, "property-value-editor-zh-CN");
         grid.HorizontalAlignment = HorizontalAlignment.Left;
         grid.Width = 354;
