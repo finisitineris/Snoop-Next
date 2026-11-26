@@ -5,9 +5,11 @@
 
 namespace Snoop.Controls.ValueEditors;
 
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
 using Snoop.Converters;
+using Snoop.Infrastructure;
 
 public class StandardValueEditor : ValueEditor
 {
@@ -33,25 +35,36 @@ public class StandardValueEditor : ValueEditor
 
     protected virtual void OnStringValueChanged(string? newValue)
     {
-        if (!this.isUpdatingValue && this.IsEditable
-            && StringValueConverter.TryConvertFromString(this.PropertyInfo?.PropertyType.Type, newValue, out var converted))
+        if (this.isUpdatingValue || !this.IsEditable || this.PropertyInfo is not { Property: not null } property)
         {
-            CommitUserValue(this.PropertyInfo, converted);
+            return;
+        }
+
+        if (!StringValueConverter.TryConvertFromString(property.PropertyType.Type, newValue, out var converted))
+        {
+            property.SetEditValidation(PropertyEditValidation.InvalidFormat, newValue);
+            return;
+        }
+
+        if (!CommitUserValue(property, converted))
+        {
+            property.SetEditValidation(PropertyEditValidation.RejectedValue, newValue);
         }
     }
 
     protected override void OnValueChanged(object? newValue)
     {
         this.isUpdatingValue = true;
-
-        var value = this.Value;
-
-        this.StringValue = StringValueConverter.ConvertToString(value) ?? string.Empty;
-
+        this.StringValue = this.PropertyInfo?.RejectedEditText ?? StringValueConverter.ConvertToString(newValue) ?? string.Empty;
         this.isUpdatingValue = false;
 
         var binding = BindingOperations.GetBindingExpression(this, StringValueProperty);
         binding?.UpdateSource();
+    }
+
+    private void OnEditValidationChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        this.OnValueChanged(this.Value);
     }
 
     protected override void OnPropertyInfoChanged(DependencyPropertyChangedEventArgs e)
@@ -60,5 +73,16 @@ public class StandardValueEditor : ValueEditor
 
         this.IsEditable = this.PropertyInfo?.CanEdit is true
                           && StringValueConverter.CanConvertFromString(this.PropertyInfo?.PropertyType.Type);
+
+        if (e.OldValue is PropertyInformation oldProperty)
+        {
+            PropertyChangedEventManager.RemoveHandler(oldProperty, this.OnEditValidationChanged, nameof(PropertyInformation.EditValidation));
+        }
+
+        if (this.PropertyInfo is { } property)
+        {
+            PropertyChangedEventManager.AddHandler(property, this.OnEditValidationChanged, nameof(PropertyInformation.EditValidation));
+            this.OnValueChanged(property.Value);
+        }
     }
 }

@@ -410,6 +410,10 @@
   <data name="zh-CN.PropertyGrid.ColumnValueSource" xml:space="preserve"><value>值来源</value></data>
   <data name="en-US.PropertyGrid.ShowOrigin" xml:space="preserve"><value>Show value source details</value></data>
   <data name="zh-CN.PropertyGrid.ShowOrigin" xml:space="preserve"><value>查看属性值来源</value></data>
+  <data name="en-US.PropertyGrid.Edited" xml:space="preserve"><value>Edited</value></data>
+  <data name="zh-CN.PropertyGrid.Edited" xml:space="preserve"><value>已编辑</value></data>
+  <data name="en-US.PropertyGrid.ReadOnlyHint" xml:space="preserve"><value>This property is read-only. Its value comes from the target.</value></data>
+  <data name="zh-CN.PropertyGrid.ReadOnlyHint" xml:space="preserve"><value>此属性为只读，值由目标对象提供。</value></data>
   <data name="en-US.PropertyOrigin.BaseSource" xml:space="preserve"><value>Base value source: {0}</value></data>
   <data name="zh-CN.PropertyOrigin.BaseSource" xml:space="preserve"><value>基础值来源：{0}</value></data>
   <data name="en-US.PropertyOrigin.Modifiers" xml:space="preserve"><value>IsExpression: {0}, IsAnimated: {1}, IsCoerced: {2}</value></data>
@@ -637,6 +641,10 @@
   <data name="en-US.Previewer.ScreenshotTip" xml:space="preserve"><value>Save the current preview to a file.</value></data>
   <data name="zh-CN.Previewer.ScreenshotTip" xml:space="preserve"><value>将当前预览保存到文件。</value></data>
   <data name="en-US.ValueEditor.ScrollToEditTip" xml:space="preserve"><value>Scroll mouse wheel here to edit value</value></data>
+  <data name="en-US.ValueEditor.InvalidFormat" xml:space="preserve"><value>Enter a value in the format this property accepts.</value></data>
+  <data name="zh-CN.ValueEditor.InvalidFormat" xml:space="preserve"><value>请输入符合此属性格式的值。</value></data>
+  <data name="en-US.ValueEditor.RejectedValue" xml:space="preserve"><value>This property rejected the value. Enter a different value.</value></data>
+  <data name="zh-CN.ValueEditor.RejectedValue" xml:space="preserve"><value>此属性不接受该值。请输入其他值。</value></data>
   <data name="zh-CN.ValueEditor.ScrollToEditTip" xml:space="preserve"><value>在此滚动鼠标滚轮以编辑值</value></data>
   <data name="en-US.ValueEditor.OpenDetailsTip" xml:space="preserve"><value>Opens an editor window where you can see and edit the full value.&#10;Editing is only possible if the property is not read only.</value></data>
   <data name="zh-CN.ValueEditor.OpenDetailsTip" xml:space="preserve"><value>打开编辑器窗口以查看或编辑完整值。&#10;只有非只读属性才能编辑。</value></data>

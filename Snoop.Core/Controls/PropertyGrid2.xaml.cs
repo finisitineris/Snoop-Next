@@ -146,6 +146,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
             }
 
             this.ClosePropertyOrigin();
+            this.selection?.SetEditValidation(PropertyEditValidation.None);
             this.selection = value;
             this.OnPropertyChanged(nameof(this.Selection));
         }
@@ -333,7 +334,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
     {
         if (e.Parameter is PropertyInformation propertyInformation)
         {
-            e.CanExecute = propertyInformation.IsLocallySet;
+            e.CanExecute = propertyInformation.CanEdit && propertyInformation.IsLocallySet;
         }
 
         e.Handled = true;

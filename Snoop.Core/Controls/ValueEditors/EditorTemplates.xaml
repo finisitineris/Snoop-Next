@@ -67,6 +67,7 @@
                           DataType="valueEditors:StandardValueEditor">
                 <controls:EditTextBox Height="Auto"
                                       Padding="1"
+                                      AutomationProperties.HelpText="{Binding Path=(AutomationProperties.HelpText), RelativeSource={RelativeSource AncestorType=ListViewItem}}"
                                       HorizontalAlignment="Stretch"
                                       VerticalContentAlignment="Center"
                                       BorderThickness="0"
