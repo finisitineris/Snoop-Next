@@ -92,8 +92,8 @@
   <data name="zh-CN.TreeMenu.RoundDecimals" xml:space="preserve"><value>数值保留一位小数</value></data>
   <data name="en-US.TreeMenu.RoundDecimalsTip" xml:space="preserve"><value>Round exported numeric values to one decimal place.</value></data>
   <data name="zh-CN.TreeMenu.RoundDecimalsTip" xml:space="preserve"><value>将导出的数值四舍五入到小数点后一位。</value></data>
-  <data name="en-US.Tree.Label" xml:space="preserve"><value>Tree:</value></data>
-  <data name="zh-CN.Tree.Label" xml:space="preserve"><value>可视化树：</value></data>
+  <data name="en-US.Tree.Label" xml:space="preserve"><value>Tree mode</value></data>
+  <data name="zh-CN.Tree.Label" xml:space="preserve"><value>树模式</value></data>
   <data name="en-US.Theme.Label" xml:space="preserve"><value>Theme:</value></data>
   <data name="zh-CN.Theme.Label" xml:space="preserve"><value>主题：</value></data>
   <data name="en-US.Theme.Auto" xml:space="preserve"><value>System</value></data>

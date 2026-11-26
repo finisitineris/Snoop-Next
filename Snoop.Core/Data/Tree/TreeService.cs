@@ -2,6 +2,7 @@ namespace Snoop.Data.Tree;
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -69,7 +70,7 @@ public abstract class TreeService : IDisposable, INotifyPropertyChanged
     {
         TreeItem treeItem = target switch
         {
-            AutomationPeer typedTarget => new AutomationPeerTreeItem(typedTarget, parent, this),
+            AutomationPeer typedTarget => new AutomationPeerTreeItem(typedTarget, parent, this, isScoped),
             ResourceDictionaryWrapper typedTarget => new ResourceDictionaryTreeItem(typedTarget, parent, this),
             ResourceDictionary typedTarget => new ResourceDictionaryTreeItem(typedTarget, parent, this),
             Application typedTarget => new ApplicationTreeItem(typedTarget, parent, this),
@@ -204,11 +205,9 @@ public sealed class AutomationPeerTreeService : TreeService
 
     public override TreeItem Construct(object target, TreeItem? parent, bool omitChildren = false, bool isScoped = false)
     {
-        if (omitChildren == false
-            && target is not AutomationPeer
-            && target is UIElement element)
+        if (!omitChildren && CreatePeer(target) is { } peer)
         {
-            target = UIElementAutomationPeer.CreatePeerForElement(element);
+            target = peer;
         }
 
         return base.Construct(target, parent, omitChildren: omitChildren, isScoped: isScoped);
@@ -216,21 +215,47 @@ public sealed class AutomationPeerTreeService : TreeService
 
     public override IEnumerable GetChildren(object target)
     {
-        if (target is not AutomationPeer automationPeer)
+        return target switch
         {
-            yield break;
+            AutomationPeer peer => peer.GetChildren() ?? Enumerable.Empty<AutomationPeer>(),
+            // A scoped panel or decorator may have no peer. Keep the scope as the root
+            // and expose the first real peers below it, just as WPF skips peerless visuals.
+            DependencyObject visual and (Visual or Visual3D) => GetDescendantPeers(visual),
+            _ => Enumerable.Empty<AutomationPeer>()
+        };
+    }
+
+    private static AutomationPeer? CreatePeer(object target) => target switch
+    {
+        UIElement element => UIElementAutomationPeer.CreatePeerForElement(element),
+        UIElement3D element => UIElement3DAutomationPeer.CreatePeerForElement(element),
+        ContentElement element => ContentElementAutomationPeer.CreatePeerForElement(element),
+        _ => null
+    };
+
+    private static IEnumerable<AutomationPeer> GetDescendantPeers(DependencyObject visual)
+    {
+        var remaining = new Stack<DependencyObject>();
+        PushChildren(visual);
+        while (remaining.Count > 0)
+        {
+            var child = remaining.Pop();
+            if (CreatePeer(child) is { } peer)
+            {
+                yield return peer;
+            }
+            else
+            {
+                PushChildren(child);
+            }
         }
 
-        var children = automationPeer.GetChildren();
-
-        if (children is null)
+        void PushChildren(DependencyObject parent)
         {
-            yield break;
-        }
-
-        foreach (var child in children)
-        {
-            yield return child;
+            for (var index = VisualTreeHelper.GetChildrenCount(parent) - 1; index >= 0; --index)
+            {
+                remaining.Push(VisualTreeHelper.GetChild(parent, index));
+            }
         }
     }
 }

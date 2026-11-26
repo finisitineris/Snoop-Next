@@ -14,7 +14,12 @@ public class AutomationPeerTreeItem : TreeItem
     private DiagnosticItem? missingAdornerLayerDiagnosticItem;
 
     public AutomationPeerTreeItem(AutomationPeer target, TreeItem? parent, TreeService treeService)
-        : base(target, parent, treeService)
+        : this(target, parent, treeService, false)
+    {
+    }
+
+    internal AutomationPeerTreeItem(AutomationPeer target, TreeItem? parent, TreeService treeService, bool isScoped)
+        : base(target, parent, treeService, isScoped)
     {
         if (this.Target is UIElementAutomationPeer { Owner: { } } uiElementAutomationPeer)
         {

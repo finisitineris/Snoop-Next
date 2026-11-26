@@ -151,20 +151,6 @@
                     </DataTrigger>
                 </DataTemplate.Triggers>
             </DataTemplate>
-            <DataTemplate x:Key="WorkbenchTreeOption">
-                <TextBlock x:Name="Caption" Text="{Binding}" />
-                <DataTemplate.Triggers>
-                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Visual}">
-                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Visual}" />
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Logical}">
-                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Logical}" />
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding}" Value="{x:Static tree:TreeType.Automation}">
-                        <Setter TargetName="Caption" Property="Text" Value="{localization:InspectorLoc Tree.Automation}" />
-                    </DataTrigger>
-                </DataTemplate.Triggers>
-            </DataTemplate>
             <DataTemplate x:Key="RefreshCommandContent">
                 <StackPanel Orientation="Horizontal">
                     <Path Style="{StaticResource WorkbenchCommandIcon}" Data="M14,7 A6,6 0 1 0 14,11 M14,2 V7 H9" />
@@ -423,12 +409,19 @@
                                Target="{Binding ElementName=TreeTypeComboBox}" />
                         <ComboBox x:Name="TreeTypeComboBox"
                                   MinWidth="100" MinHeight="28"
-                                  ItemTemplate="{StaticResource WorkbenchTreeOption}"
+                                  AutomationProperties.LabeledBy="{Binding ElementName=TreeHeaderLabel}"
                                   Margin="0 2 8 2"
                                   Padding="8 2"
                                   FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
-                                  ItemsSource="{Binding Source={snoop:EnumBindingSource {x:Type tree:TreeType}}}"
-                                  SelectedItem="{Binding CurrentTreeType, Mode=TwoWay}" />
+                                  SelectedValuePath="Tag"
+                                  SelectedValue="{Binding CurrentTreeType, Mode=TwoWay}">
+                            <ComboBoxItem Tag="{x:Static tree:TreeType.Visual}" AutomationProperties.AutomationId="Visual"
+                                          Content="{localization:InspectorLoc Tree.Visual}" />
+                            <ComboBoxItem Tag="{x:Static tree:TreeType.Logical}" AutomationProperties.AutomationId="Logical"
+                                          Content="{localization:InspectorLoc Tree.Logical}" />
+                            <ComboBoxItem Tag="{x:Static tree:TreeType.Automation}" AutomationProperties.AutomationId="Automation"
+                                          Content="{localization:InspectorLoc Tree.Automation}" />
+                        </ComboBox>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Label Padding="2 2 4 2"

@@ -2,8 +2,13 @@ namespace Snoop.Host.SettingsSmoke;
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Snoop.Controls;
@@ -21,7 +26,7 @@ internal static class WorkbenchTreeOverflowSmoke
         var originalSelection = inspector.CurrentSelection;
         var propertiesToggle = (MenuItem)inspector.FindName("ShowPropertiesPaneItem");
         var propertiesShown = propertiesToggle.IsChecked;
-        var document = new Grid { Name = "PerformanceWorkspace" };
+        var document = new Grid { Name = "RootGrid" };
         var panel = document;
         var layers = new[]
         {
@@ -62,12 +67,6 @@ internal static class WorkbenchTreeOverflowSmoke
             SetPropertiesShown(false);
             InspectorLocalization.Default.SetLanguage("zh-CN");
             inspector.CurrentSelection = leaf;
-            void Arrange()
-            {
-                inspector.UpdateLayout();
-                inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
-            }
-
             Arrange();
             var viewer = (ScrollViewer)tree.Template.FindName("_tv_scrollviewer_", tree);
             var header = FindHeader(tree, leaf) ?? throw new InvalidOperationException("The expanded leaf was not rendered.");
@@ -93,6 +92,7 @@ internal static class WorkbenchTreeOverflowSmoke
             viewer.ScrollToLeftEnd();
             Arrange();
             LauncherAppearanceSmoke.CaptureIfRequested(chrome, "expanded-visual-tree");
+            VerifyRootExpansion();
             VerifyDeferredToolTip();
         }
         finally
@@ -103,7 +103,52 @@ internal static class WorkbenchTreeOverflowSmoke
             InspectorLocalization.Default.SetLanguage(language);
         }
 
-        Console.WriteLine("PASS: wide tree, full 18-level label scrolling and on-demand tree preview brushes.");
+        Console.WriteLine("PASS: RootGrid collapse and expansion, full 18-level label scrolling and on-demand tree preview brushes.");
+
+        void Arrange()
+        {
+            inspector.UpdateLayout();
+            inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+        }
+
+        void VerifyRootExpansion()
+        {
+            var rootRow = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(rootItem);
+            var rowPeer = UIElementAutomationPeer.CreatePeerForElement(rootRow);
+            var expansion = (IExpandCollapseProvider)rowPeer.GetPattern(PatternInterface.ExpandCollapse);
+            var expander = (ToggleButton)rootRow.Template.FindName("Expander", rootRow);
+            var toggle = (IToggleProvider)UIElementAutomationPeer.CreatePeerForElement(expander).GetPattern(PatternInterface.Toggle);
+            var expectedRows = rootItem.Children.Concat(new[] { leaf }).ToArray();
+
+            VerifyRows(true);
+            toggle.Toggle();
+            Arrange();
+            VerifyRows(false);
+            toggle.Toggle();
+            Arrange();
+            VerifyRows(true);
+
+            void VerifyRows(bool expanded)
+            {
+                var expectedState = expanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
+                if (!expander.IsVisible || rowPeer.GetAutomationId() != document.Name || expansion.ExpandCollapseState != expectedState
+                    || rootItem.IsExpanded != expanded)
+                {
+                    throw new InvalidOperationException($"RootGrid must remain visible and report {expectedState} through the tree and UI Automation.");
+                }
+
+                // A collapsed branch can retain its containers. Check their effective visibility and
+                // resolve each header again after expansion so recycled rows must display the same nodes.
+                foreach (var item in expectedRows)
+                {
+                    var rowHeader = FindHeader(tree, item);
+                    if ((rowHeader?.IsVisible == true) != expanded || (expanded && rowHeader?.Text != item.ToString()))
+                    {
+                        throw new InvalidOperationException($"Unexpected visibility or caption for '{item.Name}' when RootGrid is {expectedState}.");
+                    }
+                }
+            }
+        }
 
         void SetPropertiesShown(bool shown)
         {
@@ -120,8 +165,7 @@ internal static class WorkbenchTreeOverflowSmoke
             inspector.TreeItems.Add(node);
             try
             {
-                inspector.UpdateLayout();
-                inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+                Arrange();
                 var row = (TreeViewItem)tree.ItemContainerGenerator.ContainerFromItem(node);
                 if (node.BrushReads != 0 || !ReferenceEquals(row.ToolTip, node))
                 {
@@ -180,12 +224,11 @@ internal static class WorkbenchTreeOverflowSmoke
             tree = container;
         }
 
-        var header = (DependencyObject)tree.Template.FindName("PART_Header", tree);
-        return FindText(header);
+        return tree.Template?.FindName("PART_Header", tree) is DependencyObject header ? FindText(header) : null;
 
         TextBlock? FindText(DependencyObject visual)
         {
-            if (visual is TextBlock block && Equals(block.DataContext, leaf))
+            if (visual is TextBlock block && ReferenceEquals(block.DataContext, leaf))
             {
                 return block;
             }

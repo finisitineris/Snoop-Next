@@ -266,7 +266,7 @@ internal static class Program
                         Require(inspectSnoop.Header as string == "检查 Snoop", "SnoopUI did not localize the self-inspection command");
                         Require(versionHeader.Text == $"版本: {version}", "SnoopUI did not localize the version header");
                         Require(fileMenu.Header as string == "文件", "SnoopUI did not load the zh-CN File menu resource");
-                        Require(treeHeader.Content as string == "可视化树：", "SnoopUI did not load the zh-CN tree header");
+                        Require(treeHeader.Content as string == "树模式", "SnoopUI did not load the zh-CN tree header");
                         Require(Thread.CurrentThread.CurrentUICulture.Name == "de-DE",
                             "inspector localization modified the inspected thread CurrentUICulture");
 
@@ -274,7 +274,7 @@ internal static class Program
                         System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(
                             System.Windows.Threading.DispatcherPriority.ApplicationIdle, new Action(() => { }));
                         Require(fileMenu.Header as string == "File", "SnoopUI File menu did not live-switch to en-US");
-                        Require(treeHeader.Content as string == "Tree:", "SnoopUI tree header did not live-switch to en-US");
+                        Require(treeHeader.Content as string == "Tree mode", "SnoopUI tree header did not live-switch to en-US");
                         Require(inspectSnoop.Header as string == "Snoop Snoop", "self-inspection command did not live-switch to en-US");
                         Require(versionHeader.Text == $"Version: {version}", "version header did not live-switch to en-US");
 
