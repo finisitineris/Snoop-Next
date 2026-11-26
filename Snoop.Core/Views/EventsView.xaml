@@ -49,33 +49,17 @@
 
             <HierarchicalDataTemplate DataType="{x:Type infrastructure:TrackedEvent}"
                                       ItemsSource="{Binding Stack}">
-                <Grid x:Name="Grid"
-                      Background="Transparent">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <StackPanel Background="Transparent">
                     <StackPanel Orientation="Horizontal">
-                        <ContentControl Content="{Binding EventArgsText}"
-                                        Focusable="False" />
+                        <TextBlock Text="{Binding EventArgsText}" />
                         <TextBlock Text="{localization:InspectorLoc Events.On}" />
                         <TextBlock Text="{Binding Originator.Handler, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
                     </StackPanel>
-                    <ContentControl x:Name="Handler"
-                                    Grid.Row="1"
-                                    Grid.ColumnSpan="2"
-                                    Focusable="False"
-                                    Visibility="Collapsed">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{localization:InspectorLoc Events.HandledBy}" />
-                            <TextBlock Text="{Binding HandledBy, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
-                        </StackPanel>
-                    </ContentControl>
-                </Grid>
+                    <StackPanel x:Name="Handler" Orientation="Horizontal" Visibility="Collapsed">
+                        <TextBlock Text="{localization:InspectorLoc Events.HandledBy}" />
+                        <TextBlock Text="{Binding HandledBy, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
+                    </StackPanel>
+                </StackPanel>
                 <HierarchicalDataTemplate.Triggers>
                     <DataTrigger Binding="{Binding Handled}" Value="True">
                         <Setter TargetName="Handler" Property="Visibility" Value="Visible" />

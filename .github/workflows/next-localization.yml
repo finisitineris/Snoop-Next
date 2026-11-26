@@ -21,6 +21,8 @@ on:
       - 'Snoop/App.xaml.cs'
       - 'Snoop/Views/SettingsView.xaml'
       - 'Snoop/Views/SettingsView.xaml.cs'
+      - 'Snoop/Views/SettingsWindow.cs'
+      - 'Snoop/Data/KeyGestureEx.cs'
       - 'Snoop/ProcessInfo.cs'
       - 'Snoop.Core/Data/TransientSettingsData.cs'
       - 'Snoop.Core/Infrastructure/SnoopManager.cs'

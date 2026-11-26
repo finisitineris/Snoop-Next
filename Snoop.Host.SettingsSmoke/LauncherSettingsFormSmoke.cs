@@ -189,6 +189,10 @@ internal static class LauncherSettingsFormSmoke
             var scroll = Find<ScrollViewer>(view, "SettingsScrollViewer");
             scroll.ScrollToTop();
             Drain();
+            var versionRow = Find<TextBlock>(view, "VersionValue");
+            Require(scroll.ComputedVerticalScrollBarVisibility != Visibility.Visible && Inside(versionRow, scroll)
+                    && versionRow.TranslatePoint(new Point(0, versionRow.ActualHeight), scroll).Y + 4 <= scroll.ActualHeight,
+                "The default settings size must fit the version line above the footer without scrolling.");
             if (capture)
             {
                 InspectorFlyoutSmoke.CaptureFramed(view, "settings-" + theme);
@@ -204,7 +208,7 @@ internal static class LauncherSettingsFormSmoke
                 {
                     var popup = InspectorFlyoutSmoke.VerifyPopup(combo, window);
                     VerifyChoices(combo, popup, index == 0 ? languageOptions : modeOptions);
-                    if (index == 1)
+                    if (combo.Name == "MultipleDispatcherModeSelector")
                     {
                         InspectorFlyoutSmoke.CaptureFramed(view, $"settings-dropdown-{LocalizationManager.Default.LanguageTag}-{theme}", popup);
                     }
