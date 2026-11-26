@@ -368,6 +368,14 @@
   <data name="zh-CN.PropertyInspector.EditedOnly" xml:space="preserve"><value>仅已编辑</value></data>
   <data name="en-US.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>Show only properties edited in Snoop.</value></data>
   <data name="zh-CN.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>仅显示在 Snoop 中编辑过的属性。</value></data>
+  <data name="en-US.PropertyInspector.UndoEdit" xml:space="preserve"><value>Undo</value></data>
+  <data name="zh-CN.PropertyInspector.UndoEdit" xml:space="preserve"><value>撤销</value></data>
+  <data name="en-US.PropertyInspector.RedoEdit" xml:space="preserve"><value>Redo</value></data>
+  <data name="zh-CN.PropertyInspector.RedoEdit" xml:space="preserve"><value>重做</value></data>
+  <data name="en-US.PropertyInspector.UndoEditTip" xml:space="preserve"><value>Undo property edit</value></data>
+  <data name="zh-CN.PropertyInspector.UndoEditTip" xml:space="preserve"><value>撤销属性编辑</value></data>
+  <data name="en-US.PropertyInspector.RedoEditTip" xml:space="preserve"><value>Redo property edit</value></data>
+  <data name="zh-CN.PropertyInspector.RedoEditTip" xml:space="preserve"><value>重做属性编辑</value></data>
   <data name="en-US.PropertyInspector.NullTarget" xml:space="preserve"><value>Target object is NULL</value></data>
   <data name="zh-CN.PropertyInspector.NullTarget" xml:space="preserve"><value>目标对象为 NULL</value></data>
   <data name="en-US.PropertyInspector.FilterDefault" xml:space="preserve"><value>(Default)</value></data>

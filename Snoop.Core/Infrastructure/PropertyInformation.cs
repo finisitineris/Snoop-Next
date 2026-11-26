@@ -207,6 +207,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
         this.Update();
 
+        this.filter?.EditHistory.ObservedValueChanged(this);
         if (this.breakOnChange)
         {
             if (Debugger.IsAttached == false)
@@ -755,6 +756,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
                 this.SetEditValidation(PropertyEditValidation.None);
                 d.ClearValue(dp);
                 this.IsValueChangedByUser = true;
+                this.filter?.EditHistory.Record(this, DependencyProperty.UnsetValue, DependencyProperty.UnsetValue, false);
                 this.RefreshValueSource();
             }
         }

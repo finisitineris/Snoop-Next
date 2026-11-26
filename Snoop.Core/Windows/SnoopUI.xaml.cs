@@ -102,6 +102,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         InputManager.Current.PreProcessInput += this.HandlePreProcessInputForTracking;
         this.Tree.SelectedItemChanged += this.HandleTreeSelectedItemChanged;
         this.PreviewArea.ElementPicked += this.HandlePreviewElementPicked;
+        this.PropertyInspector.PropertyGrid.EditReplayed += this.HandleEditReplayed;
 
         this.filterTimer = new DispatcherTimer
         {
@@ -528,6 +529,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         this.WorkbenchGrid.LayoutUpdated -= this.HandleWorkbenchLayoutUpdated;
         this.PreviewArea.ElementPicked -= this.HandlePreviewElementPicked;
+        this.PropertyInspector.PropertyGrid.EditReplayed -= this.HandleEditReplayed;
         InputManager.Current.PreProcessInput -= this.HandlePreProcessInputForTracking;
 
         this.filterTimer.Stop();
@@ -901,6 +903,12 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.filterComboBox.SelectedIndex = -1;
         this.filterTimer.Stop();
         this.SetFilter(string.Empty);
+    }
+
+    private void HandleEditReplayed(DependencyObject target, DependencyProperty property, object? value, bool edited)
+    {
+        var owner = ReferenceEquals(this.CurrentSelection?.Target, target) ? this.CurrentSelection : null;
+        EditedPropertiesHelper.UpdateEditedProperty(this.Dispatcher, this.PropertyInspector.PropertyFilter, target, owner, property, property.Name, value, edited);
     }
 
     private void CopyPropertyChangesHandler(object sender, ExecutedRoutedEventArgs e)
@@ -1789,46 +1797,71 @@ public static class EditedPropertiesHelper
 {
     private static readonly object @lock = new();
 
-    private static readonly Dictionary<Dispatcher, Dictionary<TreeItem, List<PropertyValueInfo>>> itemsWithEditedProperties =
-        new();
+    private static readonly Dictionary<Dispatcher, List<EditedObject>> itemsWithEditedProperties = new();
 
     public static void AddEditedProperty(Dispatcher dispatcher, TreeItem propertyOwner, PropertyInformation propInfo)
     {
+        UpdateEditedProperty(dispatcher, (object?)propInfo.Filter ?? propertyOwner, propInfo.Target ?? propertyOwner.Target, propertyOwner,
+            (object?)propInfo.DependencyProperty ?? propInfo.Name ?? propInfo.DisplayName, propInfo.DisplayName, propInfo.Value, true);
+    }
+
+    internal static void UpdateEditedProperty(Dispatcher dispatcher, object scope, object target, TreeItem? owner, object key, string name, object? value, bool edited)
+    {
         lock (@lock)
         {
-            // first get the dictionary we're using for the given dispatcher
-            if (!itemsWithEditedProperties.TryGetValue(dispatcher, out var dispatcherList))
+            if (!itemsWithEditedProperties.TryGetValue(dispatcher, out var groups))
             {
-                dispatcherList = new Dictionary<TreeItem, List<PropertyValueInfo>>();
-                itemsWithEditedProperties.Add(dispatcher, dispatcherList);
+                if (!edited)
+                {
+                    return;
+                }
+
+                groups = new List<EditedObject>();
+                itemsWithEditedProperties.Add(dispatcher, groups);
             }
 
-            // now get the property info list for the owning object
-            if (!dispatcherList.TryGetValue(propertyOwner, out var propInfoList))
+            var group = groups.Find(item => item.Matches(scope, target));
+            if (edited)
             {
-                propInfoList = new List<PropertyValueInfo>();
-                dispatcherList.Add(propertyOwner, propInfoList);
-            }
+                if (group is null)
+                {
+                    var label = owner?.ToString() ?? (target is FrameworkElement { Name.Length: > 0 } element
+                        ? $"{element.Name} ({target.GetType().Name})" : target.GetType().Name);
+                    group = new EditedObject(scope, target, label);
+                    groups.Add(group);
+                }
 
-            // if we already have a property of that name on this object, remove it
-            var existingPropInfo = propInfoList.FirstOrDefault(l => l.PropertyName == propInfo.DisplayName);
-            if (existingPropInfo is not null)
+                var displayName = group.Properties.TryGetValue(key, out var previous) ? previous.PropertyName : name;
+                group.Properties[key] = new PropertyValueInfo(displayName, value);
+            }
+            else if (group is not null && group.Properties.Remove(key) && group.Properties.Count == 0)
             {
-                propInfoList.Remove(existingPropInfo);
+                groups.Remove(group);
+                if (groups.Count == 0)
+                {
+                    itemsWithEditedProperties.Remove(dispatcher);
+                }
             }
-
-            // finally add the edited property info
-            propInfoList.Add(new PropertyValueInfo(propInfo.DisplayName, propInfo.Value));
         }
     }
 
     public static void DumpObjectsWithEditedProperties()
     {
+        var report = FormatReport();
+        if (report is not null)
+        {
+            LogHelper.WriteLine(report);
+            ClipboardHelper.SetText(report);
+        }
+    }
+
+    internal static string? FormatReport()
+    {
         lock (@lock)
         {
             if (itemsWithEditedProperties.Count == 0)
             {
-                return;
+                return null;
             }
 
             var sb = new StringBuilder();
@@ -1846,10 +1879,10 @@ public static class EditedPropertiesHelper
                     sb.AppendFormat("-- Dispatcher #{0} -- {1}", dispatcherCount++, Environment.NewLine);
                 }
 
-                foreach (var objectPropertiesItemPair in dispatcherItemPair.Value)
+                foreach (var group in dispatcherItemPair.Value)
                 {
-                    sb.AppendFormat("Object: {0}{1}", objectPropertiesItemPair.Key, Environment.NewLine);
-                    foreach (var propInfo in objectPropertiesItemPair.Value)
+                    sb.AppendFormat("Object: {0}{1}", group.Label, Environment.NewLine);
+                    foreach (var propInfo in group.Properties.Values)
                     {
                         sb.AppendFormat(
                             "\tProperty: {0}, New Value: {1}{2}",
@@ -1865,8 +1898,28 @@ public static class EditedPropertiesHelper
                 }
             }
 
-            LogHelper.WriteLine(sb.ToString());
-            ClipboardHelper.SetText(sb.ToString());
+            return sb.ToString();
         }
+    }
+
+    private sealed class EditedObject
+    {
+        private readonly WeakReference<object> scope;
+        private readonly WeakReference<object> target;
+
+        public EditedObject(object scope, object target, string label)
+        {
+            this.scope = new WeakReference<object>(scope);
+            this.target = new WeakReference<object>(target);
+            this.Label = label;
+        }
+
+        public string Label { get; }
+
+        public Dictionary<object, PropertyValueInfo> Properties { get; } = new();
+
+        public bool Matches(object editor, object owner)
+            => this.scope.TryGetTarget(out var savedEditor) && ReferenceEquals(savedEditor, editor)
+               && this.target.TryGetTarget(out var savedOwner) && ReferenceEquals(savedOwner, owner);
     }
 }

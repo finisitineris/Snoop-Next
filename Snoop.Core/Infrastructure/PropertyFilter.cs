@@ -78,6 +78,8 @@ public class PropertyFilter : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    internal PropertyEditHistory EditHistory { get; } = new();
+
     public PropertyFilter(string filterString, bool showDefaults)
     {
         this.FilterString = filterString;
@@ -179,11 +181,14 @@ public class PropertyFilter : INotifyPropertyChanged
 
     internal void SetEdited(PropertyInformation row, bool edited)
     {
-        if (row.Target is not { } target || GetEditKey(row) is not { } key)
+        if (row.Target is { } target && GetEditKey(row) is { } key)
         {
-            return;
+            this.SetEdited(target, key, edited);
         }
+    }
 
+    internal void SetEdited(object target, object key, bool edited)
+    {
         if (edited)
         {
             this.editedProperties.GetOrCreateValue(target).Add(key);
