@@ -30,6 +30,17 @@ public partial class EventsView : INotifyPropertyChanged, IDisposable
 
     private ICollectionView? availableEvents;
 
+    private void HandleDockSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        // Give the event list the filter row's vertical spacing when the dock is short.
+        // Handled events need a second line for their handler, including at CJK font metrics.
+        var padding = e.NewSize.Height < 100 ? 0 : 2;
+        this.FilterRow.Margin = new Thickness(0, padding, 0, padding);
+        this.EventFilterLabel.Padding = new Thickness(2, padding, 6, padding);
+        this.MaxEventsLabel.Padding = new Thickness(0, padding, 4, padding);
+        this.EventFilter.Padding = this.MaxEventsEditor.Padding = new Thickness(4, padding, 4, padding);
+    }
+
     public EventsView()
     {
         this.InterestingEvents = new(this.interestingEvents);

@@ -85,6 +85,8 @@ internal static class InspectorPropertyAndDebugSmoke
     {
         var traceSwitch = PresentationTraceSources.DataBindingSource.Switch;
         var originalLevel = traceSwitch.Level;
+        var savedFilters = Snoop.Core.Settings.Default.SnoopDebugFilters;
+        var originalFilters = savedFilters.ToArray();
         try
         {
             localization.SetLanguage("zh-CN");
@@ -100,18 +102,27 @@ internal static class InspectorPropertyAndDebugSmoke
 
             var filter = new SnoopSingleFilter { FilterType = FilterType.RegularExpression, Text = "^trace:[0-9]+$" };
             model.InitializeFilters(new[] { filter });
-            // An empty dialog session closes without a save prompt. The template
-            // and listener each exercise a separate filter below.
-            var dialog = new SetFiltersWindow(new FiltersViewModel(Array.Empty<SnoopSingleFilter>()));
+            var dialogModel = new FiltersViewModel(new[]
+            {
+                new SnoopSingleFilter { IsInverse = true, FilterType = FilterType.RegularExpression, Text = "^X$" }
+            });
+            var dialog = new SetFiltersWindow(dialogModel);
             try
             {
                 var apply = (TextBlock)Find<Button>(dialog, "buttonSetFilter").Content;
                 var output = Find<TextBox>(listener, "textBoxDebugContent");
-                var filterRow = (StackPanel)Find<ListBox>(dialog, "listBoxFilters").ItemTemplate.LoadContent();
-                filterRow.DataContext = new SnoopSingleFilter { IsInverse = true, FilterType = FilterType.RegularExpression, Text = "^X$" };
+                dialog.Show();
+                DrainDispatcher();
+                var row = (ListBoxItem)Find<ListBox>(dialog, "listBoxFilters").ItemContainerGenerator.ContainerFromIndex(0);
+                var pattern = InspectorTableSmoke.Descendants(row).OfType<TextBox>().Single(editor => editor.Name == "textBlockFilter");
+                var filterRow = (Grid)pattern.Parent;
                 var inverse = (TextBlock)filterRow.Children[0];
                 var matchType = (ComboBox)filterRow.Children[1];
-                var pattern = (TextBox)filterRow.Children[2];
+                InspectorFlyoutSmoke.CaptureFramed((FrameworkElement)dialog.Content, "debug-filter-settings-zh-CN");
+                Require(pattern.ActualWidth >= 180 && pattern.ActualHeight >= 28
+                        && pattern.FontSize >= 13 && pattern.FontFamily.Source.Contains("Microsoft YaHei")
+                        && inverse.FontSize == pattern.FontSize && inverse.FontFamily.Equals(pattern.FontFamily),
+                    $"Debug filter input {pattern.RenderSize}, font {pattern.FontSize} {pattern.FontFamily.Source}; inverse label {inverse.FontSize} {inverse.FontFamily.Source}.");
                 traceLevels.SelectedItem = errorLevel;
                 listener.Write("ignored");
                 listener.Write("Trace:42");
@@ -143,12 +154,13 @@ internal static class InspectorPropertyAndDebugSmoke
             }
             finally
             {
-                dialog.Close();
+                Find<Button>(dialog, "buttonSetFilter").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
         }
         finally
         {
             traceSwitch.Level = originalLevel;
+            savedFilters.UpdateWith(originalFilters);
         }
     }
 

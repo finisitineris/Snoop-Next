@@ -1,7 +1,11 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -103,6 +107,7 @@ internal static class WorkbenchPreviewHighlightSmoke
             Require(Previewer.MagnifyCommand.CanExecute(null, preview)
                     && Previewer.ScreenshotCommand.CanExecute(null, preview),
                 "The magnifier and screenshot commands must remain available for the selected visual.");
+            VerifyBackdropControls(inspector, preview, viewport);
 
             inspector.CurrentSelection = scopedSecond;
             Arrange();
@@ -227,6 +232,126 @@ internal static class WorkbenchPreviewHighlightSmoke
             Require(outline.Visibility == Visibility.Collapsed
                     && (viewbox.Child is not Rectangle { Fill: VisualBrush brush } || !ReferenceEquals(brush.Visual, scene)),
                 "An inactive, disconnected or nonvisual selection must clear the scene outline and previous projection.");
+        }
+    }
+
+    private static void VerifyBackdropControls(SnoopUI inspector, Previewer preview, Grid viewport)
+    {
+        var slider = Find<Slider>(preview, "ColorSlider");
+        var magnify = Find<Button>(preview, "MagnifyButton");
+        var originalWidth = preview.MaxWidth;
+        var range = (IRangeValueProvider)UIElementAutomationPeer.CreatePeerForElement(slider).GetPattern(PatternInterface.RangeValue);
+        var brightness = range.Value;
+        var placement = Snoop.Core.Settings.Default.ZoomerWindowPlacement;
+        Zoomer? viewer = null;
+        try
+        {
+            Require(!viewport.IsAncestorOf(slider) && slider.IsHitTestVisible && slider.IsEnabled
+                    && ReferenceEquals(magnify.Command, Previewer.MagnifyCommand),
+                "The backdrop slider must accept input outside the preview's pick and pan surface.");
+            range.SetValue(0.25);
+            DrainDispatcher();
+            Require(viewport.Background is SolidColorBrush brush && Math.Abs(brush.Color.ScR - 0.25) < 0.001
+                    && brush.Color.ScG == brush.Color.ScR && brush.Color.ScB == brush.Color.ScR,
+                "The backdrop range control must change the live preview's grayscale background.");
+            VerifyBackdropPosition(preview);
+            preview.SetCurrentValue(FrameworkElement.MaxWidthProperty, 160d);
+            WorkbenchLayoutSmoke.Arrange(inspector);
+            VerifyBackdropPosition(preview);
+            Require(slider.ActualWidth is >= 32 and < 100, "The backdrop slider must shrink in a narrow preview.");
+
+            Previewer.MagnifyCommand.Execute(null, magnify);
+            viewer = Application.Current.Windows.OfType<Zoomer>().Single(window => ReferenceEquals(window.Target, preview.Target));
+            Require(Find<Slider>(viewer, "ColorSlider").Value == range.Value,
+                "Opening the magnifier must retain the selected preview backdrop.");
+            CaptureBackdropControls(preview, range.Value);
+        }
+        finally
+        {
+            viewer?.Close();
+            Snoop.Core.Settings.Default.ZoomerWindowPlacement = placement;
+            range.SetValue(brightness);
+            preview.SetCurrentValue(FrameworkElement.MaxWidthProperty, originalWidth);
+            WorkbenchLayoutSmoke.Arrange(inspector);
+        }
+    }
+
+    private static Rect VerifyBackdropPosition(Previewer preview)
+    {
+        var slider = Find<Slider>(preview, "ColorSlider");
+        var magnify = Find<Button>(preview, "MagnifyButton");
+        var backdrop = slider.TransformToAncestor(preview).TransformBounds(new Rect(slider.RenderSize));
+        var button = magnify.TransformToAncestor(preview).TransformBounds(new Rect(magnify.RenderSize));
+        var bounds = new Rect(preview.RenderSize);
+        Require(bounds.Contains(backdrop) && bounds.Contains(button) && Math.Abs(backdrop.Right + 4 - button.Left) <= 1
+                && Math.Abs(backdrop.Top - button.Top) <= 1 && Math.Abs(backdrop.Bottom - button.Bottom) <= 1
+                && Math.Abs(bounds.Bottom - button.Bottom - 4) <= 1,
+            $"The backdrop slider {backdrop} must sit directly left of the magnifier {button} in the bottom toolbar of {bounds}.");
+        return backdrop;
+    }
+
+    private static void CaptureBackdropControls(Previewer workbenchPreview, double brightness)
+    {
+        if (Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR") is not { Length: > 0 } directory)
+        {
+            return;
+        }
+
+        // A separate visible window supplies the normal preview styles and a stable
+        // capture area independently of the workbench's persisted splitter sizes.
+        var preview = new Previewer { ScopeTarget = workbenchPreview.ScopeTarget, Target = workbenchPreview.Target };
+        var surface = new Grid
+        {
+            Width = 320, Height = 200,
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top,
+        };
+        surface.Children.Add(preview);
+        var host = new SnoopBaseWindow
+        {
+            Content = surface, SizeToContent = SizeToContent.WidthAndHeight,
+            WindowStyle = WindowStyle.None, ResizeMode = ResizeMode.NoResize,
+            ShowActivated = false, ShowInTaskbar = false,
+        };
+        try
+        {
+            host.Show();
+            Find<Slider>(preview, "ColorSlider").SetCurrentValue(Slider.ValueProperty, brightness);
+            Capture(320, "preview-backdrop-controls");
+            Capture(160, "preview-backdrop-controls-narrow");
+        }
+        finally
+        {
+            host.Close();
+        }
+
+        void Capture(int width, string name)
+        {
+            surface.Width = width;
+            host.UpdateLayout();
+            DrainDispatcher();
+            Require(preview.IsVisible && preview.ActualWidth == width && preview.ActualHeight == surface.Height,
+                $"The capture window must show a {width} × {surface.Height} preview, got {preview.RenderSize}.");
+            var backdrop = VerifyBackdropPosition(preview);
+            LauncherAppearanceSmoke.CaptureIfRequested(surface, name);
+            using var stream = File.OpenRead(System.IO.Path.Combine(directory, name + ".png"));
+            var image = new FormatConvertedBitmap(BitmapFrame.Create(stream), PixelFormats.Bgra32, null, 0);
+            var pixels = new int[image.PixelWidth * image.PixelHeight];
+            image.CopyPixels(pixels, image.PixelWidth * 4, 0);
+            Require(image.PixelWidth == width && image.PixelHeight == surface.Height
+                    && pixels.Count(pixel => (uint)pixel >> 24 == 255) >= pixels.Length * 0.98
+                    && pixels.Take((int)backdrop.Top * image.PixelWidth).Contains(unchecked((int)0xffff7f50)),
+                $"{name} must contain the opaque preview with the coral fixture element above the toolbar.");
+
+            foreach (FrameworkElement control in Find<Grid>(preview, "PreviewToolbar").Children)
+            {
+                var rect = control.TransformToAncestor(preview).TransformBounds(new Rect(control.RenderSize));
+                var sample = new Int32Rect((int)Math.Ceiling(rect.Left), (int)Math.Ceiling(rect.Top),
+                    (int)rect.Width - 1, (int)rect.Height - 1);
+                var controlPixels = new int[sample.Width * sample.Height];
+                image.CopyPixels(sample, controlPixels, sample.Width * 4, 0);
+                Require(controlPixels.Distinct().Take(3).Count() == 3,
+                    $"{name} must visibly render the {control.GetType().Name} at {rect}.");
+            }
         }
     }
 

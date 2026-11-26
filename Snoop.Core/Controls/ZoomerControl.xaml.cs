@@ -34,6 +34,15 @@ public partial class ZoomerControl
 
     internal bool IgnoreHitTestVisibility { get; set; } = true;
 
+    public static readonly DependencyProperty BackdropBrightnessProperty = DependencyProperty.Register(
+        nameof(BackdropBrightness), typeof(double), typeof(ZoomerControl), new PropertyMetadata(0.75));
+
+    public double BackdropBrightness
+    {
+        get => (double)this.GetValue(BackdropBrightnessProperty);
+        set => this.SetValue(BackdropBrightnessProperty, value);
+    }
+
     #region Target
 
     /// <summary>
@@ -333,10 +342,7 @@ public partial class ZoomerControl
 
     private void Content_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (this.pointerButton is not null
-            || !this.IsValidTarget
-            || (e.OriginalSource is Visual source
-                && (ReferenceEquals(source, this.ColorSlider) || this.ColorSlider.IsAncestorOf(source))))
+        if (this.pointerButton is not null || !this.IsValidTarget)
         {
             return;
         }

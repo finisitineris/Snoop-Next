@@ -16,7 +16,7 @@
         Width="740" MinWidth="560" Height="48" MinHeight="48"
         AllowsTransparency="True" Background="Transparent" Topmost="True"
         ResizeMode="NoResize" WindowStyle="None" UseLayoutRounding="True" SnapsToDevicePixels="True"
-        Foreground="{DynamicResource SnoopNext.Brush.Text}" FontFamily="Segoe UI" FontSize="13"
+        Foreground="{DynamicResource SnoopNext.Brush.Text}" FontFamily="{DynamicResource SnoopNext.FontFamily.UI}" FontSize="13"
         DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.Resources>
         <ResourceDictionary>

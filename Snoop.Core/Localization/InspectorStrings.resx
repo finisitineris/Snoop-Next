@@ -4,14 +4,18 @@
   <resheader name="version"><value>2.0</value></resheader>
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="en-US.Menu.Help" xml:space="preserve"><value>_Help</value></data>
+  <data name="zh-CN.Menu.Help" xml:space="preserve"><value>帮助(_H)</value></data>
+  <data name="en-US.Menu.FileAccess" xml:space="preserve"><value>_File</value></data>
   <data name="en-US.Menu.File" xml:space="preserve"><value>File</value></data>
+  <data name="zh-CN.Menu.FileAccess" xml:space="preserve"><value>文件(_F)</value></data>
   <data name="zh-CN.Menu.File" xml:space="preserve"><value>文件</value></data>
   <data name="en-US.Menu.View" xml:space="preserve"><value>_View</value></data>
   <data name="zh-CN.Menu.View" xml:space="preserve"><value>视图(_V)</value></data>
   <data name="en-US.Menu.CloseWindow" xml:space="preserve"><value>Close window</value></data>
   <data name="zh-CN.Menu.CloseWindow" xml:space="preserve"><value>关闭窗口</value></data>
-  <data name="en-US.Menu.Settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="zh-CN.Menu.Settings" xml:space="preserve"><value>设置</value></data>
+  <data name="en-US.Menu.Settings" xml:space="preserve"><value>_Settings</value></data>
+  <data name="zh-CN.Menu.Settings" xml:space="preserve"><value>设置(_S)</value></data>
   <data name="en-US.Menu.MakeSettingsApplicationSpecific" xml:space="preserve"><value>Make settings application specific</value></data>
   <data name="zh-CN.Menu.MakeSettingsApplicationSpecific" xml:space="preserve"><value>将设置应用于当前应用</value></data>
   <data name="en-US.Menu.DeleteApplicationSpecificSettings" xml:space="preserve"><value>Delete application specific settings</value></data>
@@ -21,7 +25,7 @@
   <data name="en-US.Menu.ResetSettings" xml:space="preserve"><value>Reset settings</value></data>
   <data name="zh-CN.Menu.ResetSettings" xml:space="preserve"><value>重置设置</value></data>
   <data name="en-US.Menu.TrackingOptions" xml:space="preserve"><value>_Tracking options</value></data>
-  <data name="zh-CN.Menu.TrackingOptions" xml:space="preserve"><value>_跟踪选项</value></data>
+  <data name="zh-CN.Menu.TrackingOptions" xml:space="preserve"><value>跟踪选项(_T)</value></data>
   <data name="en-US.Menu.TrackOnMouseMove" xml:space="preserve"><value>Track on mouse move when CTRL + _SHIFT is pressed</value></data>
   <data name="zh-CN.Menu.TrackOnMouseMove" xml:space="preserve"><value>按住 CTRL + _SHIFT 时在鼠标移动时跟踪</value></data>
   <data name="en-US.Tooltip.TrackOnMouseMove" xml:space="preserve"><value>When enabled and CTRL + _SHIFT is pressed tracks all parts of the UI.</value></data>
@@ -43,7 +47,7 @@
   <data name="en-US.Menu.HighlightOptions" xml:space="preserve"><value>Highlight options ...</value></data>
   <data name="zh-CN.Menu.HighlightOptions" xml:space="preserve"><value>高亮选项…</value></data>
   <data name="en-US.Menu.Debug" xml:space="preserve"><value>_Debug</value></data>
-  <data name="zh-CN.Menu.Debug" xml:space="preserve"><value>_调试</value></data>
+  <data name="zh-CN.Menu.Debug" xml:space="preserve"><value>调试(_D)</value></data>
   <data name="en-US.Menu.LaunchDebugger" xml:space="preserve"><value>Launch debugger</value></data>
   <data name="zh-CN.Menu.LaunchDebugger" xml:space="preserve"><value>启动调试器</value></data>
   <data name="en-US.Menu.SnoopSnoop" xml:space="preserve"><value>Snoop Snoop</value></data>
@@ -224,6 +228,10 @@
   <data name="zh-CN.FilterEditor.Properties" xml:space="preserve"><value>属性：</value></data>
   <data name="en-US.FilterEditor.AddNew" xml:space="preserve"><value>Add new</value></data>
   <data name="zh-CN.FilterEditor.AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="en-US.FilterEditor.MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="zh-CN.FilterEditor.MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="en-US.FilterEditor.MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="zh-CN.FilterEditor.MoveDown" xml:space="preserve"><value>下移</value></data>
   <data name="en-US.FilterEditor.NewFilter" xml:space="preserve"><value>New Filter</value></data>
   <data name="zh-CN.FilterEditor.NewFilter" xml:space="preserve"><value>新建筛选集</value></data>
   <data name="en-US.Common.Delete" xml:space="preserve"><value>Delete</value></data>
@@ -504,6 +512,8 @@
   <data name="zh-CN.DebugListener.ClearFiltersMessage" xml:space="preserve"><value>确定要清除筛选器吗？</value></data>
   <data name="en-US.DebugListener.ClearFiltersTitle" xml:space="preserve"><value>Clear Filters Confirmation</value></data>
   <data name="zh-CN.DebugListener.ClearFiltersTitle" xml:space="preserve"><value>确认清除筛选器</value></data>
+  <data name="en-US.DebugFilter.Remove" xml:space="preserve"><value>Remove filter</value></data>
+  <data name="zh-CN.DebugFilter.Remove" xml:space="preserve"><value>删除筛选条件</value></data>
   <data name="en-US.DebugFilter.Title" xml:space="preserve"><value>Set Filters</value></data>
   <data name="zh-CN.DebugFilter.Title" xml:space="preserve"><value>设置筛选器</value></data>
   <data name="en-US.DebugFilter.GroupFilters" xml:space="preserve"><value>Group Filters</value></data>
@@ -640,10 +650,22 @@
   <data name="zh-CN.Highlight.Close" xml:space="preserve"><value>关闭</value></data>
   <data name="en-US.Highlight.Background" xml:space="preserve"><value>Background</value></data>
   <data name="zh-CN.Highlight.Background" xml:space="preserve"><value>背景</value></data>
-  <data name="en-US.Highlight.BorderBrush" xml:space="preserve"><value>BorderBrush</value></data>
-  <data name="zh-CN.Highlight.BorderBrush" xml:space="preserve"><value>边框画刷</value></data>
-  <data name="en-US.Highlight.BorderThickness" xml:space="preserve"><value>BorderThickness</value></data>
+  <data name="en-US.Highlight.BorderBrush" xml:space="preserve"><value>Border color</value></data>
+  <data name="zh-CN.Highlight.BorderBrush" xml:space="preserve"><value>边框颜色</value></data>
+  <data name="en-US.Highlight.BorderThickness" xml:space="preserve"><value>Border thickness</value></data>
   <data name="zh-CN.Highlight.BorderThickness" xml:space="preserve"><value>边框粗细</value></data>
+  <data name="en-US.Highlight.NoFill" xml:space="preserve"><value>No fill</value></data>
+  <data name="zh-CN.Highlight.NoFill" xml:space="preserve"><value>无填充</value></data>
+  <data name="en-US.Highlight.ColorHelp" xml:space="preserve"><value>Enter a color name or #AARRGGBB. Leave the background blank for no fill.</value></data>
+  <data name="zh-CN.Highlight.ColorHelp" xml:space="preserve"><value>请输入颜色名称或 #AARRGGBB。背景留空表示无填充。</value></data>
+  <data name="en-US.Highlight.InvalidColor" xml:space="preserve"><value>Enter a valid color, such as #80FF0000.</value></data>
+  <data name="zh-CN.Highlight.InvalidColor" xml:space="preserve"><value>请输入有效颜色，例如 #80FF0000。</value></data>
+  <data name="en-US.Highlight.InvalidThickness" xml:space="preserve"><value>Enter a finite number of zero or greater.</value></data>
+  <data name="zh-CN.Highlight.InvalidThickness" xml:space="preserve"><value>请输入大于或等于零的有限数值。</value></data>
+  <data name="en-US.Highlight.SelectedElement" xml:space="preserve"><value>Selected element</value></data>
+  <data name="zh-CN.Highlight.SelectedElement" xml:space="preserve"><value>选中的元素</value></data>
+  <data name="en-US.Highlight.Reset" xml:space="preserve"><value>Restore defaults</value></data>
+  <data name="zh-CN.Highlight.Reset" xml:space="preserve"><value>恢复默认值</value></data>
   <data name="en-US.Previewer.MagnifyTip" xml:space="preserve"><value>Bring up the Magnify window on the currently selected object.</value></data>
   <data name="zh-CN.Previewer.MagnifyTip" xml:space="preserve"><value>在放大窗口中查看当前所选对象。</value></data>
   <data name="en-US.Previewer.ToggleTip" xml:space="preserve"><value>Enable/disable preview area (i.e. the display of the currently selected object).</value></data>

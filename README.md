@@ -22,6 +22,8 @@ You can change property values, view triggers, set breakpoints on property chang
 - [AppVeyor](https://ci.appveyor.com/project/batzen/snoopwpf/build/artifacts) for the latest preview versions (built on every code change)
 - You need at least .NET Framework 4.6.2 to run Snoop
 
+Use `Snoop.exe` to open the graphical launcher. The package also includes `Snoop.com`, a Windows console executable that uses the same command parser and writes its help and errors to the terminal. Run `.\Snoop.com --help` from the installation directory to see the available commands.
+
 ## Supported .NET versions
 
 - .NET Framework >= 4.6.2

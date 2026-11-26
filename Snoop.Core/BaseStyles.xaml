@@ -3447,8 +3447,8 @@
         <Setter Property="Background" Value="{DynamicResource ToolTip.Background}" />
         <Setter Property="BorderBrush" Value="{DynamicResource ToolTip.Border}" />
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="FontFamily" Value="{DynamicResource {x:Static SystemFonts.StatusFontFamilyKey}}" />
-        <Setter Property="FontSize" Value="{DynamicResource {x:Static SystemFonts.StatusFontSizeKey}}" />
+        <Setter Property="FontFamily" Value="{DynamicResource SnoopNext.FontFamily.UI}" />
+        <Setter Property="FontSize" Value="{DynamicResource SnoopNext.FontSize.UI}" />
         <Setter Property="FontStyle" Value="{DynamicResource {x:Static SystemFonts.StatusFontStyleKey}}" />
         <Setter Property="FontWeight" Value="{DynamicResource {x:Static SystemFonts.StatusFontWeightKey}}" />
         <Setter Property="Foreground" Value="{DynamicResource ToolTip.Foreground}" />

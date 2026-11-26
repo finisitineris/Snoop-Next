@@ -24,6 +24,33 @@
   <data name="Settings.Chinese" xml:space="preserve"><value>Chinese (Simplified)</value></data>
   <data name="Settings.English" xml:space="preserve"><value>English (United States)</value></data>
   <data name="Settings.FollowSystem" xml:space="preserve"><value>Follow system</value></data>
+  <data name="Settings.LauncherSection" xml:space="preserve"><value>Launcher</value></data>
+  <data name="Settings.InspectorSection" xml:space="preserve"><value>Inspection</value></data>
+  <data name="Settings.ToolsSection" xml:space="preserve"><value>External tools</value></data>
+  <data name="Settings.GlobalHotKey" xml:space="preserve"><value>Global shortcut</value></data>
+  <data name="Settings.ShortcutHelp" xml:space="preserve"><value>Select the shortcut and press a combination, such as Ctrl+Shift+F8.</value></data>
+  <data name="Settings.ShortcutListening" xml:space="preserve"><value>Press shortcut…</value></data>
+  <data name="Settings.ShortcutRecordingHelp" xml:space="preserve"><value>Press a combination such as Ctrl+Shift+F8. Esc cancels.</value></data>
+  <data name="Settings.ShortcutNeedsModifier" xml:space="preserve"><value>Hold a modifier with the key, for example Ctrl+Shift+F8.</value></data>
+  <data name="Settings.ShortcutNeedsKey" xml:space="preserve"><value>Keep the modifier held and press another key.</value></data>
+  <data name="Settings.ShortcutReserved" xml:space="preserve"><value>This combination is used by Windows or common app commands. Choose another.</value></data>
+  <data name="Settings.ShortcutWindows" xml:space="preserve"><value>For a shortcut with Win, also hold Ctrl or Shift.</value></data>
+  <data name="Settings.ShortcutAlt" xml:space="preserve"><value>For a shortcut with Alt, also hold Ctrl. Try Ctrl+Alt+F8.</value></data>
+  <data name="Settings.ShortcutUnsupported" xml:space="preserve"><value>This key cannot be recorded. Choose another key.</value></data>
+  <data name="Settings.ShortcutReset" xml:space="preserve"><value>Reset</value></data>
+  <data name="Settings.ShortcutDisable" xml:space="preserve"><value>Disable</value></data>
+  <data name="Settings.ShortcutDisabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="Settings.StartMinimized" xml:space="preserve"><value>Start the launcher minimized</value></data>
+  <data name="Settings.MultipleAppDomains" xml:space="preserve"><value>Multiple application domains</value></data>
+  <data name="Settings.MultipleDispatchers" xml:space="preserve"><value>Multiple UI dispatchers</value></data>
+  <data name="Settings.ModeAsk" xml:space="preserve"><value>Ask each time</value></data>
+  <data name="Settings.ModeAlways" xml:space="preserve"><value>Always use</value></data>
+  <data name="Settings.ModeNever" xml:space="preserve"><value>Never use</value></data>
+  <data name="Settings.SetOwnerWindow" xml:space="preserve"><value>Make the target window the owner of the inspector</value></data>
+  <data name="Settings.ShowActivated" xml:space="preserve"><value>Activate the inspector when it opens</value></data>
+  <data name="Settings.EnableDiagnostics" xml:space="preserve"><value>Enable diagnostics</value></data>
+  <data name="Settings.ILSpyPath" xml:space="preserve"><value>ILSpy executable path</value></data>
+  <data name="Settings.SaveFailed" xml:space="preserve"><value>Couldn’t save settings. Check that the settings file is writable and try again.</value></data>
   <data name="Settings.SaveAndClose" xml:space="preserve"><value>Save &amp; close</value></data>
   <data name="Settings.DiscardChanges" xml:space="preserve"><value>Discard changes</value></data>
   <data name="Settings.ResetAll" xml:space="preserve"><value>Reset all settings</value></data>

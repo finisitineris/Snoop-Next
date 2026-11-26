@@ -13,10 +13,12 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Snoop.Controls;
 using Snoop.Core;
+using Snoop.Infrastructure;
 using Snoop.Infrastructure.Diagnostics;
 using Snoop.Localization;
 using Snoop.Views;
 using Snoop.Windows;
+using CoreSettings = Snoop.Core.Settings;
 
 internal static class InspectorTableSmoke
 {
@@ -103,6 +105,7 @@ internal static class InspectorTableSmoke
                 VerifyDataGrid(window, theme);
             }
 
+            VerifyPropertyEditorLayout(window);
             VerifyPropertyFilterToolbar(window);
         }
         finally
@@ -113,6 +116,121 @@ internal static class InspectorTableSmoke
         }
 
         Console.WriteLine("PASS: both themes cover actual diagnostic/provider and property tables, plus editable and read-only WPF DataGrid cells.");
+    }
+
+    private static void VerifyPropertyEditorLayout(Window window)
+    {
+        var target = new Button { Background = Brushes.AliceBlue };
+        var grid = new PropertyGrid2
+        {
+            Filter = new PropertyFilter(string.Empty, true)
+            {
+                SelectedFilterSet = new PropertyFilterSet { Properties = new[] { "ActualWidth", "MinWidth", "Name", "Visibility", "IsDefault", "Background" } }
+            },
+            Target = target
+        };
+        window.Content = grid;
+        ThemeManager.Current.ApplyTheme(ThemeMode.Light, window);
+        var list = (ListView)grid.FindName("ListView");
+        var column = ((GridView)list.View).Columns[2];
+        PropertyInformation Row(DependencyProperty dp) => list.Items.OfType<PropertyInformation>().Single(item => item.DependencyProperty == dp);
+        PropertyOriginFilterSmoke.Await(() => list.Items.OfType<PropertyInformation>().Any(item => item.DependencyProperty == UIElement.VisibilityProperty),
+            "The property grid must realize the editor fixture.");
+
+        void VerifyWidth(FrameworkElement input, double accessoryAllowance)
+        {
+            grid.UpdateLayout();
+            var header = Descendants(list).OfType<GridViewColumnHeader>().Single(h => ReferenceEquals(h.Column, column));
+            var field = input.TransformToAncestor(list).TransformBounds(new Rect(input.RenderSize));
+            var cell = header.TransformToAncestor(list).TransformBounds(new Rect(header.RenderSize));
+            if (!input.IsVisible || field.Width < cell.Width - accessoryAllowance || field.Left < cell.Left - 2 || field.Right > cell.Right + 2)
+            {
+                throw new InvalidOperationException($"The {input.GetType().Name} must use the available value column. Field {field}, column {cell}.");
+            }
+
+            var minimumHeight = CoreSettings.Default.WorkbenchDensity == CoreSettings.CompactDensity ? 22 : 24;
+            if (input is EditTextBox editor && (editor.FontSize != 13 || editor.Padding.Left < 4 || editor.ActualHeight < minimumHeight))
+            {
+                throw new InvalidOperationException($"The property input must provide a readable font and room to type. Height {field.Height}, font {editor.FontSize}, padding {editor.Padding}.");
+            }
+        }
+
+        var numeric = PropertyOriginFilterSmoke.SelectTextEditor(list, Row(FrameworkElement.MinWidthProperty));
+        if (numeric.Text != "0")
+        {
+            throw new InvalidOperationException("The numeric width fixture must start with a single digit.");
+        }
+
+        var originalDensity = CoreSettings.Default.WorkbenchDensity;
+        try
+        {
+            foreach (var density in new[] { CoreSettings.ComfortableDensity, CoreSettings.CompactDensity })
+            {
+                CoreSettings.Default.WorkbenchDensity = density;
+                Drain();
+                VerifyWidth(numeric, 48);
+                var row = (ListViewItem)list.ItemContainerGenerator.ContainerFromItem(list.SelectedItem);
+                if (row.ActualHeight > row.MinHeight + 1 || numeric.ActualHeight > row.ActualHeight)
+                {
+                    throw new InvalidOperationException($"The numeric editor must fit the {density} row. Field {numeric.ActualHeight}, row {row.ActualHeight}.");
+                }
+            }
+        }
+        finally
+        {
+            CoreSettings.Default.WorkbenchDensity = originalDensity;
+            Drain();
+        }
+
+        LauncherAppearanceSmoke.CaptureIfRequested(grid, "property-value-editor-zh-CN");
+        grid.HorizontalAlignment = HorizontalAlignment.Left;
+        grid.Width = 354;
+        VerifyWidth(numeric, 48);
+        var narrowBounds = numeric.TransformToAncestor(list).TransformBounds(new Rect(numeric.RenderSize));
+        if (Rect.Intersect(narrowBounds, new Rect(list.RenderSize)).Width < 88)
+        {
+            throw new InvalidOperationException("A one-digit value needs room to type in the default-width Properties pane.");
+        }
+
+        LauncherAppearanceSmoke.CaptureIfRequested(grid, "property-value-editor-narrow-zh-CN");
+        grid.Width = double.NaN;
+        grid.HorizontalAlignment = HorizontalAlignment.Stretch;
+        foreach (var width in new[] { 104d, 320d })
+        {
+            column.Width = width;
+            VerifyWidth(numeric, 48);
+        }
+
+        PropertyOriginFilterSmoke.CommitText(numeric, "25");
+        if (target.MinWidth != 25 || !Row(FrameworkElement.MinWidthProperty).IsValueChangedByUser)
+        {
+            throw new InvalidOperationException("Pressing Enter in the resized value cell must commit and mark the row.");
+        }
+
+        var text = PropertyOriginFilterSmoke.SelectTextEditor(list, Row(FrameworkElement.NameProperty));
+        if (!string.IsNullOrEmpty(text.Text) || numeric.IsVisible)
+        {
+            throw new InvalidOperationException("Moving to the empty string must close the previous in-place editor.");
+        }
+
+        VerifyWidth(text, 68);
+        var enumRow = PropertyOriginFilterSmoke.SelectRow(list, Row(UIElement.VisibilityProperty));
+        VerifyWidth(Descendants(enumRow).OfType<ComboBox>().Single(), 80);
+        var brush = PropertyOriginFilterSmoke.SelectTextEditor(list, Row(Control.BackgroundProperty));
+        VerifyWidth(brush, 160);
+        var readOnly = PropertyOriginFilterSmoke.SelectTextEditor(list, Row(FrameworkElement.ActualWidthProperty));
+        VerifyWidth(readOnly, 32);
+        if (!readOnly.IsReadOnly)
+        {
+            throw new InvalidOperationException("The expanded ActualWidth field must stay read-only.");
+        }
+
+        var booleanRow = PropertyOriginFilterSmoke.SelectRow(list, Row(Button.IsDefaultProperty));
+        var check = Descendants(booleanRow).OfType<CheckBox>().Single(item => item.Name == "PART_CheckBox");
+        if (check.ActualWidth < 12 || check.ActualWidth > 32)
+        {
+            throw new InvalidOperationException("The Boolean editor must keep its compact checkbox.");
+        }
     }
 
     private static void VerifyPropertyFilterToolbar(Window window)

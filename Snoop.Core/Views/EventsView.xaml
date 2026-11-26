@@ -18,6 +18,7 @@
       x:Name="Events"
       MinWidth="0"
       MinHeight="0"
+      SizeChanged="HandleDockSizeChanged"
       mc:Ignorable="d">
     <Grid.Resources>
         <ResourceDictionary>
@@ -49,33 +50,17 @@
 
             <HierarchicalDataTemplate DataType="{x:Type infrastructure:TrackedEvent}"
                                       ItemsSource="{Binding Stack}">
-                <Grid x:Name="Grid"
-                      Background="Transparent">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <StackPanel Background="Transparent">
                     <StackPanel Orientation="Horizontal">
-                        <ContentControl Content="{Binding EventArgsText}"
-                                        Focusable="False" />
+                        <TextBlock Text="{Binding EventArgsText}" />
                         <TextBlock Text="{localization:InspectorLoc Events.On}" />
                         <TextBlock Text="{Binding Originator.Handler, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
                     </StackPanel>
-                    <ContentControl x:Name="Handler"
-                                    Grid.Row="1"
-                                    Grid.ColumnSpan="2"
-                                    Focusable="False"
-                                    Visibility="Collapsed">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{localization:InspectorLoc Events.HandledBy}" />
-                            <TextBlock Text="{Binding HandledBy, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
-                        </StackPanel>
-                    </ContentControl>
-                </Grid>
+                    <StackPanel x:Name="Handler" Orientation="Horizontal" Visibility="Collapsed">
+                        <TextBlock Text="{localization:InspectorLoc Events.HandledBy}" />
+                        <TextBlock Text="{Binding HandledBy, Converter={x:Static converters:ObjectToStringConverter.Instance}}" />
+                    </StackPanel>
+                </StackPanel>
                 <HierarchicalDataTemplate.Triggers>
                     <DataTrigger Binding="{Binding Handled}" Value="True">
                         <Setter TargetName="Handler" Property="Visibility" Value="Visible" />
@@ -145,7 +130,7 @@
         </Button.ToolTip>
     </Button>
 
-    <Grid Grid.Row="1" Margin="0 2">
+    <Grid x:Name="FilterRow" Grid.Row="1" Margin="0 2">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -153,6 +138,7 @@
         </Grid.ColumnDefinitions>
 
         <Label x:Name="EventFilterLabel"
+               MinHeight="0"
                Padding="2 2 6 2"
                VerticalAlignment="Center"
                Content="{localization:InspectorLoc Events.Filter}"
@@ -160,17 +146,19 @@
         <TextBox x:Name="EventFilter"
                  Grid.Column="1"
                  MinWidth="0"
+                 MinHeight="0"
                  Padding="4 2"
                  FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
                  ToolTip="{localization:InspectorLoc Events.FilterTip}"
                  TextChanged="HandleEventFilterTextChanged" />
         <StackPanel Grid.Column="2" Margin="6 0 0 0" Orientation="Horizontal">
-            <Label Padding="0 2 4 2"
+            <Label x:Name="MaxEventsLabel" MinHeight="0" Padding="0 2 4 2"
                    VerticalAlignment="Center"
                    Content="{localization:InspectorLoc Events.MaximumDisplayed}"
                    Target="{Binding ElementName=MaxEventsEditor}" />
             <TextBox x:Name="MaxEventsEditor"
                      Width="46"
+                     MinHeight="0"
                      Padding="4 2"
                      FocusVisualStyle="{DynamicResource SnoopNext.WorkbenchFocusVisual}"
                      Text="{Binding ElementName=Events, Path=MaxEventsDisplayed}" />

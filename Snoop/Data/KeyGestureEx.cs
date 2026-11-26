@@ -33,7 +33,7 @@ public class KeyGestureEx : KeyGesture, IEquatable<KeyGestureEx>
 
     public override bool Matches(object? targetElement, InputEventArgs inputEventArgs)
     {
-        if (inputEventArgs is not KeyEventArgs keyEventArgs)
+        if (this.Key == Key.None || inputEventArgs is not KeyEventArgs keyEventArgs)
         {
             return false;
         }

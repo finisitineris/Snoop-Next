@@ -43,7 +43,7 @@ internal static class InspectorRemainingViewSmoke
             var shell = new EmbeddedShellView();
             var autoExpand = (TextBlock)Find<CheckBox>(shell, "autoExpandCheckBox").Content;
             var previewer = new Previewer();
-            var screenshot = ((Grid)previewer.Content).Children.OfType<Button>()
+            var screenshot = Find<Grid>(previewer, "PreviewToolbar").Children.OfType<Button>()
                 .Single(button => button.Command == Previewer.ScreenshotCommand);
             var screenshotTip = (TextBlock)screenshot.ToolTip;
 
