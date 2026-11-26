@@ -49,7 +49,7 @@ internal static class LauncherSettingsFormSmoke
             LocalizationManager.Default.SetLanguage(settings.LanguageTag);
             var committed = File.ReadAllBytes(file);
 
-            ShowForm((window, view) =>
+            ShowForm("record and save", (window, view) =>
             {
                 VerifyLayout(window, view, capture: true);
                 VerifyForm(view, defaults);
@@ -67,7 +67,7 @@ internal static class LauncherSettingsFormSmoke
 
             VerifySaved(edited);
             committed = File.ReadAllBytes(file);
-            ShowForm((window, view) =>
+            ShowForm("reset and cancel", (window, view) =>
             {
                 VerifyForm(view, edited);
                 VerifyLayout(window, view, capture: false);
@@ -79,7 +79,7 @@ internal static class LauncherSettingsFormSmoke
             }, save: false);
             RequireUnchanged(edited, committed);
 
-            ShowForm((_, view) =>
+            ShowForm("disable and save", (_, view) =>
             {
                 VerifyForm(view, edited);
                 Click(view, "DisableShortcut");
@@ -89,7 +89,7 @@ internal static class LauncherSettingsFormSmoke
             Require(reloaded.GlobalHotKey?.Key is null or Key.None && settings.GlobalHotKey?.Key is null or Key.None,
                 "Clearing the shortcut must disable it both live and after a restart.");
 
-            ShowForm((_, view) =>
+            ShowForm("restore all defaults", (_, view) =>
             {
                 Require(Equals(Find<Button>(view, "GlobalHotKeyEditor").Content, LocalizationManager.Default["Settings.ShortcutDisabled"]),
                     "A disabled shortcut must reopen with an explicit localized status.");
@@ -102,7 +102,7 @@ internal static class LauncherSettingsFormSmoke
             // A gesture recorded in an earlier release remains usable on an unrelated save.
             settings.GlobalHotKey = new KeyGestureEx(Key.F6);
             settings.Save();
-            ShowForm((_, view) =>
+            ShowForm("preserve earlier shortcut", (_, view) =>
             {
                 Require(Equals(Find<Button>(view, "GlobalHotKeyEditor").Content, "F6"), "The stored legacy shortcut must be displayed.");
                 Find<CheckBox>(view, "EnableDiagnosticsCheckBox").IsChecked = false;
@@ -137,14 +137,16 @@ internal static class LauncherSettingsFormSmoke
         }
     }
 
-    private static void ShowForm(Action<SettingsWindow, SettingsView> interact, bool save)
+    private static void ShowForm(string scenario, Action<SettingsWindow, SettingsView> interact, bool save)
     {
+        Console.WriteLine("Launcher settings opening: " + scenario);
         var window = new SettingsWindow();
         Exception? failure = null;
         window.ContentRendered += (_, _) => window.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
         {
             try
             {
+                Console.WriteLine("Launcher settings ready: " + scenario);
                 var hwnd = new WindowInteropHelper(window).Handle;
                 const int captionAndSystemMenu = 0x00C80000;
                 const int toolWindow = 0x00000080;
@@ -168,6 +170,7 @@ internal static class LauncherSettingsFormSmoke
         }));
 
         var result = window.ShowDialog();
+        Console.WriteLine("Launcher settings closed: " + scenario);
         if (failure is not null)
         {
             ExceptionDispatchInfo.Capture(failure).Throw();
@@ -308,6 +311,7 @@ internal static class LauncherSettingsFormSmoke
         var button = Find<Button>(view, "GlobalHotKeyEditor");
         var hint = Find<TextBlock>(view, "ShortcutHint");
         var text = LocalizationManager.Default;
+        Console.WriteLine("Recorder: validating individual keys (" + text.LanguageTag + ").");
         Find<Button>(view, "ResetShortcut").Focus();
         button.Focus();
         Require(button.IsKeyboardFocused && Equals(button.Content, text["Settings.ShortcutListening"]),
@@ -320,12 +324,12 @@ internal static class LauncherSettingsFormSmoke
 
         Drain();
         InspectorFlyoutSmoke.CaptureFramed(view, "settings-shortcut-validation-" + text.LanguageTag);
+        Console.WriteLine("Recorder: validating modifiers and reserved shortcuts.");
         SendKey(view, Key.F8, ModifierKeys.Alt);
         Require(hint.Text == text["Settings.ShortcutAlt"], "An Alt shortcut without Ctrl must explain the launcher's modifier requirement.");
         SendKey(view, Key.L, ModifierKeys.Windows);
         Require(hint.Text == text["Settings.ShortcutWindows"], "A Windows shortcut must explain which additional modifiers are supported.");
         SendKey(view, Key.LeftCtrl, ModifierKeys.Control);
-        SendKey(view, Key.LeftCtrl, release: true);
         Require(hint.Text == text["Settings.ShortcutNeedsKey"], "A lone modifier must explain the missing second key.");
         foreach (var gesture in new KeyGestureEx[]
                  {
@@ -343,6 +347,7 @@ internal static class LauncherSettingsFormSmoke
             Require(hint.Text == text["Settings.ShortcutReserved"], "The recorder accepted a reserved combination: " + gesture);
         }
 
+        Console.WriteLine("Recorder: checking validation, cancellation and reset.");
         Click(view, "SaveSettingsAndClose");
         Require(Window.GetWindow(view).IsVisible && hint.IsVisible && hint.Text == text["Settings.ShortcutReserved"],
             "An unresolved shortcut error must keep the form open.");
@@ -353,6 +358,7 @@ internal static class LauncherSettingsFormSmoke
         var defaultKey = new HostSettings().GlobalHotKey!;
         VerifyForm(view, edited, expectedShortcut: defaultKey);
 
+        Console.WriteLine("Recorder: checking focus traversal.");
         Click(view, "GlobalHotKeyEditor");
         SendKey(view, Key.Tab);
         Require(Find<Button>(view, "ResetShortcut").IsKeyboardFocused, "Tab must move from the recorder to the shortcut reset action.");
@@ -360,6 +366,7 @@ internal static class LauncherSettingsFormSmoke
         SendKey(view, Key.Tab, ModifierKeys.Shift);
         Require(Find<ComboBox>(view, "LanguageSelector").IsKeyboardFocusWithin, "Shift+Tab must return to the language selector.");
 
+        Console.WriteLine("Recorder: recording the default and custom combinations.");
         Click(view, "GlobalHotKeyEditor");
         SendKey(view, defaultKey.Key, defaultKey.Modifiers);
         Require(Equals(button.Content, defaultKey.ToString()), "The recorder must accept the factory shortcut including the Windows modifier.");
@@ -371,7 +378,7 @@ internal static class LauncherSettingsFormSmoke
 
     // Set only this UI thread's keyboard state and pass the key through WPF's input manager.
     // This exercises preview, bubbling, and focus traversal without sending desktop-wide keystrokes.
-    private static void SendKey(SettingsView view, Key key, ModifierKeys modifiers = ModifierKeys.None, bool release = false)
+    private static void SendKey(SettingsView view, Key key, ModifierKeys modifiers = ModifierKeys.None)
     {
         var element = Find<Button>(view, "GlobalHotKeyEditor");
         Require(element.IsKeyboardFocused, "Keyboard input must target the focused recorder.");
@@ -398,22 +405,38 @@ internal static class LauncherSettingsFormSmoke
             state[0x5B] = 0x80;
         }
 
-        state[KeyInterop.VirtualKeyFromKey(key)] = release ? (byte)0 : (byte)0x80;
+        var virtualKey = KeyInterop.VirtualKeyFromKey(key);
+        state[virtualKey] = 0x80;
+        var source = PresentationSource.FromVisual(element);
         try
         {
             Require(SetKeyboardState(state), "Unable to set the smoke thread's modifier state.");
-            var input = new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(element), Environment.TickCount, key)
+            Deliver(Keyboard.PreviewKeyDownEvent);
+            state[virtualKey] = 0;
+            if (key == Key.LeftCtrl)
             {
-                RoutedEvent = release ? Keyboard.PreviewKeyUpEvent : Keyboard.PreviewKeyDownEvent,
-                Source = element
-            };
-            InputManager.Current.ProcessInput(input);
+                // The standalone Ctrl test releases both its left-hand and aggregate virtual keys.
+                state[0x11] = 0;
+            }
+
+            Require(SetKeyboardState(state), "Unable to release the smoke key.");
+            Deliver(Keyboard.PreviewKeyUpEvent);
         }
         finally
         {
             var restored = new byte[256];
             Require(SetKeyboardState(previous) && GetKeyboardState(restored) && restored.SequenceEqual(previous),
                 "The smoke thread's keyboard state was not restored after input.");
+        }
+
+        void Deliver(RoutedEvent routedEvent)
+        {
+            var input = new KeyEventArgs(Keyboard.PrimaryDevice, source, Environment.TickCount, key)
+            {
+                RoutedEvent = routedEvent,
+                Source = Keyboard.FocusedElement
+            };
+            InputManager.Current.ProcessInput(input);
         }
     }
 

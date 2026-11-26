@@ -102,8 +102,24 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Snoop host settings smoke compilation failed' }
           $smoke = 'bin/Release/net462/Snoop.Host.SettingsSmoke.exe'
           if (-not (Test-Path $smoke)) { throw "Missing CLR4 smoke executable: $smoke" }
-          & $smoke
-          if ($LASTEXITCODE -ne 0) { throw 'Snoop host/inspector UI smoke failed' }
+          $stdout = Join-Path $env:RUNNER_TEMP 'snoop-settings-smoke.stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'snoop-settings-smoke.stderr.log'
+          $process = Start-Process -FilePath (Resolve-Path $smoke).Path -WorkingDirectory $PWD.Path -NoNewWindow -PassThru `
+            -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          try {
+            $finished = $process.WaitForExit(160000)
+            if ($finished) { $process.WaitForExit() }
+            Get-Content -LiteralPath $stdout
+            Get-Content -LiteralPath $stderr | ForEach-Object { [Console]::Error.WriteLine($_) }
+            if (-not $finished) {
+              $process.Refresh()
+              throw "UI smoke exceeded 160 seconds. PID $($process.Id), main window title '$($process.MainWindowTitle)'."
+            }
+            if ($process.ExitCode -ne 0) { throw "Snoop host/inspector UI smoke failed (exit $($process.ExitCode))." }
+          } finally {
+            if (-not $process.HasExited) { $process.Kill() }
+            $process.Dispose()
+          }
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

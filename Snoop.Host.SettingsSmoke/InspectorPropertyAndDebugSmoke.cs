@@ -85,6 +85,8 @@ internal static class InspectorPropertyAndDebugSmoke
     {
         var traceSwitch = PresentationTraceSources.DataBindingSource.Switch;
         var originalLevel = traceSwitch.Level;
+        var savedFilters = Snoop.Core.Settings.Default.SnoopDebugFilters;
+        var originalFilters = savedFilters.ToArray();
         try
         {
             localization.SetLanguage("zh-CN");
@@ -151,15 +153,13 @@ internal static class InspectorPropertyAndDebugSmoke
             }
             finally
             {
-                Find<Button>(dialog, "buttonSetFilter").Focus();
-                DrainDispatcher();
-                dialogModel.ResetDirtyFlag();
-                dialog.Close();
+                Find<Button>(dialog, "buttonSetFilter").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
             }
         }
         finally
         {
             traceSwitch.Level = originalLevel;
+            savedFilters.UpdateWith(originalFilters);
         }
     }
 

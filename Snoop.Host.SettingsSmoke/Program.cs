@@ -251,8 +251,9 @@ internal static class Program
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     var surfaceFailures = new List<Exception>();
-                    CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));
+                    CheckSurface(InspectorTableSmoke.Verify);
                     CheckSurface(HighlightSettingsFormSmoke.Verify);
+                    CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));
                     Thread.CurrentThread.CurrentUICulture = CultureInfo.GetCultureInfo("de-DE");
                     var inspector = new SnoopUI();
                     try
@@ -310,7 +311,6 @@ internal static class Program
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
                         CheckSurface(() => InspectorFlyoutSmoke.Verify(inspector));
-                        CheckSurface(InspectorTableSmoke.Verify);
                         CheckSurface(PropertyOriginSmoke.Verify);
                         CheckSurface(PropertyOriginFilterSmoke.Verify);
                         CheckSurface(PropertyEditFeedbackSmoke.Verify);
@@ -331,7 +331,7 @@ internal static class Program
 
                     void CheckSurface(Action check)
                     {
-                        Console.WriteLine("Checking " + check.Method.Name);
+                        Console.WriteLine($"Checking {check.Method.DeclaringType?.Name}.{check.Method.Name}");
                         try
                         {
                             check();
