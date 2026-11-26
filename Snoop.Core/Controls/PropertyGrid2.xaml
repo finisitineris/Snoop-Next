@@ -123,6 +123,7 @@
     <Grid.RowDefinitions>
         <RowDefinition Height="*" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <ListView x:Name="ListView"
@@ -158,6 +159,12 @@
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="MinHeight" Value="30" />
                 <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsValueChangedByUser}" Value="True">
+                        <Setter Property="AutomationProperties.ItemStatus" Value="{localization:InspectorLoc PropertyGrid.Edited}" />
+                    </DataTrigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="AutomationProperties.HelpText" Value="{Binding Text, ElementName=PropertyEditFeedback}" />
+                    </Trigger>
                     <DataTrigger Binding="{Binding WorkbenchDensity, Source={x:Static core:Settings.Default}}"
                                  Value="{x:Static core:Settings.CompactDensity}">
                         <Setter Property="MinHeight" Value="24" />
@@ -215,12 +222,16 @@
                     </GridViewColumn.Header>
                     <GridViewColumn.CellTemplate>
                         <DataTemplate DataType="infrastructure:PropertyInformation">
-                            <TextBlock MouseLeftButtonDown="HandleNameClick"
-                                       Text="{Binding DisplayName}">
-                                <TextBlock.ToolTip>
-                                    <TextBlock Text="{Binding DisplayName}" />
-                                </TextBlock.ToolTip>
-                            </TextBlock>
+                            <DockPanel>
+                                <TextBlock x:Name="EditedMarker" DockPanel.Dock="Right" Margin="5 0 2 0"
+                                           Text="{localization:InspectorLoc PropertyGrid.Edited}" FontWeight="SemiBold"
+                                           Visibility="{Binding IsValueChangedByUser, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}" />
+                                <TextBlock MouseLeftButtonDown="HandleNameClick" Text="{Binding DisplayName}" TextTrimming="CharacterEllipsis">
+                                    <TextBlock.ToolTip>
+                                        <TextBlock Text="{Binding DisplayName}" />
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
+                            </DockPanel>
                         </DataTemplate>
                     </GridViewColumn.CellTemplate>
                 </GridViewColumn>
@@ -320,7 +331,32 @@
         </ListView.View>
     </ListView>
 
-    <Border x:Name="OriginDetailsPanel" Grid.Row="1" Visibility="Collapsed" DataContext="{x:Null}"
+    <TextBlock x:Name="PropertyEditFeedback" Grid.Row="1" Margin="8 3" TextWrapping="Wrap"
+               DataContext="{Binding SelectedItem, ElementName=ListView}">
+        <TextBlock.Style>
+            <Style TargetType="{x:Type TextBlock}">
+                <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding CanEdit}" Value="False">
+                        <Setter Property="Text" Value="{localization:InspectorLoc PropertyGrid.ReadOnlyHint}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding EditValidation}" Value="InvalidFormat">
+                        <Setter Property="Text" Value="{localization:InspectorLoc ValueEditor.InvalidFormat}" />
+                        <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Error}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding EditValidation}" Value="RejectedValue">
+                        <Setter Property="Text" Value="{localization:InspectorLoc ValueEditor.RejectedValue}" />
+                        <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Error}" />
+                    </DataTrigger>
+                    <Trigger Property="Text" Value="">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </TextBlock.Style>
+    </TextBlock>
+
+    <Border x:Name="OriginDetailsPanel" Grid.Row="2" Visibility="Collapsed" DataContext="{x:Null}"
             Padding="8 5" BorderThickness="0 1 0 0"
             BorderBrush="{DynamicResource SnoopNext.Brush.Border}" Background="{DynamicResource SnoopNext.Brush.Panel}">
         <DockPanel>

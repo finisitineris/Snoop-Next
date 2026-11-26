@@ -145,30 +145,49 @@ public abstract class ValueEditor : ContentControl
     {
     }
 
-    internal static void CommitUserValue(PropertyInformation? property, object? value)
+    internal static bool CommitUserValue(PropertyInformation? property, object? value)
     {
         if (property is not { CanEdit: true, Property: not null }
             || BindingOperations.GetBindingExpressionBase(property, PropertyInformation.ValueProperty) is not { } binding)
         {
-            return;
+            return false;
         }
 
         var previous = property.Value;
         if (Equals(previous, value))
         {
-            return;
+            property.SetEditValidation(PropertyEditValidation.None);
+            return true;
         }
 
+        // Validate before writing through the inspector binding, especially when the
+        // inspected property itself contains a binding expression.
+        if (property.DependencyProperty?.IsValidValue(value) == false)
+        {
+            return false;
+        }
+
+        property.SetEditValidation(PropertyEditValidation.None);
         property.SetCurrentValue(PropertyInformation.ValueProperty, value);
+        var sourceAcceptedValue = binding.Status == BindingStatus.Active;
         // A target setter can reject, coerce or normalize the proposed value.
         // Read it back through the same binding that the property grid displays.
-        if (binding.Status != BindingStatus.Detached)
+        if (binding.Status == BindingStatus.Detached)
         {
-            binding.UpdateTarget();
-            if (binding.Status == BindingStatus.Active && !Equals(previous, property.Value))
-            {
-                property.IsValueChangedByUser = true;
-            }
+            return false;
         }
+
+        binding.UpdateTarget();
+        if (!sourceAcceptedValue || binding.Status != BindingStatus.Active)
+        {
+            return false;
+        }
+
+        if (!Equals(previous, property.Value))
+        {
+            property.IsValueChangedByUser = true;
+        }
+
+        return true;
     }
 }

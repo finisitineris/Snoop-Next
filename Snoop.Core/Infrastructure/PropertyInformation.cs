@@ -92,7 +92,14 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
             }
 
             binding.Source = target;
-            binding.Mode = GetBindingMode();
+            if (property.IsReadOnly || dp?.ReadOnly == true)
+            {
+                binding.Mode = dp is not null || target is INotifyPropertyChanged ? BindingMode.OneWay : BindingMode.OneTime;
+            }
+            else
+            {
+                binding.Mode = BindingMode.TwoWay;
+            }
 
             try
             {
@@ -109,16 +116,6 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
         this.Update();
 
         this.isRunning = true;
-        return;
-
-        BindingMode GetBindingMode()
-        {
-            var targetSupportsNotifications = target is INotifyPropertyChanged;
-
-            return property.IsReadOnly
-                ? targetSupportsNotifications ? BindingMode.OneWay : BindingMode.OneTime
-                : BindingMode.TwoWay;
-        }
     }
 
     /// <summary>
@@ -508,6 +505,20 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
 
     public bool IsLocallySet => this.isLocallySet;
 
+    public PropertyEditValidation EditValidation { get; private set; }
+
+    internal string? RejectedEditText { get; private set; }
+
+    internal void SetEditValidation(PropertyEditValidation validation, string? text = null)
+    {
+        this.RejectedEditText = text;
+        if (this.EditValidation != validation)
+        {
+            this.EditValidation = validation;
+            this.OnPropertyChanged(nameof(this.EditValidation));
+        }
+    }
+
     private bool isValueChangedByUser;
 
     public bool IsValueChangedByUser
@@ -547,7 +558,7 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
                 return false;
             }
 
-            return this.property.IsReadOnly == false;
+            return !this.property.IsReadOnly && this.DependencyProperty?.ReadOnly != true;
         }
     }
 
@@ -736,11 +747,12 @@ public class PropertyInformation : DependencyObject, IComparable, INotifyPropert
     public void Clear()
     {
         var dp = this.DependencyProperty;
-        if (dp is not null
+        if (this.CanEdit && dp is not null
             && this.Target is DependencyObject d)
         {
             if (d.ReadLocalValue(dp) != DependencyProperty.UnsetValue)
             {
+                this.SetEditValidation(PropertyEditValidation.None);
                 d.ClearValue(dp);
                 this.IsValueChangedByUser = true;
                 this.RefreshValueSource();

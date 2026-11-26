@@ -295,7 +295,7 @@ internal static class PropertyOriginFilterSmoke
 
     private static void Drain() => Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
 
-    private static void Await(Func<bool> condition, string message)
+    internal static void Await(Func<bool> condition, string message)
     {
         var timeout = Stopwatch.StartNew();
         do
