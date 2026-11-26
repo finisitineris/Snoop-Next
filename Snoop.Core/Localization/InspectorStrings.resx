@@ -228,6 +228,10 @@
   <data name="zh-CN.FilterEditor.Properties" xml:space="preserve"><value>属性：</value></data>
   <data name="en-US.FilterEditor.AddNew" xml:space="preserve"><value>Add new</value></data>
   <data name="zh-CN.FilterEditor.AddNew" xml:space="preserve"><value>新增</value></data>
+  <data name="en-US.FilterEditor.MoveUp" xml:space="preserve"><value>Move up</value></data>
+  <data name="zh-CN.FilterEditor.MoveUp" xml:space="preserve"><value>上移</value></data>
+  <data name="en-US.FilterEditor.MoveDown" xml:space="preserve"><value>Move down</value></data>
+  <data name="zh-CN.FilterEditor.MoveDown" xml:space="preserve"><value>下移</value></data>
   <data name="en-US.FilterEditor.NewFilter" xml:space="preserve"><value>New Filter</value></data>
   <data name="zh-CN.FilterEditor.NewFilter" xml:space="preserve"><value>新建筛选集</value></data>
   <data name="en-US.Common.Delete" xml:space="preserve"><value>Delete</value></data>

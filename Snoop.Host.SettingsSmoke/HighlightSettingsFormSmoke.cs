@@ -99,12 +99,15 @@ internal static class HighlightSettingsFormSmoke
 
                 window.Width = window.MinWidth;
                 window.Height = window.MinHeight;
+                scroll.ScrollToTop();
                 Drain();
+                InspectorFlyoutSmoke.CaptureFramed(view, "highlight-options-compact-top-en-US-Dark");
                 scroll.ScrollToEnd();
                 Drain();
                 Require(scroll.ScrollableWidth < 1 && Inside(sample, scroll) && Inside(close, view)
                         && Inside(Find<Button>(view, "ResetSettings"), view),
                     "The narrow form must keep the final preview reachable and both footer actions visible.");
+                InspectorFlyoutSmoke.CaptureFramed(view, "highlight-options-compact-bottom-en-US-Dark");
                 Click(view, "Close");
             });
 
