@@ -120,6 +120,8 @@
   <data name="zh-CN.Tooltip.ClearFilter" xml:space="preserve"><value>清除应用于可视化树的筛选条件</value></data>
   <data name="en-US.Tooltip.ShowBindingErrors" xml:space="preserve"><value>Show only elements with binding errors</value></data>
   <data name="zh-CN.Tooltip.ShowBindingErrors" xml:space="preserve"><value>仅显示存在绑定错误的元素</value></data>
+  <data name="en-US.Tree.FilterName" xml:space="preserve"><value>Filter elements</value></data>
+  <data name="zh-CN.Tree.FilterName" xml:space="preserve"><value>筛选元素</value></data>
   <data name="en-US.Tooltip.FilterByNameOrType" xml:space="preserve"><value>Enter text in the combo box to filter the tree view by name or type</value></data>
   <data name="zh-CN.Tooltip.FilterByNameOrType" xml:space="preserve"><value>在组合框中输入文本，按名称或类型筛选可视化树</value></data>
   <data name="en-US.Workbench.RefreshTree" xml:space="preserve"><value>Refresh tree</value></data>

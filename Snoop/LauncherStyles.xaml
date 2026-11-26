@@ -92,6 +92,8 @@
     </Style>
 
     <Style x:Key="LauncherTargetRow" TargetType="ComboBoxItem">
+        <Setter Property="AutomationProperties.Name" Value="{Binding Description}" />
+        <Setter Property="AutomationProperties.AutomationId" Value="{Binding OwningProcessId, StringFormat='TargetProcess.{0}', ConverterCulture=en-US}" />
         <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Padding" Value="8,5" />

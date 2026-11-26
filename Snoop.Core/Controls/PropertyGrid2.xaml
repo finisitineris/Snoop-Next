@@ -126,6 +126,7 @@
     </Grid.RowDefinitions>
 
     <ListView x:Name="ListView"
+              AutomationProperties.Name="{localization:InspectorLoc Tab.Properties}"
               Style="{DynamicResource GridView.GridViewStyle}"
               MinWidth="0"
               MinHeight="0"
@@ -151,6 +152,8 @@
         <ListView.ItemContainerStyle>
             <Style TargetType="{x:Type ListViewItem}"
                    BasedOn="{StaticResource GridView.GridViewItemContainerStyle}">
+                <Setter Property="AutomationProperties.AutomationId" Value="{Binding Name}" />
+                <Setter Property="AutomationProperties.Name" Value="{Binding DisplayName}" />
                 <Setter Property="ContextMenu" Value="{StaticResource PropertyMenu}" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                 <Setter Property="MinHeight" Value="30" />

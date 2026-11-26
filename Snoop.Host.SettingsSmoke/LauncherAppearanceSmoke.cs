@@ -1,15 +1,21 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
-using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Snoop.Core;
 using Snoop.Localization;
 using Snoop.Next.Localization;
@@ -21,7 +27,7 @@ internal static class LauncherAppearanceSmoke
     public static void Verify(SnoopUI inspector)
     {
         // Lay out the real launcher content off-screen. Showing the window would install
-        // the global keyboard hook. Opening the combo would enumerate desktop processes.
+        // the global keyboard hook.
         var chooser = new AppChooser();
         var content = (FrameworkElement)chooser.Content;
         var language = LocalizationManager.Default.LanguageTag;
@@ -52,6 +58,7 @@ internal static class LauncherAppearanceSmoke
             foreach (var tag in new[] { "zh-CN", "en-US" })
             {
                 LocalizationManager.Default.SetLanguage(tag);
+                VerifyLauncherPeers(chooser, list);
                 foreach (var mode in new[] { ThemeMode.Light, ThemeMode.Dark })
                 {
                     ThemeManager.Current.ApplyTheme(mode, chooser);
@@ -73,11 +80,6 @@ internal static class LauncherAppearanceSmoke
 
                     VerifyCompactLayout(chooser, capture: tag == "zh-CN" ? "launcher-compact-" + mode : null);
 
-                    if (AutomationProperties.GetName(attach) != LocalizationManager.Default["Chooser.Inspect"])
-                    {
-                        throw new InvalidOperationException("The attach action needs an accessible name.");
-                    }
-
                     if (tag == "zh-CN")
                     {
                         WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
@@ -86,6 +88,7 @@ internal static class LauncherAppearanceSmoke
                 }
             }
 
+            VerifyTargetRow(chooser, list);
             var reopened = new AppChooser { Width = 320, Height = 86 };
             try
             {
@@ -137,6 +140,82 @@ internal static class LauncherAppearanceSmoke
         T Find<T>(string name)
             where T : FrameworkElement
             => chooser.FindName(name) as T ?? throw new InvalidOperationException("Missing launcher element " + name);
+    }
+
+    private static void VerifyLauncherPeers(AppChooser chooser, ComboBox list)
+    {
+        VerifyButton("RefreshTargetsButton", "Chooser.Refresh");
+        VerifyButton("InspectTargetButton", "Chooser.Inspect");
+        VerifyButton("MagnifyTargetButton", "Chooser.Magnify");
+        VerifyButton("SettingsButton", "Chooser.Settings");
+        VerifyButton("MinimizeButton", "Chooser.Minimize");
+        VerifyButton("CloseButton", "Chooser.Close");
+
+        void VerifyButton(string id, string key)
+        {
+            var button = (Button)chooser.FindName(id);
+            var peer = UIElementAutomationPeer.CreatePeerForElement(button);
+            if (peer.GetAutomationId() != id || peer.GetName() != LocalizationManager.Default[key]
+                || peer.GetPattern(PatternInterface.Invoke) is not IInvokeProvider)
+            {
+                throw new InvalidOperationException($"Missing launcher button ID, localized name or Invoke pattern for {id}.");
+            }
+        }
+
+        var selector = UIElementAutomationPeer.CreatePeerForElement(list);
+        if (selector.GetAutomationId() != "windowsComboBox" || selector.GetName() != LocalizationManager.Default["Chooser.SelectTarget"]
+            || selector.GetPattern(PatternInterface.ExpandCollapse) is not IExpandCollapseProvider
+            || selector.GetPattern(PatternInterface.Selection) is not ISelectionProvider
+            || !list.Focusable || !list.IsTabStop || TextSearch.GetTextPath(list) != nameof(WindowInfo.ProcessName))
+        {
+            throw new InvalidOperationException("The keyboard-searchable target list must expose its localized name, ID, selection and expansion.");
+        }
+    }
+
+    private static void VerifyTargetRow(AppChooser chooser, ComboBox list)
+    {
+        // Realize the real picker in an ordinary window, so the chooser's global hook stays inactive.
+        var parent = (Panel)list.Parent;
+        var index = parent.Children.IndexOf(list);
+        var rows = (IList<WindowInfo>)chooser.WindowInfos.SourceCollection;
+        var host = new Window { Title = "Snoop target picker fixture", DataContext = chooser, Width = 420, Height = 100, ShowInTaskbar = false };
+        try
+        {
+            parent.Children.RemoveAt(index);
+            host.Content = list;
+            host.Show();
+            using var process = Process.GetCurrentProcess();
+            var row = WindowInfo.GetWindowInfo(new WindowInteropHelper(host).Handle);
+            rows.Add(row); // A populated list opens without enumerating the desktop.
+            list.SelectedIndex = -1;
+
+            var picker = UIElementAutomationPeer.CreatePeerForElement(list);
+            var popup = (IExpandCollapseProvider)picker.GetPattern(PatternInterface.ExpandCollapse);
+            popup.Expand();
+            list.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+            var item = picker.GetChildren().Single(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem);
+            var pid = process.Id.ToString(CultureInfo.InvariantCulture);
+            if (item.GetAutomationId() != "TargetProcess." + pid || item.GetName() != $"{host.Title} - {process.ProcessName} [{pid}]"
+                || item.GetPattern(PatternInterface.SelectionItem) is not ISelectionItemProvider selection)
+            {
+                throw new InvalidOperationException($"Target row must identify the window and process and allow selection. ID '{item.GetAutomationId()}', name '{item.GetName()}'.");
+            }
+
+            selection.Select();
+            popup.Collapse();
+            if (!selection.IsSelected || !ReferenceEquals(list.SelectedItem, row) || !ReferenceEquals(chooser.WindowInfos.CurrentItem, row))
+            {
+                throw new InvalidOperationException("UI Automation selection must update the launcher's current target.");
+            }
+        }
+        finally
+        {
+            list.IsDropDownOpen = false;
+            rows.Clear();
+            host.Content = null;
+            host.Close();
+            parent.Children.Insert(index, list);
+        }
     }
 
     private static void VerifyCompactLayout(AppChooser chooser, string? capture)
