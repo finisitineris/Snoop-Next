@@ -186,7 +186,7 @@ internal static class WorkbenchPropertyPreviewSmoke
             var format = typeof(EditedPropertiesHelper).GetMethod("FormatReport", BindingFlags.Static | BindingFlags.NonPublic)
                 ?? throw new InvalidOperationException("Missing edited-properties report formatter.");
             var report = (string?)format.Invoke(null, null) ?? string.Empty;
-            if (report.Contains("Property: Content, New Value: 完成") != edited)
+            if (string.IsNullOrWhiteSpace(report) || report.Contains("Property: Content, New Value: 完成") != edited)
             {
                 throw new InvalidOperationException("Copy property changes must reflect Undo and Redo even when the original element is not selected.");
             }

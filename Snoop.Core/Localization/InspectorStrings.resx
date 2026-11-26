@@ -368,6 +368,8 @@
   <data name="zh-CN.PropertyInspector.EditedOnly" xml:space="preserve"><value>仅已编辑</value></data>
   <data name="en-US.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>Show only properties edited in Snoop.</value></data>
   <data name="zh-CN.PropertyInspector.EditedOnlyTip" xml:space="preserve"><value>仅显示在 Snoop 中编辑过的属性。</value></data>
+  <data name="en-US.PropertyInspector.NoEditedProperties" xml:space="preserve"><value>No edited properties.</value></data>
+  <data name="zh-CN.PropertyInspector.NoEditedProperties" xml:space="preserve"><value>没有已编辑的属性。</value></data>
   <data name="en-US.PropertyInspector.UndoEdit" xml:space="preserve"><value>Undo</value></data>
   <data name="zh-CN.PropertyInspector.UndoEdit" xml:space="preserve"><value>撤销</value></data>
   <data name="en-US.PropertyInspector.RedoEdit" xml:space="preserve"><value>Redo</value></data>

@@ -1848,20 +1848,17 @@ public static class EditedPropertiesHelper
     public static void DumpObjectsWithEditedProperties()
     {
         var report = FormatReport();
-        if (report is not null)
-        {
-            LogHelper.WriteLine(report);
-            ClipboardHelper.SetText(report);
-        }
+        LogHelper.WriteLine(report);
+        ClipboardHelper.SetText(report);
     }
 
-    internal static string? FormatReport()
+    internal static string FormatReport()
     {
         lock (@lock)
         {
             if (itemsWithEditedProperties.Count == 0)
             {
-                return null;
+                return InspectorLocalization.Default["PropertyInspector.NoEditedProperties"];
             }
 
             var sb = new StringBuilder();
