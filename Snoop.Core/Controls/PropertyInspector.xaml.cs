@@ -69,6 +69,9 @@ public partial class PropertyInspector : INotifyPropertyChanged
         this.inspector = this.PropertyGrid;
         this.inspector.Filter = this.propertyFilter;
 
+        this.UndoPropertyEditButton.Command = new RelayCommand(_ => this.PropertyGrid.UndoEdit(), _ => this.PropertyGrid.CanUndoEdit);
+        this.RedoPropertyEditButton.Command = new RelayCommand(_ => this.PropertyGrid.RedoEdit(), _ => this.PropertyGrid.CanRedoEdit);
+
         this.CommandBindings.Add(new CommandBinding(PopTargetCommand, this.HandlePopTarget, this.CanPopTarget));
 
         this.CommandBindings.Add(new CommandBinding(DelveCommand, this.HandleDelve, CanDelve));

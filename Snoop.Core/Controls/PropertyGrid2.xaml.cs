@@ -97,6 +97,36 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
 
     public ObservableCollection<PropertyInformation> Properties { get; } = new();
 
+    internal event Action<DependencyObject, DependencyProperty, object?, bool>? EditReplayed;
+
+    internal bool CanUndoEdit => this.Filter?.EditHistory.CanReplay(undo: true) == true;
+
+    internal bool CanRedoEdit => this.Filter?.EditHistory.CanReplay(undo: false) == true;
+
+    internal bool UndoEdit() => this.ReplayEdit(undo: true);
+
+    internal bool RedoEdit() => this.ReplayEdit(undo: false);
+
+    private bool ReplayEdit(bool undo)
+    {
+        if (this.Filter is not { } filter)
+        {
+            return false;
+        }
+
+        return filter.EditHistory.Replay(undo, (target, dp, value, edited) =>
+        {
+            filter.SetEdited(target, dp, edited);
+            foreach (var row in this.Properties.Where(p => ReferenceEquals(p.Target, target) && p.DependencyProperty == dp).ToList())
+            {
+                row.SetEditValidation(PropertyEditValidation.None);
+                row.IsValueChangedByUser = edited;
+            }
+
+            this.EditReplayed?.Invoke(target, dp, value, edited);
+        });
+    }
+
     public object? Target
     {
         get { return this.GetValue(TargetProperty); }

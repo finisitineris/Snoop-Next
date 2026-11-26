@@ -153,7 +153,9 @@ public abstract class ValueEditor : ContentControl
             return false;
         }
 
-        var previous = property.Value;
+        var history = property.Filter?.EditHistory;
+        var before = history is not null ? PropertyEditHistory.CaptureLiteral(property, binding) : DependencyProperty.UnsetValue;
+        var previous = before != DependencyProperty.UnsetValue ? before : property.Value;
         if (Equals(previous, value))
         {
             property.SetEditValidation(PropertyEditValidation.None);
@@ -168,6 +170,7 @@ public abstract class ValueEditor : ContentControl
         }
 
         property.SetEditValidation(PropertyEditValidation.None);
+        var previouslyEdited = property.IsValueChangedByUser;
         property.SetCurrentValue(PropertyInformation.ValueProperty, value);
         var sourceAcceptedValue = binding.Status == BindingStatus.Active;
         // A target setter can reject, coerce or normalize the proposed value.
@@ -186,6 +189,7 @@ public abstract class ValueEditor : ContentControl
         if (!Equals(previous, property.Value))
         {
             property.IsValueChangedByUser = true;
+            history?.Record(property, before, PropertyEditHistory.CaptureLiteral(property, binding), previouslyEdited);
         }
 
         return true;

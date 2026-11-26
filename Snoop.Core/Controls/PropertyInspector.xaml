@@ -37,6 +37,10 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="*" />
     </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
 
     <TextBox x:Name="DelvePathBox" Grid.Row="0"
              Margin="4 4 4 1" Padding="0"
@@ -84,7 +88,19 @@
         </TextBlock.ContextMenu>
     </TextBlock>
 
-    <Grid x:Name="PropertyFilterToolbar" Grid.Row="2" Margin="4 3 4 6" UseLayoutRounding="True"
+    <StackPanel Grid.RowSpan="2" Grid.Column="1" Orientation="Horizontal"
+                VerticalAlignment="Center" Height="{StaticResource FilterControlHeight}" Margin="0 2 4 2">
+        <Button x:Name="UndoPropertyEditButton" Padding="8 0"
+                Content="{localization:InspectorLoc PropertyInspector.UndoEdit}"
+                AutomationProperties.Name="{localization:InspectorLoc PropertyInspector.UndoEditTip}"
+                ToolTip="{localization:InspectorLoc PropertyInspector.UndoEditTip}" ToolTipService.ShowOnDisabled="True" />
+        <Button x:Name="RedoPropertyEditButton" Margin="4 0 0 0" Padding="8 0"
+                Content="{localization:InspectorLoc PropertyInspector.RedoEdit}"
+                AutomationProperties.Name="{localization:InspectorLoc PropertyInspector.RedoEditTip}"
+                ToolTip="{localization:InspectorLoc PropertyInspector.RedoEditTip}" ToolTipService.ShowOnDisabled="True" />
+    </StackPanel>
+
+    <Grid x:Name="PropertyFilterToolbar" Grid.Row="2" Grid.ColumnSpan="2" Margin="4 3 4 6" UseLayoutRounding="True"
           TextElement.FontSize="13" SizeChanged="PropertyFilterToolbar_OnSizeChanged">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -217,7 +233,7 @@
 
     <controls:PropertyGrid2 x:Name="PropertyGrid"
                             Grid.Row="3"
-                            Grid.Column="1"
+                            Grid.ColumnSpan="2"
                             MinWidth="0"
                             MinHeight="0"
                             Target="{Binding ElementName=propertyInspector, Path=Target}" />
