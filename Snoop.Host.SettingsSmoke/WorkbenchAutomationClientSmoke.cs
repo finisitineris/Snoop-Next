@@ -1,7 +1,6 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,33 +16,47 @@ internal static class WorkbenchAutomationClientSmoke
         var handle = new WindowInteropHelper(inspector).Handle;
         // UIA calls back onto the WPF dispatcher. Give the client an MTA thread and
         // keep the window pumping messages while the client walks its control view.
-        var read = Task.Run(() => ReadEditedHeight(handle));
-        var elapsed = Stopwatch.StartNew();
-        while (!read.IsCompleted)
+        var operation = "connecting to the workbench window";
+        var frame = new DispatcherFrame();
+        var timeout = new DispatcherTimer(DispatcherPriority.Normal, inspector.Dispatcher) { Interval = TimeSpan.FromSeconds(45) };
+        timeout.Tick += (_, _) => frame.Continue = false;
+        var read = Task.Run(() => ReadEditedHeight(handle, step => Volatile.Write(ref operation, step)));
+        read.ConfigureAwait(false).GetAwaiter().OnCompleted(() => frame.Continue = false);
+        timeout.Start();
+        try
         {
-            if (elapsed.Elapsed >= TimeSpan.FromSeconds(20))
-            {
-                throw new TimeoutException("The UI Automation client timed out reading the selected element's Height.");
-            }
+            Dispatcher.PushFrame(frame);
+        }
+        finally
+        {
+            timeout.Stop();
+        }
 
-            inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
-            Thread.Sleep(10);
+        if (!read.IsCompleted)
+        {
+            throw new TimeoutException("The UI Automation client timed out " + Volatile.Read(ref operation) + ".");
         }
 
         read.GetAwaiter().GetResult();
         Console.WriteLine("PASS: Windows UI Automation locates the filtered TextBlock, selects its Height property and reads 48 through ValuePattern.");
     }
 
-    private static void ReadEditedHeight(IntPtr handle)
+    private static void ReadEditedHeight(IntPtr handle, Action<string> report)
     {
         var window = AutomationElement.FromHandle(handle);
+        report("finding the element tree");
         var tree = Find(window, AutomationElement.AutomationIdProperty, "Tree");
+        report("finding the filtered TextBlock");
         var item = Find(tree, AutomationElement.AutomationIdProperty, "NameInputResultGroupB");
+        report("selecting the filtered TextBlock");
         ((SelectionItemPattern)item.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
 
+        report("finding the property grid");
         var grid = Find(window, AutomationElement.AutomationIdProperty, "ListView");
+        report("finding and selecting the Height row");
         var height = Find(grid, AutomationElement.AutomationIdProperty, "Height");
         ((SelectionItemPattern)height.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+        report("reading the Height value cell");
         var table = (GridPattern)grid.GetCurrentPattern(GridPattern.Pattern);
         if (table.Current.RowCount != 1)
         {
