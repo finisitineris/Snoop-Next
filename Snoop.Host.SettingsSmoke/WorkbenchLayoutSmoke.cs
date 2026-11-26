@@ -111,6 +111,7 @@ internal static class WorkbenchLayoutSmoke
             settings.Reload();
             WithInspector(reopened => VerifyPaneSizes(reopened, 282, 354, 210));
             WithInspector(InspectorFilterSmoke.VerifySearchRecovery, showWideWindow: true);
+            WithInspector(WorkbenchTreeModeSmoke.Verify, showWideWindow: true);
             WithInspector(WorkbenchPropertyPreviewSmoke.Verify, showWideWindow: true);
 
             LoadLayout(new XElement("WorkbenchTreeFraction", "invalid"), new XElement("WorkbenchDiagnosticsFraction", "0.42"),

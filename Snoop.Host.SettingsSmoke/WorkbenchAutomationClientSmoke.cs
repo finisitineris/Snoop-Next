@@ -7,11 +7,77 @@ using System.Threading.Tasks;
 using System.Windows.Automation;
 using System.Windows.Interop;
 using System.Windows.Threading;
+using Snoop.Data.Tree;
+using Snoop.Localization;
 using Snoop.Windows;
 
 internal static class WorkbenchAutomationClientSmoke
 {
     public static void VerifyEditedHeight(SnoopUI inspector)
+    {
+        RunClient(inspector, ReadEditedHeight);
+        Console.WriteLine("PASS: Windows UI Automation locates the filtered TextBlock, selects its Height property and reads 48 through ValuePattern.");
+    }
+
+    public static void VerifyTreeModeSelector(SnoopUI inspector)
+    {
+        var originalLanguage = InspectorLocalization.Default.LanguageTag;
+        try
+        {
+            SelectMode("en-US", "Tree mode", TreeType.Automation, "Automation");
+            SelectMode("zh-CN", "树模式", TreeType.Logical, "逻辑");
+            SelectMode("zh-CN", "树模式", TreeType.Visual, "可视");
+        }
+        finally
+        {
+            InspectorLocalization.Default.SetLanguage(originalLanguage);
+        }
+
+        Console.WriteLine("PASS: Windows UI Automation reads localized tree modes and selects each mode before a target is loaded.");
+
+        void SelectMode(string language, string label, TreeType mode, string optionName)
+        {
+            InspectorLocalization.Default.SetLanguage(language);
+            inspector.Dispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
+            RunClient(inspector, (handle, report) =>
+            {
+                report("locating the tree mode selector");
+                var window = AutomationElement.FromHandle(handle);
+                var selector = Find(window, AutomationElement.AutomationIdProperty, "TreeTypeComboBox");
+                if (selector.Current.Name != label)
+                {
+                    throw new InvalidOperationException($"Expected tree mode label '{label}', got '{selector.Current.Name}'.");
+                }
+
+                report("opening the tree mode list");
+                var dropdown = (ExpandCollapsePattern)selector.GetCurrentPattern(ExpandCollapsePattern.Pattern);
+                dropdown.Expand();
+                try
+                {
+                    report("selecting the " + mode + " tree");
+                    var option = Find(selector, AutomationElement.AutomationIdProperty, mode.ToString());
+                    ((SelectionItemPattern)option.GetCurrentPattern(SelectionItemPattern.Pattern)).Select();
+                    var selection = (SelectionPattern)selector.GetCurrentPattern(SelectionPattern.Pattern);
+                    var selected = selection.Current.GetSelection().Single();
+                    if (option.Current.Name != optionName || selected.Current.AutomationId != mode.ToString() || selected.Current.Name != optionName)
+                    {
+                        throw new InvalidOperationException($"The {language} tree selector should expose '{optionName}' as its selected item.");
+                    }
+                }
+                finally
+                {
+                    dropdown.Collapse();
+                }
+            });
+
+            if (inspector.CurrentTreeType != mode || inspector.RootTreeItem is not null || inspector.CurrentSelection is not null)
+            {
+                throw new InvalidOperationException("Changing the tree mode before inspection must leave an empty workbench in the requested mode.");
+            }
+        }
+    }
+
+    private static void RunClient(SnoopUI inspector, Action<IntPtr, Action<string>> run)
     {
         var handle = new WindowInteropHelper(inspector).Handle;
         // UIA calls back onto the WPF dispatcher. Give the client an MTA thread and
@@ -20,7 +86,7 @@ internal static class WorkbenchAutomationClientSmoke
         var frame = new DispatcherFrame();
         var timeout = new DispatcherTimer(DispatcherPriority.Normal, inspector.Dispatcher) { Interval = TimeSpan.FromSeconds(45) };
         timeout.Tick += (_, _) => frame.Continue = false;
-        var read = Task.Run(() => ReadEditedHeight(handle, step => Volatile.Write(ref operation, step)));
+        var read = Task.Run(() => run(handle, step => Volatile.Write(ref operation, step)));
         read.ConfigureAwait(false).GetAwaiter().OnCompleted(() => frame.Continue = false);
         timeout.Start();
         try
@@ -38,7 +104,6 @@ internal static class WorkbenchAutomationClientSmoke
         }
 
         read.GetAwaiter().GetResult();
-        Console.WriteLine("PASS: Windows UI Automation locates the filtered TextBlock, selects its Height property and reads 48 through ValuePattern.");
     }
 
     private static void ReadEditedHeight(IntPtr handle, Action<string> report)

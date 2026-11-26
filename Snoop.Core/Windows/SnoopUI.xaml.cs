@@ -168,7 +168,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     /// </summary>
     public string? InspectedProcess => this.RootTreeItem is null ? null : inspectedProcessIdentity.Value;
 
-    public object? ScopedPreviewTarget => this.RootTreeItem is { IsScoped: true } root ? root.Target : null;
+    public object? ScopedPreviewTarget => this.RootTreeItem is { IsScoped: true } root ? TreeModeSelection.GetInspectedRoot(root) : null;
 
     /// <summary>
     /// Root element of the tree.
@@ -413,9 +413,12 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     {
         var control = (SnoopUI)d;
 
-        control.TreeService?.Dispose();
+        using var previousService = control.TreeService;
         control.TreeService = TreeService.From((TreeType)e.NewValue);
-        control.Refresh();
+        if (control.RootTreeItem is not null)
+        {
+            control.Refresh(treeTypeChanged: true);
+        }
     }
 
     public TreeType CurrentTreeType
@@ -563,36 +566,52 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.Refresh();
     }
 
-    private void Refresh()
+    private void Refresh(bool treeTypeChanged = false)
     {
         var saveCursor = Mouse.OverrideCursor;
         Mouse.OverrideCursor = Cursors.Wait;
         try
         {
             var previousSelection = this.CurrentSelection;
-            var previousTarget = previousSelection?.Target;
+            var rootTarget = this.ScopedRootObject ?? this.RootObject!;
+            var isScoped = this.ScopedRootObject is not null;
+            if (treeTypeChanged && this.RootTreeItem is { } oldRoot)
+            {
+                // Picking in another presentation source may have changed the live root since Inspect.
+                rootTarget = this.ScopedRootObject ?? TreeModeSelection.GetInspectedRoot(oldRoot);
+                isScoped = isScoped || oldRoot.IsScoped;
+                this.depthAdjustment?.Abort();
+                this.depthAdjustment = null;
+            }
 
             SystemResourcesCache.Instance.Reload();
 
             this.TreeItems.Clear();
+            if (treeTypeChanged && previousSelection is not null)
+            {
+                // Remove the old highlight before enumerating the target's visuals.
+                previousSelection.IsSelected = false;
+            }
 
             this.SystemResourcesTreeItem?.Dispose();
             this.SystemResourcesTreeItem = (SystemResourcesTreeItem)new SystemResourcesTreeItem(null, this.TreeService).Reload();
 
             this.RootTreeItem?.Dispose();
-            this.RootTreeItem = this.TreeService.Construct(this.ScopedRootObject ?? this.RootObject!, null, isScoped: this.ScopedRootObject is not null);
+            this.RootTreeItem = this.TreeService.Construct(rootTarget, null, isScoped: isScoped);
 
             this.TreeService.DiagnosticContext.AnalyzeTree();
 
-            if (previousTarget is not null)
+            if (previousSelection is not null)
             {
-                var treeItem = this.FindItem(previousTarget);
+                var treeItem = treeTypeChanged
+                    ? TreeModeSelection.Restore(previousSelection, this.RootTreeItem, this.SystemResourcesTreeItem)
+                    : this.FindItem(previousSelection.Target);
                 if (treeItem is not null)
                 {
                     this.CurrentSelection = treeItem;
                     this.PropertyInspector.PropertyGrid.RefreshPropertyGrid();
 
-                    if (previousSelection?.IsExpanded == true)
+                    if (previousSelection.IsExpanded)
                     {
                         this.CurrentSelection.ExpandTo();
                     }
