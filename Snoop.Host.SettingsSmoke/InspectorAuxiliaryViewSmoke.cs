@@ -99,6 +99,8 @@ internal static class InspectorAuxiliaryViewSmoke
         Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
         var surface = (Grid)editor.FindName("FormSurface");
         var localization = InspectorLocalization.Default;
+        editor.UpdateLayout();
+        InspectorFlyoutSmoke.CaptureFramed(surface, $"user-filter-settings-{localization.LanguageTag}-{theme}");
         foreach (var id in new[] { "NameEditor", "PropertiesEditor", "AddItem", "DeleteItem", "MoveUp", "MoveDown", "Accept", "Cancel" })
         {
             var field = (Control)editor.FindName(id);
@@ -106,7 +108,7 @@ internal static class InspectorAuxiliaryViewSmoke
             if (!field.IsVisible || field.ActualHeight < 30 || field.ActualWidth < 34 || !new Rect(surface.RenderSize).Contains(bounds)
                 || field.FontSize < 13 || !field.FontFamily.Source.Contains("Microsoft YaHei"))
             {
-                throw new InvalidOperationException("The named filter-set dialog clipped or undersized a field: " + id);
+                throw new InvalidOperationException($"Filter field {id}: visibility {field.IsVisible}, size {field.RenderSize}, bounds {bounds} inside {surface.RenderSize}, font {field.FontSize} {field.FontFamily.Source}.");
             }
 
             if (field is TextBox && (field.ActualWidth < 200 || AutomationProperties.GetLabeledBy(field) is not Label label
@@ -118,7 +120,6 @@ internal static class InspectorAuxiliaryViewSmoke
 
         RequireText(AutomationProperties.GetName((Button)editor.FindName("MoveUp")), localization["FilterEditor.MoveUp"], "Move-up accessible name");
         RequireText(AutomationProperties.GetName((Button)editor.FindName("MoveDown")), localization["FilterEditor.MoveDown"], "Move-down accessible name");
-        InspectorFlyoutSmoke.CaptureFramed(surface, $"user-filter-settings-{localization.LanguageTag}-{theme}");
     }
 
     private static void RequireText(string? actual, string expected, string control)

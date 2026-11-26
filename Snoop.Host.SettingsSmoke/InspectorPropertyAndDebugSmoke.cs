@@ -118,10 +118,11 @@ internal static class InspectorPropertyAndDebugSmoke
                 var filterRow = (Grid)pattern.Parent;
                 var inverse = (TextBlock)filterRow.Children[0];
                 var matchType = (ComboBox)filterRow.Children[1];
-                Require(pattern.ActualWidth >= 180 && pattern.ActualHeight >= 28
-                        && inverse.FontSize == pattern.FontSize && inverse.FontFamily.Equals(pattern.FontFamily),
-                    $"Debug filters need a full-width text input and a readable inverse label. Editor {pattern.RenderSize}.");
                 InspectorFlyoutSmoke.CaptureFramed((FrameworkElement)dialog.Content, "debug-filter-settings-zh-CN");
+                Require(pattern.ActualWidth >= 180 && pattern.ActualHeight >= 28
+                        && pattern.FontSize >= 13 && pattern.FontFamily.Source.Contains("Microsoft YaHei")
+                        && inverse.FontSize == pattern.FontSize && inverse.FontFamily.Equals(pattern.FontFamily),
+                    $"Debug filter input {pattern.RenderSize}, font {pattern.FontSize} {pattern.FontFamily.Source}; inverse label {inverse.FontSize} {inverse.FontFamily.Source}.");
                 traceLevels.SelectedItem = errorLevel;
                 listener.Write("ignored");
                 listener.Write("Trace:42");

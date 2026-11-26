@@ -15,7 +15,8 @@
                          Width="520" Height="390" MinWidth="380" MinHeight="320"
                          FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
                          FontSize="{DynamicResource SnoopNext.FontSize.UI}">
-    <Grid x:Name="FormSurface">
+    <Grid x:Name="FormSurface" TextElement.FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
+          TextElement.FontSize="{DynamicResource SnoopNext.FontSize.UI}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />

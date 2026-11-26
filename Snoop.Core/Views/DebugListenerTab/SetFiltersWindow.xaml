@@ -8,7 +8,8 @@
                          Width="560" Height="340" MinWidth="400" MinHeight="240"
                          FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
                          FontSize="{DynamicResource SnoopNext.FontSize.UI}">
-    <Grid>
+    <Grid TextElement.FontFamily="{DynamicResource SnoopNext.FontFamily.UI}"
+          TextElement.FontSize="{DynamicResource SnoopNext.FontSize.UI}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
