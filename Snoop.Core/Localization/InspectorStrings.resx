@@ -814,4 +814,18 @@
   <data name="zh-CN.Diagnostics.Result.ResourceNotResolved" xml:space="preserve"><value>资源未解析</value></data>
   <data name="en-US.Diagnostics.Result.ResourceNotResolvedDescription" xml:space="preserve"><value>The resource '{0}' on property '{1}' could not be resolved.</value></data>
   <data name="zh-CN.Diagnostics.Result.ResourceNotResolvedDescription" xml:space="preserve"><value>无法解析属性“{1}”上的资源“{0}”。</value></data>
+  <data name="en-US.Tab.Bindings" xml:space="preserve"><value>Bindings</value></data>
+  <data name="zh-CN.Tab.Bindings" xml:space="preserve"><value>绑定</value></data>
+  <data name="en-US.Tab.RoutedEvents" xml:space="preserve"><value>Routed events</value></data>
+  <data name="zh-CN.Tab.RoutedEvents" xml:space="preserve"><value>路由事件</value></data>
+  <data name="en-US.SelectionDetails.RoutedEventsHelp" xml:space="preserve"><value>Routed events registered for this type or its base types.</value></data>
+  <data name="zh-CN.SelectionDetails.RoutedEventsHelp" xml:space="preserve"><value>为此类型或其基类型注册的路由事件。</value></data>
+  <data name="en-US.SelectionDetails.NoBindings" xml:space="preserve"><value>No bindings on the selected object.</value></data>
+  <data name="zh-CN.SelectionDetails.NoBindings" xml:space="preserve"><value>所选对象没有绑定。</value></data>
+  <data name="en-US.SelectionDetails.NoRoutedEvents" xml:space="preserve"><value>No routed events registered for this object type.</value></data>
+  <data name="zh-CN.SelectionDetails.NoRoutedEvents" xml:space="preserve"><value>此对象类型没有注册路由事件。</value></data>
+  <data name="en-US.SelectionDetails.BindingsUnavailable" xml:space="preserve"><value>Unable to read bindings on the selected object.</value></data>
+  <data name="zh-CN.SelectionDetails.BindingsUnavailable" xml:space="preserve"><value>无法读取所选对象的绑定。</value></data>
+  <data name="en-US.SelectionDetails.RoutedEventsUnavailable" xml:space="preserve"><value>Unable to read routed events for this object type.</value></data>
+  <data name="zh-CN.SelectionDetails.RoutedEventsUnavailable" xml:space="preserve"><value>无法读取此对象类型的路由事件。</value></data>
 </root>

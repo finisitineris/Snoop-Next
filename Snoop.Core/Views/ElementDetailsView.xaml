@@ -1,0 +1,72 @@
+<Grid x:Class="Snoop.Views.ElementDetailsView"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:loc="clr-namespace:Snoop.Localization"
+      Background="{DynamicResource SnoopNext.Brush.Panel}">
+    <Grid.Resources>
+        <Style x:Key="DetailList" TargetType="ListView">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="ItemContainerStyle" Value="{DynamicResource ListBoxItemStyle}" />
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling" />
+        </Style>
+        <Style x:Key="EmptyMessage" TargetType="TextBlock">
+            <Setter Property="Margin" Value="8" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.TextSecondary}" />
+        </Style>
+    </Grid.Resources>
+    <Grid x:Name="BindingsPanel">
+        <ListView x:Name="BindingsList" Style="{StaticResource DetailList}"
+                  AutomationProperties.Name="{loc:InspectorLoc Tab.Bindings}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="1 2">
+                        <TextBlock Text="{Binding PropertyName}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock x:Name="BindingsEmpty" IsHitTestVisible="False">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyMessage}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasItems, ElementName=BindingsList}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+    <Grid x:Name="RoutedEventsPanel" Visibility="Collapsed">
+        <ListView x:Name="RoutedEventsList" Style="{StaticResource DetailList}"
+                  AutomationProperties.Name="{loc:InspectorLoc Tab.RoutedEvents}"
+                  AutomationProperties.HelpText="{loc:InspectorLoc SelectionDetails.RoutedEventsHelp}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="1 2">
+                        <TextBlock Text="{Binding EventName}" TextWrapping="Wrap" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <TextBlock x:Name="RoutedEventsEmpty" IsHitTestVisible="False">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource EmptyMessage}">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasItems, ElementName=RoutedEventsList}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+    </Grid>
+</Grid>

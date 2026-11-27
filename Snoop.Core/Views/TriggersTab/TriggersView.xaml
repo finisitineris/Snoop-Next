@@ -232,7 +232,7 @@
         </ResourceDictionary>
     </Grid.Resources>
 
-    <Grid Visibility="{Binding HasTriggerItems, ElementName=triggerView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}">
+    <Grid Visibility="{Binding HasTriggerItems, ElementName=triggerView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}">
         <Grid.RowDefinitions>
             <RowDefinition Height="5*" />
             <!--<RowDefinition Height="1*"/>-->
@@ -306,6 +306,6 @@
     <TextBlock HorizontalAlignment="Center"
                VerticalAlignment="Center"
                Text="{localization:InspectorLoc Triggers.NoTriggers}"
-               Visibility="{Binding HasTriggerItems, ElementName=triggerView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}}"
+               Visibility="{Binding HasTriggerItems, ElementName=triggerView, Converter={x:Static converters:BoolToVisibilityConverter.DefaultInstance}, ConverterParameter=True}"
                Opacity="0.6" />
 </Grid>
