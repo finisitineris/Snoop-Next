@@ -70,7 +70,7 @@ public class PropertyFilter : INotifyPropertyChanged
     };
 
     // The inspector owns its edit history. Targets remain collectible after the user navigates away.
-    private readonly ConditionalWeakTable<object, HashSet<object>> editedProperties = new();
+    private ConditionalWeakTable<object, HashSet<object>> editedProperties = new();
     private MatcherBase? matcher;
     private string filterString = string.Empty;
     private bool useRegex;
@@ -79,6 +79,12 @@ public class PropertyFilter : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     internal PropertyEditHistory EditHistory { get; } = new();
+
+    internal void EndEditSession()
+    {
+        this.EditHistory.EndSession();
+        this.editedProperties = new();
+    }
 
     public PropertyFilter(string filterString, bool showDefaults)
     {
@@ -189,6 +195,11 @@ public class PropertyFilter : INotifyPropertyChanged
 
     internal void SetEdited(object target, object key, bool edited)
     {
+        if (this.EditHistory.IsClosed)
+        {
+            return;
+        }
+
         if (edited)
         {
             this.editedProperties.GetOrCreateValue(target).Add(key);

@@ -133,7 +133,7 @@ public partial class ZoomerControl
     {
         if (this.Target is UIElement selected && this.TryGetPreviewContext(selected, out var scene, out var context))
         {
-            var toBrush = GetContextTransform(context);
+            var toBrush = VisualCaptureUtil.GetVisualBrushTransform(context);
             var crop = Rect.Transform(new Rect(context.RenderSize), toBrush);
             if (HasArea(crop))
             {
@@ -151,14 +151,6 @@ public partial class ZoomerControl
         }
 
         this.SetSelectionOutline(Rect.Empty);
-    }
-
-    private static Matrix GetContextTransform(Visual context)
-    {
-        var transform = VisualTreeHelper.GetTransform(context)?.Value ?? Matrix.Identity;
-        var offset = VisualTreeHelper.GetOffset(context);
-        transform.Translate(offset.X, offset.Y);
-        return transform;
     }
 
     private bool TryGetPreviewContext(UIElement selected, [NotNullWhen(true)] out UIElement? scene, [NotNullWhen(true)] out UIElement? client)
@@ -214,7 +206,7 @@ public partial class ZoomerControl
             }
         }
 
-        return this.TryProjectOutline(visual, client, this.contextImage, brush.Viewbox, GetContextTransform(client), out _, out _);
+        return this.TryProjectOutline(visual, client, this.contextImage, brush.Viewbox, VisualCaptureUtil.GetVisualBrushTransform(client), out _, out _);
     }
 
     private UIElement? keyboardPickCandidate;
@@ -513,7 +505,7 @@ public partial class ZoomerControl
         }
 
         var crop = brush.Viewbox;
-        var toContext = GetContextTransform(context);
+        var toContext = VisualCaptureUtil.GetVisualBrushTransform(context);
         var contextBounds = new Rect(context.RenderSize);
         if (!toContext.HasInverse || !HasArea(crop) || crop != Rect.Transform(contextBounds, toContext))
         {

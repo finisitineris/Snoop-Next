@@ -20,8 +20,18 @@ using Snoop.Windows;
 internal static class Program
 {
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
+        if (args.Length == 1 && args[0] == LauncherSearchSmoke.FixtureArgument)
+        {
+            return LauncherSearchSmoke.RunFixture();
+        }
+
+        if (LauncherAttachFailureSmoke.IsTestHelper())
+        {
+            return LauncherAttachFailureSmoke.RunHelper(args);
+        }
+
         const string settingsRootVariable = Snoop.Core.SettingsHelper.SNOOP_SETTINGS_PATH_ENV_VAR;
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
         var file = Path.Combine(path, "SnoopSettings.xml");
@@ -34,6 +44,40 @@ internal static class Program
             File.WriteAllText(file, "<Settings />");
             File.WriteAllText(inspectorFile, "<Settings />");
             Environment.SetEnvironmentVariable(settingsRootVariable, path);
+            if (args.Length == 1 && args[0] == "--launcher-search-smoke")
+            {
+                return RunLauncherSearchSmoke();
+            }
+
+            if (args.Length == 1 && args[0] == WorkbenchInitialSelectionSmoke.Argument)
+            {
+                return WorkbenchInitialSelectionSmoke.Run();
+            }
+
+            if (args.Length == 1 && args[0] == WorkbenchDisconnectSmoke.Argument)
+            {
+                return WorkbenchDisconnectSmoke.Run();
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.ProbeArgument)
+            {
+                return LauncherAttachFailureSmoke.RunProbe();
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.SmokeArgument)
+            {
+                try
+                {
+                    LauncherAttachFailureSmoke.Verify(path);
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                    return 1;
+                }
+            }
+
             return RunSmoke(file, inspectorFile);
         }
         finally
@@ -53,6 +97,29 @@ internal static class Program
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int RunLauncherSearchSmoke()
+    {
+        var app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+        var chooser = new AppChooser();
+        try
+        {
+            chooser.ApplyTemplate();
+            LauncherSearchSmoke.Verify(chooser, (System.Windows.Controls.ComboBox)chooser.FindName("windowsComboBox"));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
+        finally
+        {
+            chooser.Close();
+            app.Shutdown();
+        }
+    }
+
     // Keep the JIT from initializing the settings singletons before Main sets the temporary root.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static int RunSmoke(string file, string inspectorFile)
@@ -65,6 +132,7 @@ internal static class Program
                 "inspector settings did not use the temporary settings root");
 
             AppDomainLanguageSmoke.Verify(Path.GetDirectoryName(file)!);
+            LauncherAttachFailureSmoke.Verify(Path.GetDirectoryName(file)!);
 
             var settings = new Settings { SettingsFile = file };
             Require(settings.LanguageTag == "zh-CN", "default language must be zh-CN");
@@ -251,6 +319,8 @@ internal static class Program
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     var surfaceFailures = new List<Exception>();
+                    CheckSurface(() => WorkbenchInitialSelectionSmoke.Verify(app));
+                    CheckSurface(WorkbenchDisconnectSmoke.Verify);
                     CheckSurface(InspectorTableSmoke.Verify);
                     CheckSurface(HighlightSettingsFormSmoke.Verify);
                     CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));
@@ -288,7 +358,7 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
-                        LauncherAppearanceSmoke.Verify(inspector);
+                        CheckSurface(() => LauncherAppearanceSmoke.Verify(inspector));
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
@@ -307,6 +377,7 @@ internal static class Program
                         WorkbenchDiagnosticLocationSmoke.Verify();
                         WorkbenchBindingDiagnosticsSmoke.Verify();
                         InspectorAuxiliaryViewSmoke.Verify();
+                        CheckSurface(ScreenshotPreviewSmoke.Verify);
                         CheckSurface(InspectorPropertyAndDebugSmoke.Verify);
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);
