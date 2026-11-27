@@ -1,9 +1,6 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,10 +9,8 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Snoop.Core;
 using Snoop.Localization;
 using Snoop.Next.Localization;
@@ -88,7 +83,7 @@ internal static class LauncherAppearanceSmoke
                 }
             }
 
-            VerifyTargetRow(chooser, list);
+            LauncherSearchSmoke.Verify(chooser, list);
             var reopened = new AppChooser { Width = 320, Height = 86 };
             try
             {
@@ -154,52 +149,6 @@ internal static class LauncherAppearanceSmoke
             || !list.Focusable || !list.IsTabStop || TextSearch.GetTextPath(list) != nameof(WindowInfo.ProcessName))
         {
             throw new InvalidOperationException("The keyboard-searchable target list must expose its localized name, ID, selection and expansion.");
-        }
-    }
-
-    private static void VerifyTargetRow(AppChooser chooser, ComboBox list)
-    {
-        // Realize the real picker in an ordinary window, so the chooser's global hook stays inactive.
-        var parent = (Panel)list.Parent;
-        var index = parent.Children.IndexOf(list);
-        var rows = (IList<WindowInfo>)chooser.WindowInfos.SourceCollection;
-        var host = new Window { Title = "Snoop target picker fixture", DataContext = chooser, Width = 420, Height = 100, ShowInTaskbar = false };
-        try
-        {
-            parent.Children.RemoveAt(index);
-            host.Content = list;
-            host.Show();
-            using var process = Process.GetCurrentProcess();
-            var row = WindowInfo.GetWindowInfo(new WindowInteropHelper(host).Handle);
-            rows.Add(row); // A populated list opens without enumerating the desktop.
-            list.SelectedIndex = -1;
-
-            var picker = UIElementAutomationPeer.CreatePeerForElement(list);
-            var popup = (IExpandCollapseProvider)picker.GetPattern(PatternInterface.ExpandCollapse);
-            popup.Expand();
-            list.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
-            var item = picker.GetChildren().Single(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem);
-            var pid = process.Id.ToString(CultureInfo.InvariantCulture);
-            if (item.GetAutomationId() != "TargetProcess." + pid || item.GetName() != $"{host.Title} - {process.ProcessName} [{pid}]"
-                || item.GetPattern(PatternInterface.SelectionItem) is not ISelectionItemProvider selection)
-            {
-                throw new InvalidOperationException($"Target row must identify the window and process and allow selection. ID '{item.GetAutomationId()}', name '{item.GetName()}'.");
-            }
-
-            selection.Select();
-            popup.Collapse();
-            if (!selection.IsSelected || !ReferenceEquals(list.SelectedItem, row) || !ReferenceEquals(chooser.WindowInfos.CurrentItem, row))
-            {
-                throw new InvalidOperationException("UI Automation selection must update the launcher's current target.");
-            }
-        }
-        finally
-        {
-            list.IsDropDownOpen = false;
-            rows.Clear();
-            host.Content = null;
-            host.Close();
-            parent.Children.Insert(index, list);
         }
     }
 

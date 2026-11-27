@@ -20,8 +20,13 @@ using Snoop.Windows;
 internal static class Program
 {
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
+        if (args.Length == 1 && args[0] == LauncherSearchSmoke.FixtureArgument)
+        {
+            return LauncherSearchSmoke.RunFixture();
+        }
+
         const string settingsRootVariable = Snoop.Core.SettingsHelper.SNOOP_SETTINGS_PATH_ENV_VAR;
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
         var file = Path.Combine(path, "SnoopSettings.xml");
@@ -288,7 +293,7 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
-                        LauncherAppearanceSmoke.Verify(inspector);
+                        CheckSurface(() => LauncherAppearanceSmoke.Verify(inspector));
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
@@ -307,6 +312,7 @@ internal static class Program
                         WorkbenchDiagnosticLocationSmoke.Verify();
                         WorkbenchBindingDiagnosticsSmoke.Verify();
                         InspectorAuxiliaryViewSmoke.Verify();
+                        CheckSurface(ScreenshotPreviewSmoke.Verify);
                         CheckSurface(InspectorPropertyAndDebugSmoke.Verify);
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);

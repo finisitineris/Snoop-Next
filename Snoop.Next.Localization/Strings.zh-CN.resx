@@ -63,6 +63,10 @@
   <data name="Chooser.MagnifyLabel" xml:space="preserve"><value>放大</value></data>
   <data name="Chooser.SelectTarget" xml:space="preserve"><value>选择要挂载的窗口</value></data>
   <data name="Chooser.Empty" xml:space="preserve"><value>未找到 WPF 窗口</value></data>
+  <data name="Chooser.SearchTip" xml:space="preserve"><value>选择目标窗口，或按 Ctrl+F 搜索</value></data>
+  <data name="Chooser.SearchTargets" xml:space="preserve"><value>搜索 PID、进程名或窗口标题</value></data>
+  <data name="Chooser.ClearSearch" xml:space="preserve"><value>清除搜索</value></data>
+  <data name="Chooser.NoMatches" xml:space="preserve"><value>没有匹配的 WPF 窗口</value></data>
   <data name="Chooser.Refresh" xml:space="preserve"><value>刷新目标窗口（F5）</value></data>
   <data name="Chooser.Inspect" xml:space="preserve"><value>挂载到选中的窗口</value></data>
   <data name="Chooser.PickInspect" xml:space="preserve"><value>拖到窗口上以挂载（Esc 取消）</value></data>
