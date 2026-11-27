@@ -782,7 +782,7 @@
                         <RowDefinition />
                     </Grid.RowDefinitions>
 
-                    <DockPanel Margin="8 5" ClipToBounds="True">
+                    <DockPanel x:Name="WorkbenchPreviewHeader" Margin="8 5" ClipToBounds="True">
                         <TextBlock DockPanel.Dock="Left"
                                    Margin="0 0 10 0"
                                    Foreground="{DynamicResource SnoopNext.Brush.Text}"
@@ -794,6 +794,12 @@
                                            TextWrapping="Wrap" />
                             </TextBlock.ToolTip>
                         </TextBlock>
+                        <Button x:Name="WorkbenchPreviewPickerButton" DockPanel.Dock="Right"
+                                Margin="4 0 0 0" Padding="5 0"
+                                Content="{localization:InspectorLoc Previewer.KeyboardPickTitle}"
+                                ToolTip="{localization:InspectorLoc Previewer.KeyboardPickHelp}"
+                                FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                                Command="{x:Static windows:SnoopUI.TogglePreviewPickerCommand}" />
                         <TextBlock x:Name="WorkbenchPreviewSelectionPath"
                                    Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
                                    TextTrimming="CharacterEllipsis">
@@ -816,6 +822,34 @@
                             </TextBlock.Style>
                         </TextBlock>
                     </DockPanel>
+
+                    <Grid x:Name="WorkbenchPreviewPicker" Margin="8 5" ClipToBounds="True" Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="3*" />
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="WorkbenchPreviewPickerCandidate" Content="{Binding DisplayName}" DataContext="{x:Null}"
+                                HorizontalContentAlignment="Stretch" Padding="5 0"
+                                AutomationProperties.Name="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                AutomationProperties.HelpText="{Binding Text, ElementName=WorkbenchPreviewPickerHelp}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                FocusVisualStyle="{StaticResource SnoopNext.WorkbenchFocusVisual}"
+                                IsEnabled="{Binding IsActive, ElementName=PreviewArea}"
+                                PreviewKeyDown="HandlePreviewPickerKeyDown" Click="CommitPreviewPicker"
+                                IsEnabledChanged="HandlePreviewPickerEnabledChanged"
+                                LostKeyboardFocus="HandlePreviewPickerLostFocus">
+                            <Button.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </Button.ContentTemplate>
+                        </Button>
+                        <TextBlock x:Name="WorkbenchPreviewPickerHelp" Grid.Column="1" Margin="5 0 0 0"
+                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                   Foreground="{DynamicResource SnoopNext.Brush.Text}"
+                                   Text="{localization:InspectorLoc Previewer.KeyboardPickHelp}"
+                                   ToolTip="{Binding Text, RelativeSource={RelativeSource Self}}" />
+                    </Grid>
 
                     <controls:Previewer x:Name="PreviewArea"
                                         Grid.Row="1"

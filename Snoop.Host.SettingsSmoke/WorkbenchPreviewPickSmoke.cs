@@ -5,14 +5,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 using Snoop.Controls;
+using Snoop.Core;
 using Snoop.Data.Tree;
-using Snoop.Infrastructure;
+using Snoop.Localization;
 using Snoop.Windows;
 using CoreSettings = Snoop.Core.Settings;
 using Rectangle = System.Windows.Shapes.Rectangle;
@@ -40,11 +43,21 @@ internal static class WorkbenchPreviewPickSmoke
         settings.SettingsFile = fixtureFile;
         try
         {
-            var inspector = new SnoopUI();
-            // The hidden inspector has no native Window source to acquire this usage count.
-            CacheManager.Instance.IncreaseUsageCount();
+            settings.SnoopUIWindowPlacement = null;
+            var inspector = new SnoopUI
+            {
+                ShowInTaskbar = false,
+                WindowStartupLocation = WindowStartupLocation.Manual,
+                Left = -32000,
+                Top = -32000,
+                Width = 1360,
+                Height = 790,
+            };
             try
             {
+                inspector.Show();
+                inspector.Activate();
+                DrainDispatcher();
                 VerifyInspector(inspector, selectPoint);
             }
             finally
@@ -69,7 +82,7 @@ internal static class WorkbenchPreviewPickSmoke
             DrainDispatcher();
         }
 
-        Console.WriteLine("PASS: preview clicks select and reveal the projected tree element while preserving scope, panes and zoom");
+        Console.WriteLine("PASS: pointer and keyboard preview picks synchronize selection, and cancel restores keyboard focus");
     }
 
     private static void VerifyInspector(SnoopUI inspector, MethodInfo selectPoint)
@@ -134,7 +147,6 @@ internal static class WorkbenchPreviewPickSmoke
 
         try
         {
-            zoomer.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent, zoomer));
             preview.SetCurrentValue(Previewer.IsActiveProperty, true);
             inspector.ScopeTo(scope);
             SnoopUI.RefreshCommand.Execute(null, inspector);
@@ -192,6 +204,74 @@ internal static class WorkbenchPreviewPickSmoke
             Require(scale.ScaleX == 1.15 && scale.ScaleY == 1.15 && translation.X == panX && translation.Y == panY,
                 "Picking a visual from the same scene must retain the preview zoom and translation.");
 
+            inspector.CurrentSelection = firstNode;
+            Arrange();
+            var opener = Find<Button>(inspector, "CommandPaletteButton");
+            var pickerButton = Find<Button>(inspector, "WorkbenchPreviewPickerButton");
+            Require(pickerButton.IsVisible && pickerButton.IsTabStop && new ButtonAutomationPeer(pickerButton).GetName().Contains("F6"),
+                "The preview must expose a focusable picker button with its shortcut.");
+            Require(opener.Focus() && opener.IsKeyboardFocused, "The picker must be reachable from a focused workbench control.");
+            SendKey(inspector, Key.F6);
+            var candidate = Find<Button>(inspector, "WorkbenchPreviewPickerCandidate");
+            var help = Find<TextBlock>(inspector, "WorkbenchPreviewPickerHelp");
+            Require(candidate.IsVisible && candidate.IsKeyboardFocused && Equals(candidate.Content, firstNode.DisplayName)
+                    && help.IsVisible && !string.IsNullOrWhiteSpace(help.Text) && AutomationProperties.GetHelpText(candidate) == help.Text,
+                "F6 must focus the current preview candidate and expose the picking instructions visually and to assistive technology.");
+            SendKey(inspector, Key.Down);
+            Require(Equals(candidate.Content, buttonNode.DisplayName) && Outlines(button) && !Outlines(first)
+                    && ReferenceEquals(inspector.CurrentSelection, firstNode)
+                    && ReferenceEquals(properties.RootTarget, first) && activated == 0,
+                "Down must outline the next candidate without committing it or activating the inspectee.");
+            var pane = Find<Grid>(inspector, "WorkbenchPreviewPane");
+            var language = InspectorLocalization.Default.LanguageTag;
+            var theme = CoreSettings.Default.ThemeMode;
+            var fullSize = new Size(inspector.Width, inspector.Height);
+            try
+            {
+                VerifyPickerAppearance(ThemeMode.Light, "en-US", "browse");
+                VerifyPickerAppearance(ThemeMode.Dark, "zh-CN", "浏览");
+                inspector.Width = inspector.MinWidth;
+                inspector.Height = inspector.MinHeight;
+                DrainDispatcher();
+                inspector.UpdateLayout();
+                var visible = viewport.TransformToAncestor(inspector).TransformBounds(new Rect(viewport.RenderSize));
+                visible.Intersect(new Rect(inspector.RenderSize));
+                Require(visible.Width > 0 && visible.Height > 0 && candidate.IsKeyboardFocused,
+                    $"The focused picker must leave a visible preview at minimum window size. Visible viewport: {visible}.");
+            }
+            finally
+            {
+                inspector.Width = fullSize.Width;
+                inspector.Height = fullSize.Height;
+                InspectorLocalization.Default.SetLanguage(language);
+                ThemeManager.Current.ApplyTheme(theme, inspector);
+                DrainDispatcher();
+                Arrange();
+            }
+
+            SendKey(inspector, Key.Down);
+            Require(Equals(candidate.Content, buttonNode.DisplayName),
+                "Browsing past the last candidate must skip template parts and stay inside the displayed scope.");
+            SendKey(inspector, Key.Up);
+            Require(Equals(candidate.Content, firstNode.DisplayName), "Up must return to the preceding preview candidate.");
+            SendKey(inspector, Key.Down);
+            SendKey(inspector, Key.Escape);
+            Require(!candidate.IsVisible && opener.IsKeyboardFocused && Outlines(first) && !Outlines(button),
+                "Escape must close the picker, restore its originating focus and outline the committed selection.");
+            VerifySelection(firstNode, "PickScope › PickGroup › FirstSelection", group.Name);
+
+            SendKey(inspector, Key.F6);
+            SendKey(inspector, Key.Down);
+            SendKey(inspector, Key.F6);
+            Require(!candidate.IsVisible && opener.IsKeyboardFocused, "Pressing F6 again must abandon the pending candidate.");
+            VerifySelection(firstNode, "PickScope › PickGroup › FirstSelection", group.Name);
+
+            SendKey(inspector, Key.F6);
+            SendKey(inspector, Key.Down);
+            SendKey(inspector, Key.Enter);
+            Require(!candidate.IsVisible && Outlines(button), "Enter must close the picker and outline its committed candidate.");
+            VerifySelection(buttonNode, "PickScope › PickGroup › PreviewAction", group.Name);
+
             ApplyFilter(first.Name);
             inspector.CurrentSelection = firstNode;
             Require(inspector.TreeItems.Count == 1 && ReferenceEquals(inspector.TreeItems[0], firstNode),
@@ -207,17 +287,42 @@ internal static class WorkbenchPreviewPickSmoke
             preview.SetCurrentValue(Previewer.IsActiveProperty, false);
             selectPoint.Invoke(zoomer, new object[] { stalePoint });
             Arrange();
-            Require(ReferenceEquals(inspector.CurrentSelection, firstNode), "A disabled preview must reject picking.");
+            Require(opener.Focus(), "The disabled-preview check requires an in-window focus origin.");
+            SendKey(inspector, Key.F6);
+            Require(!candidate.IsVisible && opener.IsKeyboardFocused && ReferenceEquals(inspector.CurrentSelection, firstNode),
+                "A disabled preview must reject pointer and keyboard picking.");
             preview.SetCurrentValue(Previewer.IsActiveProperty, true);
             Arrange();
 
+            SendKey(inspector, Key.F6);
+            SendKey(inspector, Key.Down);
+            Require(candidate.IsKeyboardFocused && Equals(candidate.Content, buttonNode.DisplayName),
+                "The detachment fixture must start with a pending pick on the button.");
             stalePoint = PointFor(templateLeaf);
             begin.Invoke(zoomer, new object[] { stalePoint, MouseButton.Left, true });
             source.RootVisual = null;
             complete.Invoke(zoomer, new object[] { stalePoint, MouseButton.Left });
+            if (candidate.IsKeyboardFocused)
+            {
+                SendKey(inspector, Key.Enter);
+            }
+
             Arrange();
-            Require(ReferenceEquals(inspector.CurrentSelection, firstNode) && activated == 0,
-                "A detached preview cannot pick from its old scene or invoke a target control.");
+            Require(!candidate.IsVisible && ReferenceEquals(inspector.CurrentSelection, firstNode)
+                    && ReferenceEquals(properties.RootTarget, first) && activated == 0,
+                "A detached preview cannot commit a stale pointer or keyboard pick or invoke a target control.");
+
+            void VerifyPickerAppearance(ThemeMode mode, string tag, string browse)
+            {
+                InspectorLocalization.Default.SetLanguage(tag);
+                ThemeManager.Current.ApplyTheme(mode, inspector);
+                Arrange();
+                var peer = new ButtonAutomationPeer(candidate);
+                Require(candidate.IsKeyboardFocused && peer.GetName() == buttonNode.DisplayName
+                        && help.IsVisible && help.Text.Contains(browse) && peer.GetHelpText() == help.Text && Outlines(button),
+                    $"The {tag} picker must expose its focused candidate, instructions and highlight in {mode} mode.");
+                LauncherAppearanceSmoke.CaptureIfRequested(pane, $"preview-keyboard-pick-{mode}-{tag}");
+            }
 
             void VerifySelection(TreeItem expected, string breadcrumb, string filter)
             {
@@ -237,7 +342,6 @@ internal static class WorkbenchPreviewPickSmoke
         }
         finally
         {
-            zoomer.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent, zoomer));
             source.RootVisual = null;
             DrainDispatcher();
         }
@@ -256,6 +360,9 @@ internal static class WorkbenchPreviewPickSmoke
             complete.Invoke(zoomer, new object[] { position, button });
         }
 
+        bool Outlines(FrameworkElement element) =>
+            outline.IsVisible && outline.TransformToAncestor(viewport).TransformBounds(new Rect(outline.RenderSize)).Contains(PointFor(element));
+
         Point PointFor(FrameworkElement target)
         {
             if (viewbox.Child is not Rectangle { Fill: VisualBrush { Visual: UIElement context } brush } projection)
@@ -273,6 +380,27 @@ internal static class WorkbenchPreviewPickSmoke
                 (point.Y - crop.Y) * projection.ActualHeight / crop.Height);
             return projection.TransformToAncestor(viewport).Transform(projected);
         }
+    }
+
+    private static void SendKey(SnoopUI inspector, Key key)
+    {
+        var source = PresentationSource.FromVisual(inspector)
+            ?? throw new InvalidOperationException("Keyboard picking requires a live inspector presentation source.");
+        foreach (var routedEvent in new[] { Keyboard.PreviewKeyDownEvent, Keyboard.PreviewKeyUpEvent })
+        {
+            if (Keyboard.FocusedElement is not UIElement focus || !ReferenceEquals(PresentationSource.FromVisual(focus), source))
+            {
+                throw new InvalidOperationException("The inspector lost keyboard focus before " + key + ".");
+            }
+
+            InputManager.Current.ProcessInput(new KeyEventArgs(Keyboard.PrimaryDevice, source, Environment.TickCount, key)
+            {
+                RoutedEvent = routedEvent,
+                Source = focus,
+            });
+        }
+
+        DrainDispatcher();
     }
 
     private static void Place(Canvas parent, FrameworkElement child, double x, double y)

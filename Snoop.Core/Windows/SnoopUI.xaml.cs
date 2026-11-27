@@ -95,6 +95,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         this.CommandBindings.Add(new CommandBinding(ClearSearchFilterCommand, this.ClearSearchFilterHandler));
         this.CommandBindings.Add(new CommandBinding(OpenCommandPaletteCommand, this.HandleOpenCommandPalette));
+        this.CommandBindings.Add(new CommandBinding(TogglePreviewPickerCommand, this.TogglePreviewPicker, this.CanTogglePreviewPicker));
 
         this.CommandBindings.Add(new CommandBinding(CopyPropertyChangesCommand, this.CopyPropertyChangesHandler));
 
@@ -156,6 +157,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         private set
         {
+            this.ClosePreviewPicker(restoreFocus: true);
             this.rootTreeItem = value;
             this.OnPropertyChanged();
             this.OnPropertyChanged(nameof(this.InspectedProcess));
@@ -199,6 +201,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
                 return;
             }
 
+            this.ClosePreviewPicker(restoreFocus: true);
             if (this.currentSelection is not null)
             {
                 this.ObservePreviewPathNames(false);
@@ -518,6 +521,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     protected override void OnClosed(EventArgs e)
     {
         this.WorkbenchCommandPalette.IsOpen = false;
+        this.ClosePreviewPicker(restoreFocus: false);
         this.isShuttingDown = true;
         this.depthAdjustment?.Abort();
         this.depthAdjustment = null;
