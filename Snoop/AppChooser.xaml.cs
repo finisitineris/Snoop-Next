@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -29,6 +30,7 @@ public partial class AppChooser
     public static readonly RoutedCommand InspectCommand = new(nameof(InspectCommand), typeof(AppChooser));
     public static readonly RoutedCommand RefreshCommand = new(nameof(RefreshCommand), typeof(AppChooser));
     public static readonly RoutedCommand MagnifyCommand = new(nameof(MagnifyCommand), typeof(AppChooser));
+    public static readonly RoutedCommand ClearTargetSearchCommand = new(nameof(ClearTargetSearchCommand), typeof(AppChooser));
     public static readonly RoutedCommand SettingsCommand = new(nameof(SettingsCommand), typeof(AppChooser));
     public static readonly RoutedCommand MinimizeCommand = new(nameof(MinimizeCommand), typeof(AppChooser));
 
@@ -36,6 +38,15 @@ public partial class AppChooser
         DependencyProperty.RegisterReadOnly(nameof(SortColumn), typeof(int), typeof(AppChooser), new PropertyMetadata(1));
 
     public static readonly DependencyProperty SortColumnProperty = SortColumnPropertyKey.DependencyProperty;
+
+    public static readonly DependencyProperty TargetSearchProperty = DependencyProperty.Register(
+        nameof(TargetSearch), typeof(string), typeof(AppChooser),
+        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).OnTargetSearchChanged()));
+
+    private static readonly DependencyPropertyKey HasTargetFilterPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasTargetFilter), typeof(bool), typeof(AppChooser), new PropertyMetadata(false));
+
+    public static readonly DependencyProperty HasTargetFilterProperty = HasTargetFilterPropertyKey.DependencyProperty;
 
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
     private readonly double singleRowMinimumWidth;
@@ -63,6 +74,9 @@ public partial class AppChooser
         this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefreshCommand));
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspectCommand, this.HandleCanInspectOrMagnifyCommand));
         this.CommandBindings.Add(new CommandBinding(MagnifyCommand, this.HandleMagnifyCommand, this.HandleCanInspectOrMagnifyCommand));
+        this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Find, this.HandleFindTarget));
+        this.CommandBindings.Add(new CommandBinding(ClearTargetSearchCommand, (_, _) => this.TargetSearch = string.Empty,
+                                                   (_, e) => e.CanExecute = !string.IsNullOrEmpty(this.TargetSearch)));
         this.CommandBindings.Add(new CommandBinding(SettingsCommand, this.HandleSettingsCommand));
         this.CommandBindings.Add(new CommandBinding(MinimizeCommand, this.HandleMinimizeCommand));
         this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Close, this.HandleCloseCommand));
@@ -76,6 +90,71 @@ public partial class AppChooser
     public ICollectionView WindowInfos { get; }
 
     public int SortColumn => (int)this.GetValue(SortColumnProperty);
+
+    public string TargetSearch
+    {
+        get => (string)this.GetValue(TargetSearchProperty);
+        set => this.SetValue(TargetSearchProperty, value);
+    }
+
+    public bool HasTargetFilter => (bool)this.GetValue(HasTargetFilterProperty);
+
+    private void OnTargetSearchChanged()
+    {
+        var term = this.TargetSearch?.Trim() ?? string.Empty;
+        var selected = this.WindowInfos.CurrentItem;
+        this.SetValue(HasTargetFilterPropertyKey, term.Length > 0);
+
+        var hasPid = int.TryParse(term, NumberStyles.None, CultureInfo.InvariantCulture, out var pid);
+        this.WindowInfos.Filter = term.Length == 0 ? null : item =>
+        {
+            var window = (WindowInfo)item;
+            if (hasPid && window.OwningProcessId == pid)
+            {
+                return true;
+            }
+
+            try
+            {
+                return window.ProcessName?.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0
+                    || window.WindowTitle.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                // A window may have disappeared since the last refresh.
+                return false;
+            }
+        };
+
+        // Refreshing a WPF view can select the first remaining row on its own.
+        // Keep the user's selection only while the same target is still visible.
+        if (selected is null || !this.WindowInfos.Contains(selected))
+        {
+            this.WindowInfos.MoveCurrentToPosition(-1);
+        }
+        else
+        {
+            this.WindowInfos.MoveCurrentTo(selected);
+        }
+
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void HandleFindTarget(object sender, ExecutedRoutedEventArgs e)
+    {
+        this.windowsComboBox.IsDropDownOpen = true;
+        // ComboBox queues focus navigation when its popup opens. Focus the search
+        // field after that navigation, once the popup has its own presentation source.
+        this.Dispatcher.InvokeAsync(() =>
+        {
+            if (this.windowsComboBox.IsDropDownOpen
+                && this.windowsComboBox.Template.FindName("TargetSearchBox", this.windowsComboBox) is TextBox search)
+            {
+                search.Focus();
+                search.SelectAll();
+            }
+        }, DispatcherPriority.Input);
+    }
 
     private void HandleChooserLoaded(object sender, RoutedEventArgs e)
     {
@@ -188,7 +267,7 @@ public partial class AppChooser
                     this.windowInfos.Add(windowInfo);
                 }
 
-                if (this.windowInfos.Count is 1)
+                if (this.windowInfos.Count is 1 && this.WindowInfos.Contains(this.windowInfos[0]))
                 {
                     this.WindowInfos.MoveCurrentTo(this.windowInfos[0]);
                 }
