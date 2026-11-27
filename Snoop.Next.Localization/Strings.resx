@@ -63,6 +63,14 @@
   <data name="Chooser.MagnifyLabel" xml:space="preserve"><value>Magnify</value></data>
   <data name="Chooser.SelectTarget" xml:space="preserve"><value>Choose a target window</value></data>
   <data name="Chooser.Empty" xml:space="preserve"><value>No WPF windows found</value></data>
+  <data name="Chooser.SearchTip" xml:space="preserve"><value>Choose a target window or press Ctrl+F to search</value></data>
+  <data name="Chooser.SearchTargets" xml:space="preserve"><value>Search by PID, name or title</value></data>
+  <data name="Chooser.ClearFilters" xml:space="preserve"><value>Clear filters</value></data>
+  <data name="Chooser.Runtime" xml:space="preserve"><value>Runtime</value></data>
+  <data name="Chooser.Architecture" xml:space="preserve"><value>Architecture</value></data>
+  <data name="Chooser.All" xml:space="preserve"><value>All</value></data>
+  <data name="Chooser.FiltersActive" xml:space="preserve"><value>Filters active</value></data>
+  <data name="Chooser.NoMatches" xml:space="preserve"><value>No matching WPF windows</value></data>
   <data name="Chooser.Refresh" xml:space="preserve"><value>Refresh target windows (F5)</value></data>
   <data name="Chooser.Inspect" xml:space="preserve"><value>Attach to the selected window</value></data>
   <data name="Chooser.PickInspect" xml:space="preserve"><value>Drag onto a window to attach (Esc to cancel)</value></data>
@@ -77,4 +85,10 @@
   <data name="Chooser.InspectFailed" xml:space="preserve"><value>Could not attach to window</value></data>
   <data name="Chooser.MagnifyFailed" xml:space="preserve"><value>Could not magnify window</value></data>
   <data name="Chooser.AttachFailureDetail" xml:space="preserve"><value>Failed to attach to “{0}”.</value></data>
+  <data name="Chooser.AttachFailureGuidance" xml:space="preserve"><value>Check that the target window is still open and that you have permission to inspect it. Retry to refresh the list and choose a target.</value></data>
+  <data name="Chooser.AttachAccessDenied" xml:space="preserve"><value>Windows denied access. Check that Snoop can run and that you have permission to inspect this target. Retry to choose a target again.</value></data>
+  <data name="Chooser.AttachElevationCanceled" xml:space="preserve"><value>Windows canceled the elevation request. Retry to choose a target and review the Windows prompt if it appears.</value></data>
+  <data name="Chooser.FailureDetails" xml:space="preserve"><value>Technical details</value></data>
+  <data name="Chooser.TargetUnavailable" xml:space="preserve"><value>The selected target process is no longer available.</value></data>
+  <data name="Chooser.Retry" xml:space="preserve"><value>Retry</value></data>
 </root>
