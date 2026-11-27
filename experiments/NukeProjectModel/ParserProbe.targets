@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ParserProbe.cs" />
+  </ItemGroup>
+</Project>
