@@ -23,7 +23,8 @@ internal static class ScreenshotPreviewSmoke
     public static void Verify()
     {
         var directory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "SnoopCapture-" + Guid.NewGuid().ToString("N")));
-        var destination = Path.Combine(directory.FullName, "confirmed.png");
+        const string filename = "SnoopScreenshot_CaptureTarget_96.png";
+        var destination = Path.Combine(directory.FullName, filename);
         var lastDirectory = typeof(ScreenshotDialog).GetField("lastSaveDirectory", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("Cannot isolate the screenshot destination.");
         var savedDirectory = lastDirectory.GetValue(null);
@@ -54,11 +55,14 @@ internal static class ScreenshotPreviewSmoke
                 ChooseFile(dialog, null);
                 Require(dialog.IsVisible, "Cancelling Save As must leave the screenshot preview open.");
                 ExpectEmpty();
-                ChooseFile(dialog, destination);
+                ChooseFile(dialog, filename);
                 Require(!dialog.IsVisible, "Confirming a PNG destination must close the screenshot preview.");
             });
 
-            Require(Directory.GetFiles(directory.FullName).SequenceEqual(new[] { destination }), "Explicit save must create only the chosen PNG.");
+            var files = directory.GetFiles();
+            var actual = string.Join(", ", files.Select(file => file.Name));
+            Require(files.Length == 1 && string.Equals(files[0].Name, filename, StringComparison.OrdinalIgnoreCase) && File.Exists(destination),
+                $"Expected only '{destination}' after Save As. Entries in '{directory.FullName}': [{actual}]. The picker returned directory '{lastDirectory.GetValue(null)}'.");
             using var stream = File.OpenRead(destination);
             var frame = new PngBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames.Single();
             var pixel = new byte[4];
@@ -111,7 +115,7 @@ internal static class ScreenshotPreviewSmoke
         }
     }
 
-    private static void ChooseFile(ScreenshotDialog preview, string? destination)
+    private static void ChooseFile(ScreenshotDialog preview, string? expectedFilename)
     {
         var owner = new WindowInteropHelper(preview).Handle;
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(12));
@@ -122,7 +126,7 @@ internal static class ScreenshotPreviewSmoke
         {
             try
             {
-                var buttonId = destination is null ? 2 : 1; // IDCANCEL / IDOK
+                var buttonId = expectedFilename is null ? 2 : 1; // IDCANCEL / IDOK
                 IntPtr picker;
                 IntPtr button;
                 while (true)
@@ -138,32 +142,23 @@ internal static class ScreenshotPreviewSmoke
                     Thread.Sleep(25);
                 }
 
-                if (destination is not null)
+                if (expectedFilename is not null)
                 {
                     var native = AutomationElement.FromHandle(picker);
-                    ValuePattern? filename = null;
-                    while (filename is null)
+                    // Accept the default name shown by the shell in the isolated save directory.
+                    var stem = Path.GetFileNameWithoutExtension(expectedFilename);
+                    while (true)
                     {
                         deadline.Token.ThrowIfCancellationRequested();
                         var edits = native.FindAll(TreeScope.Descendants, new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit));
-                        foreach (AutomationElement edit in edits)
+                        if (edits.Cast<AutomationElement>().Any(edit => edit.TryGetCurrentPattern(ValuePattern.Pattern, out var pattern)
+                            && pattern is ValuePattern value && (value.Current.Value == expectedFilename || value.Current.Value == stem)))
                         {
-                            if (edit.TryGetCurrentPattern(ValuePattern.Pattern, out var pattern) && pattern is ValuePattern value
-                                && value.Current.Value.StartsWith("SnoopScreenshot_CaptureTarget_96", StringComparison.Ordinal))
-                            {
-                                filename = value;
-                                break;
-                            }
+                            break;
                         }
 
-                        if (filename is null)
-                        {
-                            Thread.Sleep(25);
-                        }
+                        Thread.Sleep(25);
                     }
-
-                    filename.SetValue(destination);
-                    Require(filename.Current.Value == destination, "Save As did not accept the isolated absolute filename.");
                 }
 
                 // Post the button's notification so the client does not wait for its own modal dialog to close.

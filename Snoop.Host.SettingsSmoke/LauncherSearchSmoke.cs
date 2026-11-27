@@ -95,16 +95,18 @@ internal static class LauncherSearchSmoke
             var clear = Part<Button>("ClearTargetSearchButton");
             var empty = Part<TextBlock>("EmptyList");
             var popupRoot = (FrameworkElement)Part<Popup>("PART_Popup").Child;
-            var entry = UIElementAutomationPeer.CreatePeerForElement(search);
-            var reset = UIElementAutomationPeer.CreatePeerForElement(clear);
-            var input = (IValueProvider)entry.GetPattern(PatternInterface.Value);
-            var invoke = (IInvokeProvider)reset.GetPattern(PatternInterface.Invoke);
             var pid = first.Id.ToString(CultureInfo.InvariantCulture);
 
             // Exercise normal WPF text input on the focused editor, including the text route through the combo box.
             popup.Collapse();
+            Await(() => picker.GetChildren()?.Any(peer => peer.GetAutomationId() is "TargetSearchBox" or "ClearTargetSearchButton") != true,
+                "The collapsed picker must omit its popup controls from the automation tree.");
             ApplicationCommands.Find.Execute(null, chooser);
             Await(() => list.IsDropDownOpen && search.IsKeyboardFocused, "The launcher Find command must open the popup and focus the search editor.");
+            var entry = Child(AutomationControlType.Edit, "TargetSearchBox", "Chooser.SearchTargets");
+            var reset = Child(AutomationControlType.Button, "ClearTargetSearchButton", "Chooser.ClearSearch");
+            var input = (IValueProvider)entry.GetPattern(PatternInterface.Value);
+            var invoke = (IInvokeProvider)reset.GetPattern(PatternInterface.Invoke);
             TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, search, pid));
             Await(() => search.Text == pid && list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == first.Id,
                 "Keyboard PID input must leave only the matching target visible.");
@@ -154,7 +156,11 @@ internal static class LauncherSearchSmoke
             }
 
             popup.Collapse();
-            Console.WriteLine("PASS: launcher keyboard PID search, process/title filters, bilingual no-match state, command disabling and clear recovery.");
+            Console.WriteLine("PASS: launcher keyboard PID search, process/title filters, bilingual no-match state, command disabling and clear recovery through the picker automation tree.");
+
+            AutomationPeer Child(AutomationControlType type, string id, string nameKey)
+                => picker.GetChildren()?.SingleOrDefault(peer => peer.GetAutomationControlType() == type && peer.GetAutomationId() == id && peer.GetName() == text[nameKey])
+                   ?? throw new InvalidOperationException($"The expanded picker does not expose its localized {type} '{id}'.");
         }
         finally
         {

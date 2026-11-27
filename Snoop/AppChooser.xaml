@@ -61,7 +61,7 @@
                 <TextBlock x:Name="BrandLabel" VerticalAlignment="Center" FontWeight="SemiBold" Text="{local:Loc Shell.Title}" />
             </StackPanel>
 
-            <ComboBox x:Name="windowsComboBox" Grid.Column="1" VerticalAlignment="Center"
+            <snoop:LauncherTargetPicker x:Name="windowsComboBox" Grid.Column="1" VerticalAlignment="Center"
                       Style="{StaticResource LauncherTargetList}" MaxDropDownHeight="320"
                       IsSynchronizedWithCurrentItem="True" TextSearch.TextPath="ProcessName" ItemsSource="{Binding WindowInfos}"
                       DropDownOpened="HandleWindowsComboBox_OnDropDownOpened"
@@ -108,7 +108,7 @@
                         </DataTemplate.Triggers>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
-            </ComboBox>
+            </snoop:LauncherTargetPicker>
 
             <WrapPanel x:Name="TargetActions" Grid.Column="2" Margin="3,0,0,0" VerticalAlignment="Center">
                 <Button x:Name="RefreshTargetsButton" Style="{StaticResource LauncherButton}" Command="{x:Static snoop:AppChooser.RefreshCommand}"
