@@ -1,7 +1,7 @@
 # Snoop Next — 可直接转成 GitHub Issues / PR 的实施清单 v1.0
 
 设计基准：HTML v1.1 + `02-ui-interaction-mapping.md` + `03-resx-localization.md` + `04-mcp-host-and-ipc-contract.md`。  
-建议先在 Fork 的 `develop` 上以小 PR 实施，不直接改默认分支 `develop`（当前不存在 `main`）；保留 `upstream/develop` 的追踪。**以下是产品实施任务，文档已纳入 PR，但生产功能尚未实现。**
+建议先在 Fork 的 `develop` 上以小 PR 实施，不直接改默认分支 `develop`（当前不存在 `main`）；保留 `upstream/develop` 的追踪。各项原生 WPF 功能的验收进度、测试入口和剩余场景见[验收映射表](../traceability/acceptance-to-wpf.csv)。
 
 ## 0. 开发纪律（提交到 docs/CONTRIBUTING.md）
 

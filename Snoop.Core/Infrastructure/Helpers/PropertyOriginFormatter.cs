@@ -16,27 +16,7 @@ internal static class PropertyOriginFormatter
         var expression = BindingOperations.GetBindingExpressionBase(target, property);
         if (expression is not null)
         {
-            var bindingType = Format("PropertyOrigin.Binding", expression.ParentBindingBase.GetType().Name);
-            var status = Format("PropertyOrigin.Status", expression.Status);
-            if (expression is BindingExpression single)
-            {
-                AddPathAndSource(lines, single);
-                lines.Add(status);
-                lines.Add(bindingType);
-            }
-            else
-            {
-                lines.Add(bindingType);
-                lines.Add(status);
-                if (expression is MultiBindingExpression multi)
-                {
-                    AddChildren(lines, multi.BindingExpressions, null);
-                }
-                else if (expression is PriorityBindingExpression priority)
-                {
-                    AddChildren(lines, priority.BindingExpressions, priority.ActiveBindingExpression);
-                }
-            }
+            AddBindingDetails(lines, expression);
         }
 
         var source = DependencyPropertyHelper.GetValueSource(target, property);
@@ -45,6 +25,43 @@ internal static class PropertyOriginFormatter
         lines.Add(Format("PropertyOrigin.LocalValue", DescribeValue(() => target.ReadLocalValue(property))));
         lines.Add(Format("PropertyOrigin.EffectiveValue", DescribeValue(() => target.GetValue(property))));
         return string.Join(Environment.NewLine, lines);
+    }
+
+    internal static string GetBindingDetails(BindingExpressionBase expression)
+    {
+        var lines = new List<string>();
+        AddBindingDetails(lines, expression);
+        if (expression.ValidationError?.ErrorContent is string error && error.Length != 0)
+        {
+            lines.Add(error);
+        }
+
+        return string.Join(Environment.NewLine, lines);
+    }
+
+    private static void AddBindingDetails(List<string> lines, BindingExpressionBase expression)
+    {
+        var bindingType = Format("PropertyOrigin.Binding", expression.ParentBindingBase.GetType().Name);
+        var status = Format("PropertyOrigin.Status", expression.Status);
+        if (expression is BindingExpression single)
+        {
+            AddPathAndSource(lines, single);
+            lines.Add(status);
+            lines.Add(bindingType);
+        }
+        else
+        {
+            lines.Add(bindingType);
+            lines.Add(status);
+            if (expression is MultiBindingExpression multi)
+            {
+                AddChildren(lines, multi.BindingExpressions, null);
+            }
+            else if (expression is PriorityBindingExpression priority)
+            {
+                AddChildren(lines, priority.BindingExpressions, priority.ActiveBindingExpression);
+            }
+        }
     }
 
     private static void AddPathAndSource(List<string> lines, BindingExpression expression)

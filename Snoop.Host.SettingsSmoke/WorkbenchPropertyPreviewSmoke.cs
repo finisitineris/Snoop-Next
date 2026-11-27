@@ -150,6 +150,7 @@ internal static class WorkbenchPropertyPreviewSmoke
         Await(() => ReferenceEquals(binding, BindingOperations.GetBindingExpressionBase(button, ContentControl.ContentProperty))
                     && Equals(button.Content, "已同步"),
             "Undo must preserve a replacement binding with the same effective value and subsequent source updates.");
+        VerifyLocalizedApiNames(inspector, properties, grid, list, button);
         button.Content = "另存";
         CommandManager.InvalidateRequerySuggested();
         ExpectHistory(false, false);
@@ -239,6 +240,58 @@ internal static class WorkbenchPropertyPreviewSmoke
             var pixels = new byte[stride * bitmap.PixelHeight];
             bitmap.CopyPixels(pixels, stride, 0);
             return pixels;
+        }
+    }
+
+    // Reuse the live SaveButton and its application-owned Content binding while the workbench is open.
+    private static void VerifyLocalizedApiNames(SnoopUI inspector, PropertyInspector properties, PropertyGrid2 grid, ListView list, Button target)
+    {
+        var selected = inspector.CurrentSelection;
+        var tree = (TreeView)inspector.FindName("Tree");
+        var details = (TextBox)grid.FindName("OriginDetailsText");
+        var close = (Button)grid.FindName("CloseOriginDetailsButton");
+        var originalPreset = properties.SelectedFilterSet;
+        var originalOrigin = properties.OriginFilter;
+        var originalLanguage = InspectorLocalization.Default.LanguageTag;
+        try
+        {
+            properties.OriginFilter = PropertyOriginFilter.All;
+            properties.SelectedFilterSet = new PropertyFilterSet { Properties = new[] { nameof(Button.Content), nameof(Button.ActualWidth) } };
+            Await(() => list.Items.Cast<PropertyInformation>().Any(row => row.DependencyProperty == ContentControl.ContentProperty)
+                        && list.Items.Cast<PropertyInformation>().Any(row => row.DependencyProperty == FrameworkElement.ActualWidthProperty),
+                "The workbench must display Content and ActualWidth together.");
+            var content = list.Items.Cast<PropertyInformation>().Single(row => row.DependencyProperty == ContentControl.ContentProperty);
+            var width = list.Items.Cast<PropertyInformation>().Single(row => row.DependencyProperty == FrameworkElement.ActualWidthProperty);
+            var sourceCell = InspectorTableSmoke.Descendants(SelectRow(list, content)).OfType<Button>().Single(b => b.Name == "ShowPropertyOriginButton");
+            Invoke(sourceCell);
+
+            VerifyLanguage("zh-CN", "绑定类型：Binding", "关闭");
+            VerifyLanguage("en-US", "Binding type: Binding", "Close");
+            Invoke(close);
+            Await(() => !details.IsVisible && ReferenceEquals(inspector.CurrentSelection, selected),
+                "The localized Close button must dismiss the details and retain the selected tree element.");
+            Console.WriteLine("PASS: the workbench retains SaveButton, ActualWidth and Binding together when switching from Chinese to English.");
+
+            void VerifyLanguage(string language, string bindingLine, string closeText)
+            {
+                InspectorLocalization.Default.SetLanguage(language);
+                Await(() => ReferenceEquals(inspector.CurrentSelection, selected) && ReferenceEquals(selected?.Target, target)
+                         && ReferenceEquals(tree.SelectedItem, selected) && ReferenceEquals(properties.RootTarget, target)
+                         && InspectorTableSmoke.Descendants(tree).OfType<TreeViewItem>().Any(item => item.IsSelected && item.IsVisible
+                             && UIElementAutomationPeer.CreatePeerForElement(item).GetName().Contains("SaveButton"))
+                         && list.ItemContainerGenerator.ContainerFromItem(width) is ListViewItem widthItem
+                         && InspectorTableSmoke.Descendants(widthItem).OfType<TextBlock>().Any(cell => cell.IsVisible && cell.Text == "ActualWidth")
+                         && details.IsVisible && details.Text.Split(new[] { Environment.NewLine }, StringSplitOptions.None).Contains(bindingLine)
+                         && close.IsVisible && close.IsEnabled && Equals(close.Content, closeText)
+                         && UIElementAutomationPeer.CreatePeerForElement(close).GetName() == closeText,
+                    $"The {language} workbench must display the selected SaveButton, ActualWidth and CLR Binding type with its localized Close button.");
+            }
+        }
+        finally
+        {
+            properties.SelectedFilterSet = originalPreset;
+            properties.OriginFilter = originalOrigin;
+            InspectorLocalization.Default.SetLanguage(originalLanguage);
         }
     }
 

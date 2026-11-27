@@ -695,7 +695,7 @@
                                                 RootTarget="{Binding CurrentSelection.Target, Converter={x:Static converters:DataContextExtractorConverter.Instance}}" />
                 </TabItem>
 
-                <TabItem>
+                <TabItem x:Name="WorkbenchTriggersTab">
                     <TabItem.Header>
                         <TextBlock Text="{localization:InspectorLoc Tab.Triggers}">
                             <TextBlock.ToolTip>
@@ -708,7 +708,7 @@
                         </TextBlock>
                     </TabItem.Header>
 
-                    <triggersTab:TriggersView IsSelected="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type TabItem}}}"
+                    <triggersTab:TriggersView IsSelected="{Binding IsSelected, ElementName=WorkbenchTriggersTab}"
                                               RootTarget="{Binding CurrentSelection.Target}" />
                 </TabItem>
 
@@ -760,6 +760,16 @@
                     </TabItem.Header>
 
                     <powerShell:EmbeddedShellView IsSelected="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type TabItem}}}" />
+                </TabItem>
+
+                <TabItem x:Name="WorkbenchBindingsTab"
+                         Header="{localization:InspectorLoc Tab.Bindings}">
+                    <views:ElementDetailsView DataContext="{Binding CurrentSelection}" />
+                </TabItem>
+                <TabItem x:Name="WorkbenchRoutedEventsTab"
+                         Header="{localization:InspectorLoc Tab.RoutedEvents}"
+                         ToolTip="{localization:InspectorLoc SelectionDetails.RoutedEventsHelp}">
+                    <views:ElementDetailsView ShowRoutedEvents="True" DataContext="{Binding CurrentSelection}" />
                 </TabItem>
 
             </TabControl>
