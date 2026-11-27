@@ -39,6 +39,11 @@ internal static class Program
             File.WriteAllText(file, "<Settings />");
             File.WriteAllText(inspectorFile, "<Settings />");
             Environment.SetEnvironmentVariable(settingsRootVariable, path);
+            if (args.Length == 1 && args[0] == "--launcher-search-smoke")
+            {
+                return RunLauncherSearchSmoke();
+            }
+
             return RunSmoke(file, inspectorFile);
         }
         finally
@@ -55,6 +60,29 @@ internal static class Program
             {
                 // Test process still exits; temporary files are non-sensitive.
             }
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int RunLauncherSearchSmoke()
+    {
+        var app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+        var chooser = new AppChooser();
+        try
+        {
+            chooser.ApplyTemplate();
+            LauncherSearchSmoke.Verify(chooser, (System.Windows.Controls.ComboBox)chooser.FindName("windowsComboBox"));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
+        finally
+        {
+            chooser.Close();
+            app.Shutdown();
         }
     }
 

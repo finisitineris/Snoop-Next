@@ -1,8 +1,10 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -33,24 +35,41 @@ internal static class LauncherSearchSmoke
     internal static void Verify(AppChooser chooser, ComboBox list)
     {
         using var current = Process.GetCurrentProcess();
-        var start = new ProcessStartInfo(current.MainModule.FileName, FixtureArgument) { UseShellExecute = false, CreateNoWindow = true };
-        using var first = Process.Start(start) ?? throw new InvalidOperationException("Could not start the first WPF window.");
+        var fixtures = new List<Process>();
         try
         {
-            using var second = Process.Start(start) ?? throw new InvalidOperationException("Could not start the second WPF window.");
-            try
-            {
-                Await(() => HasWindow(first) && HasWindow(second), "The two discovery fixtures did not open their WPF windows.");
-                VerifyPicker(chooser, list, first, second);
-            }
-            finally
-            {
-                Stop(second);
-            }
+            var first = Start(current.MainModule.FileName, FixtureArgument);
+            var second = Start(current.MainModule.FileName, FixtureArgument);
+            var frameworkX86 = Start(FindFixture("net462"), $"\"{FixtureTitle}\"");
+            var modern = Start(FindFixture("net10.0-windows"), $"\"{FixtureTitle}\"");
+            Await(() => fixtures.All(HasWindow), "The discovery fixtures did not open their WPF windows.");
+            VerifyPicker(chooser, list, first, second, frameworkX86, modern);
         }
         finally
         {
-            Stop(first);
+            foreach (var fixture in fixtures)
+            {
+                using (fixture)
+                {
+                    Stop(fixture);
+                }
+            }
+        }
+
+        Process Start(string path, string arguments)
+        {
+            var start = new ProcessStartInfo(path, arguments) { UseShellExecute = false, CreateNoWindow = true };
+            var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start WPF fixture '{path}'.");
+            fixtures.Add(process);
+            return process;
+        }
+
+        static string FindFixture(string framework)
+        {
+            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fixtures", framework, "Snoop.Host.SettingsSmoke.Fixture.exe");
+            return File.Exists(path)
+                ? path
+                : throw new FileNotFoundException("Build Snoop.Host.SettingsSmoke.Fixture in the same configuration before running the smoke.", path);
         }
 
         static bool HasWindow(Process process)
@@ -69,8 +88,13 @@ internal static class LauncherSearchSmoke
         }
     }
 
-    private static void VerifyPicker(AppChooser chooser, ComboBox list, Process first, Process second)
+    private static void VerifyPicker(AppChooser chooser, ComboBox list, Process first, Process second, Process frameworkX86, Process modern)
     {
+        const int all = 0;
+        const int netFramework = 1;
+        const int coreClr = 2;
+        const int x64 = 2;
+
         // Host the real selector in a normal window to use its popup without installing the launcher's global hook.
         var host = new Window { DataContext = chooser, Width = 320, Height = 100, ShowInTaskbar = false };
         host.Resources.MergedDictionaries.Add(chooser.Resources);
@@ -88,8 +112,8 @@ internal static class LauncherSearchSmoke
             var picker = UIElementAutomationPeer.CreatePeerForElement(list);
             var popup = (IExpandCollapseProvider)picker.GetPattern(PatternInterface.ExpandCollapse);
             popup.Expand();
-            Await(() => HasBoth(), "Opening the picker must discover both running WPF fixture processes.");
-            Console.WriteLine("PASS: opening an empty target picker discovers both live WPF fixture PIDs.");
+            Await(() => HasAllFixtures(), "Opening the picker must discover all running WPF fixture processes.");
+            Console.WriteLine("PASS: opening an empty target picker discovers live CLR4 and CoreCLR WPF fixture PIDs.");
 
             var search = Part<TextBox>("TargetSearchBox");
             var clear = Part<Button>("ClearTargetSearchButton");
@@ -99,14 +123,34 @@ internal static class LauncherSearchSmoke
 
             // Exercise normal WPF text input on the focused editor, including the text route through the combo box.
             popup.Collapse();
-            Await(() => picker.GetChildren()?.Any(peer => peer.GetAutomationId() is "TargetSearchBox" or "ClearTargetSearchButton") != true,
+            Await(() => picker.GetChildren()?.Any(peer => peer.GetAutomationId() is "TargetSearchBox" or "ClearTargetSearchButton"
+                    or "TargetRuntimeFilter" or "TargetArchitectureFilter") != true,
                 "The collapsed picker must omit its popup controls from the automation tree.");
             ApplicationCommands.Find.Execute(null, chooser);
             Await(() => list.IsDropDownOpen && search.IsKeyboardFocused, "The launcher Find command must open the popup and focus the search editor.");
             var entry = Child(AutomationControlType.Edit, "TargetSearchBox", "Chooser.SearchTargets");
-            var reset = Child(AutomationControlType.Button, "ClearTargetSearchButton", "Chooser.ClearSearch");
+            var runtime = Child(AutomationControlType.ComboBox, "TargetRuntimeFilter", "Chooser.Runtime");
+            var architecture = Child(AutomationControlType.ComboBox, "TargetArchitectureFilter", "Chooser.Architecture");
+            var reset = Child(AutomationControlType.Button, "ClearTargetSearchButton", "Chooser.ClearFilters");
+            var runtimeFilter = Part<ComboBox>("TargetRuntimeFilter");
+            var architectureFilter = Part<ComboBox>("TargetArchitectureFilter");
             var input = (IValueProvider)entry.GetPattern(PatternInterface.Value);
             var invoke = (IInvokeProvider)reset.GetPattern(PatternInterface.Invoke);
+            Require(runtimeFilter.SelectedIndex == all && architectureFilter.SelectedIndex == all,
+                "The target picker's runtime and architecture filters must initially include all targets.");
+            Require(search.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next)) && runtimeFilter.IsKeyboardFocusWithin,
+                "Tab navigation from an empty search editor must reach the runtime chooser.");
+            PressKey(Key.F4);
+            Await(() => runtimeFilter.IsDropDownOpen && list.IsDropDownOpen,
+                "F4 must open the runtime choices inside the open target picker.");
+            PressKey(Key.Down);
+            PressKey(Key.Enter);
+            Await(() => !runtimeFilter.IsDropDownOpen && list.IsDropDownOpen && runtimeFilter.SelectedIndex == netFramework,
+                "Down and Enter must choose .NET Framework while keeping the target picker open.");
+            invoke.Invoke();
+            Await(() => runtimeFilter.SelectedIndex == all, "Clear filters must reset a runtime-only selection.");
+            ApplicationCommands.Find.Execute(null, chooser);
+            Await(() => search.IsKeyboardFocused, "Find must return keyboard focus to the search editor.");
             TextCompositionManager.StartComposition(new TextComposition(InputManager.Current, search, pid));
             Await(() => search.Text == pid && list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == first.Id,
                 "Keyboard PID input must leave only the matching target visible.");
@@ -130,15 +174,17 @@ internal static class LauncherSearchSmoke
             Await(() => VisibleRowIds().SequenceEqual(new[] { secondRowId }),
                 "Replacing the PID query must remove the previously selected process from the automation tree.");
             popup.Collapse();
+            Require(Part<TextBlock>("Placeholder").Text == second.Id.ToString(CultureInfo.InvariantCulture),
+                "The collapsed picker must show the active text query when no target is selected.");
             popup.Expand();
             Await(() => list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == second.Id && search.Text == second.Id.ToString(CultureInfo.InvariantCulture),
                 "Reopening the picker must retain the active target query.");
 
             input.SetValue("  LEDGER SAMPLE  ");
-            Await(() => HasBoth() && list.Items.Cast<WindowInfo>().All(v => v.WindowTitle.IndexOf("Ledger sample", StringComparison.OrdinalIgnoreCase) >= 0),
-                "Case-insensitive title search must include both fixtures and exclude other titles.");
+            Await(() => HasAllFixtures() && list.Items.Cast<WindowInfo>().All(v => v.WindowTitle.IndexOf("Ledger sample", StringComparison.OrdinalIgnoreCase) >= 0),
+                "Case-insensitive title search must include all fixtures and exclude other titles.");
             input.SetValue("SETTINGSsmoke");
-            Await(() => HasBoth() && list.Items.Cast<WindowInfo>().All(v => v.ProcessName?.IndexOf("settingssmoke", StringComparison.OrdinalIgnoreCase) >= 0),
+            Await(() => HasAllFixtures() && list.Items.Cast<WindowInfo>().All(v => v.ProcessName?.IndexOf("settingssmoke", StringComparison.OrdinalIgnoreCase) >= 0),
                 "Case-insensitive process-name search must include the fixtures and exclude unrelated processes.");
 
             foreach (var language in new[] { "en-US", "zh-CN" })
@@ -148,7 +194,9 @@ internal static class LauncherSearchSmoke
                 Await(() => list.Items.IsEmpty && empty.IsVisible && empty.Text == text["Chooser.NoMatches"], "Missing localized no-match state for " + language);
                 Await(() => VisibleRowIds().Length == 0, "An empty result must expose no actionable process row to automation.");
                 Require(clear.IsVisible && clear.IsEnabled && search.IsVisible && entry.GetName() == text["Chooser.SearchTargets"]
-                        && reset.GetName() == text["Chooser.ClearSearch"] && !input.IsReadOnly, "Missing accessible search or reset in " + language);
+                        && runtimeFilter.IsVisible && runtime.GetName() == text["Chooser.Runtime"]
+                        && architectureFilter.IsVisible && architecture.GetName() == text["Chooser.Architecture"]
+                        && reset.GetName() == text["Chooser.ClearFilters"] && !input.IsReadOnly, "Missing accessible target filters in " + language);
                 Require(list.SelectedItem is null && chooser.WindowInfos.CurrentItem is null
                         && !AppChooser.InspectCommand.CanExecute(null, chooser) && !AppChooser.MagnifyCommand.CanExecute(null, chooser),
                     "A filtered-out target must not remain actionable.");
@@ -158,11 +206,55 @@ internal static class LauncherSearchSmoke
                 }
 
                 invoke.Invoke();
-                Await(() => search.Text.Length == 0 && !empty.IsVisible && HasBoth(), "Clearing the search must restore the original discovered targets.");
+                Await(() => search.Text.Length == 0 && !empty.IsVisible && HasAllFixtures(), "Clearing the search must restore the original discovered targets.");
             }
 
+            input.SetValue(FixtureTitle);
+            runtimeFilter.SelectedIndex = netFramework;
+            Await(() => Only(first, second, frameworkX86), "The .NET Framework filter must exclude the CoreCLR target and retain CLR4 targets of both architectures.");
+            var expectedOrder = new[] { first.Id, second.Id, frameworkX86.Id }.OrderBy(id => id);
+            Require(list.Items.Cast<WindowInfo>().Select(target => target.OwningProcessId).SequenceEqual(expectedOrder),
+                "Combining text and runtime filters must preserve ascending PID order.");
+            list.SelectedItem = list.Items.Cast<WindowInfo>().Single(target => target.OwningProcessId == first.Id);
+            Require(AppChooser.InspectCommand.CanExecute(null, chooser) && AppChooser.MagnifyCommand.CanExecute(null, chooser),
+                "Both actions must be available for the selected .NET Framework target.");
+
+            var architectureMenu = (IExpandCollapseProvider)architecture.GetPattern(PatternInterface.ExpandCollapse);
+            architectureMenu.Expand();
+            Await(() => architectureFilter.IsDropDownOpen && architecture.GetChildren()?.Any(peer => peer.GetName() == "x86") == true,
+                "The x86 architecture option must be reachable through UI Automation.");
+            var x86Option = architecture.GetChildren().Single(peer => peer.GetName() == "x86");
+            ((ISelectionItemProvider)x86Option.GetPattern(PatternInterface.SelectionItem)).Select();
+            architectureMenu.Collapse();
+            Await(() => Only(frameworkX86) && list.SelectedItem is null && chooser.WindowInfos.CurrentItem is null
+                        && !AppChooser.InspectCommand.CanExecute(null, chooser) && !AppChooser.MagnifyCommand.CanExecute(null, chooser),
+                "Filtering to x86 must keep the x86 CLR4 row and clear the hidden target and both actions.");
+
+            runtimeFilter.SelectedIndex = coreClr;
+            Await(() => list.Items.IsEmpty && empty.IsVisible && empty.Text == text["Chooser.NoMatches"] && VisibleRowIds().Length == 0,
+                "The CoreCLR and x86 filters must intersect and expose no rows when neither fixture matches both.");
+
+            architectureFilter.SelectedIndex = x64;
+            Await(() => Only(modern) && VisibleRowIds().SequenceEqual(new[] { "TargetProcess." + modern.Id.ToString(CultureInfo.InvariantCulture) }),
+                "The CoreCLR and x64 filters must expose only the modern WPF target.");
+            input.SetValue(pid);
+            Await(() => list.Items.IsEmpty && empty.IsVisible, "A PID query must still be restricted by the active runtime and architecture.");
+            input.SetValue(string.Empty);
+            Require(clear.IsVisible && clear.IsEnabled, "Clear filters must remain available when only runtime and architecture filters are active.");
+            Require(picker.GetItemStatus() == text["Chooser.FiltersActive"],
+                "The picker must announce active filters even when the text query is empty.");
+            input.SetValue(FixtureTitle);
+
             popup.Collapse();
-            Console.WriteLine("PASS: launcher keyboard PID search, process/title filters, bilingual no-match state, command disabling and clear recovery through the picker automation tree.");
+            popup.Expand();
+            Await(() => search.Text == FixtureTitle && runtimeFilter.SelectedIndex == coreClr && architectureFilter.SelectedIndex == x64 && Only(modern),
+                "Reopening the picker must retain the query, runtime and architecture filters.");
+            invoke.Invoke();
+            Await(() => search.Text.Length == 0 && runtimeFilter.SelectedIndex == all && architectureFilter.SelectedIndex == all
+                        && !empty.IsVisible && HasAllFixtures(), "Clear filters must reset the query and both selectors together.");
+
+            popup.Collapse();
+            Console.WriteLine("PASS: launcher PID, process/title, runtime and architecture filters, bilingual no-match state, selection clearing and combined reset.");
 
             string[] VisibleRowIds() => picker.GetChildren()
                 .Where(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem)
@@ -182,12 +274,32 @@ internal static class LauncherSearchSmoke
             text.SetLanguage(originalLanguage);
         }
 
-        bool HasBoth() => list.Items.Cast<WindowInfo>().Any(v => v.OwningProcessId == first.Id)
-                       && list.Items.Cast<WindowInfo>().Any(v => v.OwningProcessId == second.Id);
+        bool HasAllFixtures() => new[] { first, second, frameworkX86, modern }
+            .All(process => list.Items.Cast<WindowInfo>().Any(target => target.OwningProcessId == process.Id));
+
+        bool Only(params Process[] expected) => list.Items.Count == expected.Length
+            && expected.All(process => list.Items.Cast<WindowInfo>().Any(target => target.OwningProcessId == process.Id));
 
         T Part<T>(string name)
             where T : FrameworkElement
             => list.Template.FindName(name, list) as T ?? throw new InvalidOperationException("Missing target picker control " + name);
+    }
+
+    private static void PressKey(Key key)
+    {
+        foreach (var routedEvent in new[] { Keyboard.PreviewKeyDownEvent, Keyboard.PreviewKeyUpEvent })
+        {
+            if (Keyboard.FocusedElement is not UIElement focus || PresentationSource.FromVisual(focus) is not { } source)
+            {
+                throw new InvalidOperationException($"No keyboard focus for {key}.");
+            }
+
+            InputManager.Current.ProcessInput(new KeyEventArgs(Keyboard.PrimaryDevice, source, Environment.TickCount, key)
+            {
+                RoutedEvent = routedEvent,
+                Source = focus
+            });
+        }
     }
 
     private static void Require(bool condition, string message)

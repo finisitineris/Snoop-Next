@@ -65,7 +65,11 @@
   <data name="Chooser.Empty" xml:space="preserve"><value>No WPF windows found</value></data>
   <data name="Chooser.SearchTip" xml:space="preserve"><value>Choose a target window or press Ctrl+F to search</value></data>
   <data name="Chooser.SearchTargets" xml:space="preserve"><value>Search by PID, name or title</value></data>
-  <data name="Chooser.ClearSearch" xml:space="preserve"><value>Clear search</value></data>
+  <data name="Chooser.ClearFilters" xml:space="preserve"><value>Clear filters</value></data>
+  <data name="Chooser.Runtime" xml:space="preserve"><value>Runtime</value></data>
+  <data name="Chooser.Architecture" xml:space="preserve"><value>Architecture</value></data>
+  <data name="Chooser.All" xml:space="preserve"><value>All</value></data>
+  <data name="Chooser.FiltersActive" xml:space="preserve"><value>Filters active</value></data>
   <data name="Chooser.NoMatches" xml:space="preserve"><value>No matching WPF windows</value></data>
   <data name="Chooser.Refresh" xml:space="preserve"><value>Refresh target windows (F5)</value></data>
   <data name="Chooser.Inspect" xml:space="preserve"><value>Attach to the selected window</value></data>

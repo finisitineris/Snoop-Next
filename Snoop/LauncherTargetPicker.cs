@@ -61,6 +61,8 @@ public sealed class LauncherTargetPicker : ComboBox
             var children = new List<AutomationPeer>();
             AddTemplateControl("TargetSearchBox");
             AddTemplateControl("ClearTargetSearchButton");
+            AddTemplateControl("TargetRuntimeFilter");
+            AddTemplateControl("TargetArchitectureFilter");
             if (items is not null)
             {
                 children.AddRange(items);

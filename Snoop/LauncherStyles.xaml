@@ -147,6 +147,7 @@
         <Setter Property="Height" Value="32" />
         <Setter Property="FocusVisualStyle" Value="{StaticResource LauncherFocus}" />
         <Setter Property="Foreground" Value="{DynamicResource SnoopNext.Brush.Text}" />
+        <Setter Property="AutomationProperties.ItemStatus" Value="{Binding TargetFilterText}" />
         <Setter Property="ItemContainerStyle" Value="{StaticResource LauncherTargetRow}" />
         <Setter Property="Template">
             <Setter.Value>
@@ -192,6 +193,7 @@
                                 <Grid MinWidth="218">
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid Margin="2,1,2,4">
@@ -208,18 +210,51 @@
                                                    Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}" TextTrimming="CharacterEllipsis"
                                                    Visibility="Collapsed" Text="{local:Loc Chooser.SearchTargets}" />
                                         <Button x:Name="ClearTargetSearchButton" Grid.Column="1" Margin="2,0,0,0" Style="{StaticResource LauncherButton}"
-                                                Command="{x:Static snoop:AppChooser.ClearTargetSearchCommand}"
+                                                Command="{x:Static snoop:AppChooser.ClearTargetFiltersCommand}"
                                                 CommandTarget="{Binding DataContext, RelativeSource={RelativeSource TemplatedParent}}"
-                                                AutomationProperties.Name="{local:Loc Chooser.ClearSearch}" ToolTip="{local:Loc Chooser.ClearSearch}">
+                                                AutomationProperties.Name="{local:Loc Chooser.ClearFilters}" ToolTip="{local:Loc Chooser.ClearFilters}">
                                             <Path Style="{StaticResource LauncherIcon}" Width="11" Height="11" Data="M1,1 L10,10 M10,1 L1,10" />
                                         </Button>
                                     </Grid>
-                                    <ScrollViewer Grid.Row="1" CanContentScroll="True" VerticalScrollBarVisibility="Auto"
+                                    <Grid Grid.Row="1" Margin="2,0,2,5">
+                                        <Grid.Resources>
+                                            <ResourceDictionary Source="pack://application:,,,/Snoop.Core;component/Themes/FluentFlyouts.xaml" />
+                                        </Grid.Resources>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="3*" />
+                                            <ColumnDefinition Width="2*" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Margin="0,0,4,0">
+                                            <TextBlock Margin="2,0,0,2" Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
+                                                       Text="{local:Loc Chooser.Runtime}" />
+                                            <ComboBox x:Name="TargetRuntimeFilter" Height="30" SelectedValuePath="Tag"
+                                                      SelectedValue="{Binding DataContext.TargetRuntimeFilter, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                      AutomationProperties.Name="{local:Loc Chooser.Runtime}">
+                                                <ComboBoxItem Tag="{x:Static snoop:TargetRuntime.None}" Content="{local:Loc Chooser.All}" />
+                                                <ComboBoxItem Tag="{x:Static snoop:TargetRuntime.NetFramework}" Content=".NET Framework" />
+                                                <ComboBoxItem Tag="{x:Static snoop:TargetRuntime.CoreClr}" Content=".NET (CoreCLR)" />
+                                            </ComboBox>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Margin="2,0,0,2" Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
+                                                       Text="{local:Loc Chooser.Architecture}" />
+                                            <ComboBox x:Name="TargetArchitectureFilter" Height="30" SelectedValuePath="Tag"
+                                                      SelectedValue="{Binding DataContext.TargetArchitectureFilter, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                                      AutomationProperties.Name="{local:Loc Chooser.Architecture}">
+                                                <ComboBoxItem Tag="" Content="{local:Loc Chooser.All}" />
+                                                <ComboBoxItem Tag="x86" Content="x86" />
+                                                <ComboBoxItem Tag="x64" Content="x64" />
+                                                <ComboBoxItem Tag="ARM" Content="ARM" />
+                                                <ComboBoxItem Tag="ARM64" Content="ARM64" />
+                                            </ComboBox>
+                                        </StackPanel>
+                                    </Grid>
+                                    <ScrollViewer Grid.Row="2" CanContentScroll="True" VerticalScrollBarVisibility="Auto"
                                                   HorizontalScrollBarVisibility="Disabled">
                                         <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" Grid.IsSharedSizeScope="True"
                                                         Tag="{Binding DataContext.SortColumn, RelativeSource={RelativeSource TemplatedParent}}" />
                                     </ScrollViewer>
-                                    <TextBlock x:Name="EmptyList" Grid.Row="1" Margin="8,6" Visibility="Collapsed"
+                                    <TextBlock x:Name="EmptyList" Grid.Row="2" Margin="8,6" Visibility="Collapsed"
                                                Foreground="{DynamicResource SnoopNext.Brush.TextSecondary}"
                                                Text="{local:Loc Chooser.Empty}" />
                                 </Grid>
@@ -238,9 +273,17 @@
                             <Setter TargetName="FilterMark" Property="Visibility" Value="Visible" />
                             <Setter TargetName="Selection" Property="Margin" Value="10,0,42,0" />
                             <Setter TargetName="Placeholder" Property="Margin" Value="10,0,42,0" />
-                            <Setter TargetName="Placeholder" Property="Text" Value="{Binding TargetSearch}" />
+                            <Setter TargetName="Placeholder" Property="Text" Value="{Binding TargetFilterText}" />
                             <Setter TargetName="EmptyList" Property="Text" Value="{local:Loc Chooser.NoMatches}" />
                         </DataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding HasTargetFilter}" Value="True" />
+                                <Condition Binding="{Binding TargetFilterText}" Value="" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="Placeholder" Property="Text" Value="{local:Loc Chooser.FiltersActive}" />
+                            <Setter Property="AutomationProperties.ItemStatus" Value="{local:Loc Chooser.FiltersActive}" />
+                        </MultiDataTrigger>
                         <Trigger Property="HasItems" Value="False">
                             <Setter TargetName="EmptyList" Property="Visibility" Value="Visible" />
                         </Trigger>

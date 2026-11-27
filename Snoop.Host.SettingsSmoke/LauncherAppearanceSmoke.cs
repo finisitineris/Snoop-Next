@@ -178,11 +178,13 @@ internal static class LauncherAppearanceSmoke
             var element = (FrameworkElement)chooser.FindName(name);
             return element.TransformToAncestor(content).TransformBounds(new Rect(element.RenderSize));
         }).ToArray();
+        // Edges that share a physical pixel boundary can differ by floating-point noise at fractional DPI.
+        const double overlapTolerance = 0.000001;
         for (var i = 0; i < boxes.Length; i++)
         {
             var box = boxes[i];
             if (box.Width < (i == 0 ? 145 : 28) || box.Height < 28 || !bounds.Contains(box)
-                || boxes.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > 0, Height: > 0 }))
+                || boxes.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > overlapTolerance, Height: > overlapTolerance }))
             {
                 throw new InvalidOperationException($"The compact launcher must expose its selector and every action without overlap. {names[i]} at {box}.");
             }
@@ -195,10 +197,11 @@ internal static class LauncherAppearanceSmoke
 
         applyWorkArea.Invoke(chooser, new object[] { new Rect(0, 0, 1280, 720), new Point(20, 20) });
         WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
-        if (chooser.Width != 740 || chooser.MinWidth != 560 || chooser.Height != 48 || Grid.GetRow(actions) != 0
+        var onePixel = 1 / VisualTreeHelper.GetDpi(content).DpiScaleY;
+        if (chooser.Width != 740 || chooser.MinWidth != 560 || Math.Abs(chooser.Height - 48) > onePixel + overlapTolerance || Grid.GetRow(actions) != 0
             || ((TextBlock)chooser.FindName("BrandLabel")).Visibility != Visibility.Visible)
         {
-            throw new InvalidOperationException("A wider work area must restore the launcher's single-row geometry.");
+            throw new InvalidOperationException($"A wider work area must restore the launcher's single-row geometry. Got {chooser.Width} × {chooser.Height} DIP.");
         }
     }
 

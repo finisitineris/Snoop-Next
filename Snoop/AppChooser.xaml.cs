@@ -30,7 +30,7 @@ public partial class AppChooser
     public static readonly RoutedCommand InspectCommand = new(nameof(InspectCommand), typeof(AppChooser));
     public static readonly RoutedCommand RefreshCommand = new(nameof(RefreshCommand), typeof(AppChooser));
     public static readonly RoutedCommand MagnifyCommand = new(nameof(MagnifyCommand), typeof(AppChooser));
-    public static readonly RoutedCommand ClearTargetSearchCommand = new(nameof(ClearTargetSearchCommand), typeof(AppChooser));
+    public static readonly RoutedCommand ClearTargetFiltersCommand = new(nameof(ClearTargetFiltersCommand), typeof(AppChooser));
     public static readonly RoutedCommand SettingsCommand = new(nameof(SettingsCommand), typeof(AppChooser));
     public static readonly RoutedCommand MinimizeCommand = new(nameof(MinimizeCommand), typeof(AppChooser));
 
@@ -41,7 +41,20 @@ public partial class AppChooser
 
     public static readonly DependencyProperty TargetSearchProperty = DependencyProperty.Register(
         nameof(TargetSearch), typeof(string), typeof(AppChooser),
-        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).OnTargetSearchChanged()));
+        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    public static readonly DependencyProperty TargetRuntimeFilterProperty = DependencyProperty.Register(
+        nameof(TargetRuntimeFilter), typeof(TargetRuntime), typeof(AppChooser),
+        new PropertyMetadata(TargetRuntime.None, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    public static readonly DependencyProperty TargetArchitectureFilterProperty = DependencyProperty.Register(
+        nameof(TargetArchitectureFilter), typeof(string), typeof(AppChooser),
+        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    private static readonly DependencyPropertyKey TargetFilterTextPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(TargetFilterText), typeof(string), typeof(AppChooser), new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty TargetFilterTextProperty = TargetFilterTextPropertyKey.DependencyProperty;
 
     private static readonly DependencyPropertyKey HasTargetFilterPropertyKey = DependencyProperty.RegisterReadOnly(
         nameof(HasTargetFilter), typeof(bool), typeof(AppChooser), new PropertyMetadata(false));
@@ -75,8 +88,8 @@ public partial class AppChooser
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspectCommand, this.HandleCanInspectOrMagnifyCommand));
         this.CommandBindings.Add(new CommandBinding(MagnifyCommand, this.HandleMagnifyCommand, this.HandleCanInspectOrMagnifyCommand));
         this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Find, this.HandleFindTarget));
-        this.CommandBindings.Add(new CommandBinding(ClearTargetSearchCommand, (_, _) => this.TargetSearch = string.Empty,
-                                                   (_, e) => e.CanExecute = !string.IsNullOrEmpty(this.TargetSearch)));
+        this.CommandBindings.Add(new CommandBinding(ClearTargetFiltersCommand, (_, _) => this.ClearTargetFilters(),
+                                                   (_, e) => e.CanExecute = this.HasTargetFilter || !string.IsNullOrEmpty(this.TargetSearch)));
         this.CommandBindings.Add(new CommandBinding(SettingsCommand, this.HandleSettingsCommand));
         this.CommandBindings.Add(new CommandBinding(MinimizeCommand, this.HandleMinimizeCommand));
         this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Close, this.HandleCloseCommand));
@@ -97,27 +110,52 @@ public partial class AppChooser
         set => this.SetValue(TargetSearchProperty, value);
     }
 
+    public TargetRuntime TargetRuntimeFilter
+    {
+        get => (TargetRuntime)this.GetValue(TargetRuntimeFilterProperty);
+        set => this.SetValue(TargetRuntimeFilterProperty, value);
+    }
+
+    public string TargetArchitectureFilter
+    {
+        get => (string)this.GetValue(TargetArchitectureFilterProperty);
+        set => this.SetValue(TargetArchitectureFilterProperty, value);
+    }
+
+    public string TargetFilterText => (string)this.GetValue(TargetFilterTextProperty);
+
     public bool HasTargetFilter => (bool)this.GetValue(HasTargetFilterProperty);
 
-    private void OnTargetSearchChanged()
+    private void ClearTargetFilters()
+    {
+        this.TargetSearch = string.Empty;
+        this.TargetRuntimeFilter = TargetRuntime.None;
+        this.TargetArchitectureFilter = string.Empty;
+    }
+
+    private void RefreshTargetFilter()
     {
         var term = this.TargetSearch?.Trim() ?? string.Empty;
+        var runtime = this.TargetRuntimeFilter;
+        var architecture = this.TargetArchitectureFilter;
         var selected = this.WindowInfos.CurrentItem;
-        this.SetValue(HasTargetFilterPropertyKey, term.Length > 0);
+        var hasFilter = term.Length > 0 || runtime != TargetRuntime.None || !string.IsNullOrEmpty(architecture);
+        this.SetValue(TargetFilterTextPropertyKey, term);
+        this.SetValue(HasTargetFilterPropertyKey, hasFilter);
 
         var hasPid = int.TryParse(term, NumberStyles.None, CultureInfo.InvariantCulture, out var pid);
-        this.WindowInfos.Filter = term.Length == 0 ? null : item =>
+        this.WindowInfos.Filter = !hasFilter ? null : item =>
         {
             var window = (WindowInfo)item;
-            if (hasPid && window.OwningProcessId == pid)
-            {
-                return true;
-            }
-
             try
             {
-                return window.ProcessName?.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0
+                var matchesText = term.Length == 0
+                    || (hasPid && window.OwningProcessId == pid)
+                    || window.ProcessName?.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0
                     || window.WindowTitle.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
+                return matchesText
+                    && (runtime == TargetRuntime.None || window.OwningProcessInfo?.TargetRuntimes.HasFlag(runtime) == true)
+                    && (string.IsNullOrEmpty(architecture) || window.OwningProcessInfo?.TargetArchitecture == architecture);
             }
             catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
             {
@@ -267,7 +305,7 @@ public partial class AppChooser
                     this.windowInfos.Add(windowInfo);
                 }
 
-                if (this.windowInfos.Count is 1 && this.WindowInfos.Contains(this.windowInfos[0]))
+                if (!this.HasTargetFilter && this.windowInfos.Count is 1)
                 {
                     this.WindowInfos.MoveCurrentTo(this.windowInfos[0]);
                 }
