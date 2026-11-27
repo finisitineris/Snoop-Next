@@ -79,10 +79,10 @@ internal static class LauncherSettingsFormSmoke
             }, save: false);
             RequireUnchanged(edited, committed);
 
-            ShowForm("disable and save", (_, view) =>
+            ShowForm("disable and save", (window, view) =>
             {
                 VerifyForm(view, edited);
-                Click(view, "DisableShortcut");
+                VerifyRecorderAutomation(window, view, edited.GlobalHotKey!);
                 Click(view, "SaveSettingsAndClose");
             }, save: true);
             var reloaded = new HostSettings { SettingsFile = file }.Reload();
@@ -374,6 +374,50 @@ internal static class LauncherSettingsFormSmoke
         var editedShortcut = edited.GlobalHotKey!;
         SendKey(view, editedShortcut.Key, editedShortcut.Modifiers);
         VerifyForm(view, edited);
+    }
+
+    private static void VerifyRecorderAutomation(SettingsWindow window, SettingsView view, KeyGestureEx saved)
+    {
+        var text = LocalizationManager.Default;
+        var originalLanguage = text.LanguageTag;
+        try
+        {
+            Read(saved.ToString(), "Settings.ShortcutHelp");
+            Find<Button>(view, "GlobalHotKeyEditor").Focus();
+            Read($"Recording. Current shortcut: {saved}", "Settings.ShortcutRecordingHelp");
+            SendKey(view, Key.D5);
+            Read($"Recording. Current shortcut: {saved}", "Settings.ShortcutNeedsModifier");
+
+            text.SetLanguage("zh-CN");
+            Read($"正在录制。当前快捷键：{saved}", "Settings.ShortcutNeedsModifier");
+            SendKey(view, Key.Escape);
+            Read(saved.ToString(), "Settings.ShortcutHelp");
+
+            Click(view, "GlobalHotKeyEditor");
+            var draft = new KeyGestureEx(Key.F9, ModifierKeys.Control | ModifierKeys.Shift);
+            SendKey(view, draft.Key, draft.Modifiers);
+            Read(draft.ToString(), "Settings.ShortcutHelp");
+            Click(view, "DisableShortcut");
+            Read("已禁用", "Settings.ShortcutHelp");
+
+            Click(view, "GlobalHotKeyEditor");
+            Read("正在录制。当前快捷键：已禁用", "Settings.ShortcutRecordingHelp");
+            SendKey(view, Key.Escape);
+            text.SetLanguage(originalLanguage);
+            Read("Disabled", "Settings.ShortcutHelp");
+        }
+        finally
+        {
+            text.SetLanguage(originalLanguage);
+        }
+
+        Console.WriteLine("PASS: Windows UI Automation reads the launcher shortcut, recording state and validation help in English and Chinese.");
+
+        void Read(string expectedStatus, string helpKey)
+        {
+            Drain();
+            WorkbenchAutomationClientSmoke.VerifyShortcutStatus(window, text["Settings.GlobalHotKey"], expectedStatus, text[helpKey]);
+        }
     }
 
     // Set only this UI thread's keyboard state and pass the key through WPF's input manager.
