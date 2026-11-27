@@ -16,6 +16,20 @@ Expected evidence from CI:
 - Runtime CLR version and successful Assembly.LoadFrom/GetTypes (or precise exception)
 - Separate success/failure for net462 and net10.0, plus a human-readable dependency-closure report artifact
 
+## WPF host and CLR4 binding policy
+
+The same workflow builds a separate `WpfHost` executable for .NET Framework 4.6.2 x86, .NET 6 x64 and .NET 10 x64. Each job opens the fixture's own WPF window on its STA, runs the loader check and exits after a second Dispatcher callback. The runtime log records the PID, AppDomain, architecture, CLR and WPF versions, assembly identities and paths, and type count. The CLR4 log also records the installed Framework release. On modern .NET, the log identifies the assembly load context for the fixture, PolyfillLib, System.Memory and any Snoop.Core present. The workflow archives the executable and adjacent files, the effective CLR4 configuration, runtime log, package list, commit and SDK details.
+
+The fixture takes PolyfillLib as a runtime-only dependency. On CLR4, exposing the package to the compiler can make ordinary C# string interpolation use its handler before the test begins. The fixture reports observed loads and fails if its own assembly references PolyfillLib or if the DLL has already loaded before the experiment.
+
+The CLR4 fixture models an older host request for strongly named `System.Memory` 4.0.1.2. Its executable configuration redirects that identity to the deployed 4.0.5.0 assembly. It checks the CLR policy and actual application-local path before loading the pinned PolyfillLib DLL. Each target compares the object returned for PolyfillLib's recorded System.Memory reference with the host's preloaded assembly, then traverses the library's types. The modern hosts preload their framework-provided System.Memory. The .NET 6 package graph includes Microsoft.Bcl.Memory 10.0.12, which emits a support warning for this target. Record the loader result and the package warning separately.
+
+To repeat a run, download `polyfilllib-wpf-net462`, `polyfilllib-wpf-net6.0-windows` or `polyfilllib-wpf-net10.0-windows` from a successful compatibility workflow for the commit under test. Extract the whole artifact. In PowerShell, run `& .\fixture\WpfHost.exe` on Windows with the matching runtime. An exit code of zero and a `PASS: fixture loader` line indicate completion. For a source build, use `dotnet build experiments/polyfilllib/WpfHost/WpfHost.csproj -c Release -f net462 -o output/wpf-host` and run the resulting executable from that directory. Substitute the corresponding Windows TFM for a modern host.
+
+For a desktop test with Snoop present, start a fresh fixture with `& .\fixture\WpfHost.exe --interactive`. Select the PID shown in the window title in the normal Snoop launcher. After its inspector opens, click **Run check** in the fixture window. It waits for a loaded `Snoop.Core` in its own AppDomain, reports its identity and path before loading PolyfillLib, and leaves the result visible. Save the text and the target runtime, Snoop commit and artifact URLs. Repeat in a fresh process for each run.
+
+The automated result covers loading initiated by this fixture in its own AppDomain. The manual mode additionally identifies Snoop.Core in that AppDomain. Production Snoop has no dependency on PolyfillLib. Deployment by the inspector, other hosts' binding policies and an actual Framework 4.6.2-only installation still need separate evidence.
+
 ## Still unverified after this CI
 
 - Actual **Snoop injected-process** assembly loading and target application assembly resolution / binding redirects. This is a separate **human-authorized isolated Windows desktop** test under SN-004; never inject into arbitrary processes on a hosted CI runner.
