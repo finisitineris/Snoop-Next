@@ -1,0 +1,175 @@
+{
+  "repository": "https://github.com/finisitineris/Snoop-Next",
+  "commit": "e49c433f34bdf9dce42d6c075e666047a42f9ba9",
+  "patch": "source/fixture.patch",
+  "sdk": "10.0.403",
+  "msbuild": "18.9.15+5a2162bea",
+  "build_host": "Debian 13 linux-x64",
+  "build_configuration": "Release",
+  "windows_execution": "NOT RUN",
+  "cases": [
+    {
+      "folder": "net10-x64",
+      "tfm": "net10.0-windows",
+      "platform": "x64",
+      "pe_machine": "0x8664",
+      "pe_subsystem": "Windows GUI",
+      "CLR_FLAGS_managed_image": "0x1",
+      "apphost_pack": "10.0.14",
+      "runtime_config": {
+        "Microsoft.NETCore.App": "10.0.0",
+        "Microsoft.WindowsDesktop.App": "10.0.0"
+      },
+      "compiled_xaml_embedded": true,
+      "baml_sha256": "402e5e434fbcb8ba4dee6ab2a570a49092a89e246bb1506e61e1cffd0ad4b21b",
+      "build_warnings": 0,
+      "build_errors": 0,
+      "files_sha256": {
+        "HelloWorld.deps.json": "e45b8c87f359406a32507938c2f446786ebb07bd391004aa32e77513edc040a6",
+        "HelloWorld.dll": "7b27fc3bfa8058a68eb745f6ed46d67abfa9f83328824adc666132e83c5c54a7",
+        "HelloWorld.dll.config": "d50374535e437e89b6051a2d6d8b7dab81dbf9e8d2e13be3d544a72649256056",
+        "HelloWorld.exe": "8c7ceb0fab9deaba93f57de485d02e77089c33e419fd2eb021ce5ee8e4ad41de",
+        "HelloWorld.runtimeconfig.json": "30d0dc491056efaaa5e3816f68a688b28e32ff6ca4d3bc85c148c1708d23a453"
+      },
+      "restore_audit": {
+        "properties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "advisory_diagnostics": [],
+        "restored_package_ids": []
+      }
+    },
+    {
+      "folder": "net462-x64",
+      "tfm": "net462",
+      "platform": "x64",
+      "pe_machine": "0x8664",
+      "pe_subsystem": "Windows GUI",
+      "CLR_FLAGS_managed_image": "0x1",
+      "apphost_pack": null,
+      "runtime_config": {
+        "Microsoft.NETFramework": "4.6.2"
+      },
+      "compiled_xaml_embedded": true,
+      "baml_sha256": "74cc5cd5419da7f394484b24ab2ceb367e928e56374dbcbbdc8c6a289283ee46",
+      "build_warnings": 0,
+      "build_errors": 0,
+      "files_sha256": {
+        "HelloWorld.exe": "4510ebfa3ba7337e6efa4372956b979ca4a8aad18de094af44a4f54f1dd5e46d",
+        "HelloWorld.exe.config": "9f1bfdefd8635eb211828644242cc379f9bc691caad10dfedccfbf701059d874"
+      },
+      "restore_audit": {
+        "properties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "advisory_diagnostics": [],
+        "restored_package_ids": [
+          "Microsoft.NETFramework.ReferenceAssemblies/1.0.3",
+          "Microsoft.NETFramework.ReferenceAssemblies.net462/1.0.3"
+        ]
+      }
+    },
+    {
+      "folder": "net462-x86",
+      "tfm": "net462",
+      "platform": "x86",
+      "pe_machine": "0x14c",
+      "pe_subsystem": "Windows GUI",
+      "CLR_FLAGS_managed_image": "0x3",
+      "apphost_pack": null,
+      "runtime_config": {
+        "Microsoft.NETFramework": "4.6.2"
+      },
+      "compiled_xaml_embedded": true,
+      "baml_sha256": "74cc5cd5419da7f394484b24ab2ceb367e928e56374dbcbbdc8c6a289283ee46",
+      "build_warnings": 0,
+      "build_errors": 0,
+      "files_sha256": {
+        "HelloWorld.exe": "ac6a9539a798f46ac1993b3b8a96b4a4515d2fb50ca44b60e21ad791699eec5f",
+        "HelloWorld.exe.config": "9f1bfdefd8635eb211828644242cc379f9bc691caad10dfedccfbf701059d874"
+      },
+      "restore_audit": {
+        "properties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "advisory_diagnostics": [],
+        "restored_package_ids": [
+          "Microsoft.NETFramework.ReferenceAssemblies/1.0.3",
+          "Microsoft.NETFramework.ReferenceAssemblies.net462/1.0.3"
+        ]
+      }
+    },
+    {
+      "folder": "net6-x64",
+      "tfm": "net6.0-windows",
+      "platform": "x64",
+      "pe_machine": "0x8664",
+      "pe_subsystem": "Windows GUI",
+      "CLR_FLAGS_managed_image": "0x1",
+      "apphost_pack": "6.0.36",
+      "runtime_config": {
+        "Microsoft.NETCore.App": "6.0.0",
+        "Microsoft.WindowsDesktop.App": "6.0.0"
+      },
+      "compiled_xaml_embedded": true,
+      "baml_sha256": "f1a82231fa2d890a0cb488a6db80683f4b73f982bdd60e5cfe118b80a9228d8d",
+      "build_warnings": 0,
+      "build_errors": 0,
+      "files_sha256": {
+        "HelloWorld.deps.json": "4f58a63cea0cc4e759feb9133bd6c335af423c0756277be2fe0410a04d316ebb",
+        "HelloWorld.dll": "9b97584d91eec7cbe67bafe8f44b8903ec054b048c41f64d8a784e52dacc5ead",
+        "HelloWorld.dll.config": "d2d96bbede19641300da9ed40784799e5cbf062093ca4a1b2e63f581a2fc367c",
+        "HelloWorld.exe": "dcddd38d97ab083aaa8e72463ac4b3ac4e4c7c05831ef5a607c4ce2fea0bcb23",
+        "HelloWorld.runtimeconfig.json": "4c8a73c525364eac6cbe64191bc633ed1fc8c59db376660474f6834ce0b23800"
+      },
+      "restore_audit": {
+        "properties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "advisory_diagnostics": [],
+        "restored_package_ids": []
+      }
+    },
+    {
+      "folder": "net8-x64",
+      "tfm": "net8.0-windows",
+      "platform": "x64",
+      "pe_machine": "0x8664",
+      "pe_subsystem": "Windows GUI",
+      "CLR_FLAGS_managed_image": "0x1",
+      "apphost_pack": "8.0.33",
+      "runtime_config": {
+        "Microsoft.NETCore.App": "8.0.0",
+        "Microsoft.WindowsDesktop.App": "8.0.0"
+      },
+      "compiled_xaml_embedded": true,
+      "baml_sha256": "11c32732f734cc45869603861790691048400fc3f006273c661883fcba9e7123",
+      "build_warnings": 0,
+      "build_errors": 0,
+      "files_sha256": {
+        "HelloWorld.deps.json": "36f00627b6fb3af1a45fe8de3f1ecdf7e507c7878f4d6f3074c0e34fad649171",
+        "HelloWorld.dll": "357ee8e95a58629b1cab2f7b87bf9ffdb51cb14c9948b8c7209ab95ac636af81",
+        "HelloWorld.dll.config": "945afe66ea0390e8bbdf3718af9db1cffd9c1e25a5cf547a0da4705b8f7f6242",
+        "HelloWorld.exe": "28de461f189ff1f08265c1245af2d90103643e389dc91c522956ad8c088c5c00",
+        "HelloWorld.runtimeconfig.json": "b348a58f65d548bfe35b49647979289ab8271b38dc5e4479c46ae976ee11e898"
+      },
+      "restore_audit": {
+        "properties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "advisory_diagnostics": [],
+        "restored_package_ids": []
+      }
+    }
+  ]
+}

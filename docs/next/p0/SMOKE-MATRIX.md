@@ -4,22 +4,22 @@ The CI column records WPF fixture builds. Runtime results come from tester repor
 
 | WPF fixture target | Bitness | Fixture build (CI) | Attach and inspect (manual) | Reattach to same PID | Restart target and reject stale handles | Inspect bindings and property origins |
 |---|---|---|---|---|---|---|
-| net462 (CLR4) | x86 | PASS | PASS · read both window titles | PASS | NOT RUN | NOT RUN |
-| net462 (CLR4) | x64 | PASS | PASS · opened both inspectors | PASS | NOT RUN | NOT RUN |
-| net6.0-windows | x64 | PASS · BasicTestHarness | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net8.0-windows | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
-| net10.0-windows | x64 | PASS | PASS · read both window titles | PASS | NOT RUN | NOT RUN |
-| net11.0-windows | x64 | NOT RUN | NOT RUN | NOT RUN | NOT RUN | NOT RUN |
+| net462 (CLR4) | x86 | PASS | PASS | PASS | PASS | PASS |
+| net462 (CLR4) | x64 | PASS | PASS | PASS | PASS | PASS |
+| net6.0-windows | x64 | PASS · BasicTestHarness | PASS | PASS | PASS | PASS |
+| net8.0-windows | x64 | NOT RUN | PASS | PASS | PASS | PASS |
+| net10.0-windows | x64 | PASS | PASS | PASS | PASS | PASS |
+| net11.0-windows | x64 | NOT RUN | PASS | PASS | PASS | PASS |
 
 Windows CI built nine fixture configurations and checked the CLR4 executable architectures against their PE headers and CLR flags at `ac3ef8f`. The workflow includes the .NET 6 x64 BasicTestHarness. Its manifest records compilation separately from interactive checks. [Harness CI](https://github.com/finisitineris/Snoop-Next/actions/runs/45096083280/job/137436074864) · [Build matrix at the tested commit](https://github.com/finisitineris/Snoop-Next/blob/ac3ef8ffe52d917ca374694e6a9dae59384965c3/scripts/next/Build-SnoopHarnesses.ps1)
 
-The following Windows desktop runs account for the manual results.
+Earlier Windows desktop runs also verified language switching and same-process reattach on three target configurations.
 
 - **CLR4 x86.** The net462 fixture showed two 32-bit windows. After reattaching to the same process, the tester read each window's `Title`, saw both inspectors switch to Chinese, and confirmed the target cultures and resources stayed unchanged. [PR #27](https://github.com/finisitineris/Snoop-Next/pull/27)
 - **CLR4 x64.** The tester confirmed Chinese on reattach in two AppDomains using HelloWorld and, in a separate run, in two dispatchers using MultipleDispatchers. Both runs preserved the observed target cultures and resources. The reports identify CLR4 and the net462 build target. The exact .NET Framework installation on the tester's machine was not recorded. [PR #23](https://github.com/finisitineris/Snoop-Next/pull/23) · [PR #25](https://github.com/finisitineris/Snoop-Next/pull/25)
 - **.NET 10 x64.** The tester confirmed same-PID reattach, read each window's `Title`, and observed the expected language switch with target cultures and resources preserved. The separate fixture launch check recorded Desktop Runtime 10.0.15. [PR #26](https://github.com/finisitineris/Snoop-Next/pull/26)
 
-For [SN-004](https://github.com/finisitineris/Snoop-Next/issues/5), the outstanding desktop checks include closing the target process, launching a fresh instance and checking stale handles, and inspecting known bindings and their property value origins on each runtime. The .NET 6 and .NET 8 x64 lanes still need interactive results. Record .NET 11 results when a corresponding WPF fixture and runtime are available.
+On November 26–27, 2026, the tester ran the external HelloWorld fixture on Windows 11 25H2 build 26200.9168 with portable Snoop 6.2.0-alpha.2154 (`e49c433`). Both CLR4 rows used net462 targets on installed .NET Framework 4.8.1. The four modern x64 rows ran WPF 6.0.36, 8.0.34, 10.0.15 and 11.0.0. All six rows passed the tree, value-source, binding, diagnostic, detach/reattach and target-restart checks. The .NET 8 and .NET 11 samples were built locally. The fixture-build column tracks the separate CI workflow. [Desktop observations, process identities and reproduction](evidence/sn004-2026-11-27/README.md) · [SN-004](https://github.com/finisitineris/Snoop-Next/issues/5)
 
 The full matrix will later include .NET 7/9, available x86/ARM64 paths, DPI and launcher compatibility. Upstream documents a restriction on self-contained single-file WPF processes; do not assume support without a tested design.
 

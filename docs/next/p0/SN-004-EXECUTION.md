@@ -34,8 +34,8 @@ From the repo root in **PowerShell** (local example paths; adjust to actual buil
 
 ## Acceptance evidence and exclusions
 
-Track matrix rows in [SN-004 Issue #5](https://github.com/finisitineris/Snoop-Next/issues/5); the versioned `SMOKE-MATRIX.md` reference is staged separately in [design baseline PR #1](https://github.com/finisitineris/Snoop-Next/pull/1) and is not yet part of `develop`. Mark a row PASS **only when** actual UI observations, the correct runtime/bitness, logs and screenshots are present. The standalone script does not prove binding-source correctness, safe property edits, stale handle invalidation or PID reuse; record those as separate observations and test cases. Any row lacking evidence stays NOT RUN or BLOCKED.
+Track matrix rows in [SN-004 Issue #5](https://github.com/finisitineris/Snoop-Next/issues/5); the [runtime matrix](SMOKE-MATRIX.md) links the dated desktop observations. Mark a row PASS **only when** actual UI observations, the correct runtime/bitness, logs and screenshots are present. The standalone script does not prove binding-source correctness, safe property edits, stale handle invalidation or PID reuse; record those as separate observations and test cases. Any row lacking evidence stays NOT RUN or BLOCKED.
 
-No `.NET 11` target is part of the automated matrix until a supported .NET 11 SDK, runtime and WPF harness is available; it remains NOT RUN. Self-contained single-file and ARM64 scenarios also need separate explicit investigation. Do not open privileged production processes from a build runner.
+The automatic fixture-build matrix omits .NET 11. The [2026-11-27 desktop report](evidence/sn004-2026-11-27/README.md) records a local .NET 11 x64 fixture build and run. Self-contained single-file and ARM64 scenarios also need separate explicit investigation. Do not open privileged production processes from a build runner.
 
 Do not close SN-004 based only on a green harness compilation workflow.
