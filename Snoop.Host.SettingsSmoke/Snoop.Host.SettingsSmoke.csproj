@@ -2,10 +2,15 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net462</TargetFramework>
+    <Prefer32Bit>false</Prefer32Bit>
     <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Snoop/Snoop.csproj" />
+    <ProjectReference Include="../Snoop.Host.SettingsSmoke.Fixture/Snoop.Host.SettingsSmoke.Fixture.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework" />
   </ItemGroup>
 </Project>

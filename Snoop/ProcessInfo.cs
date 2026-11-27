@@ -12,6 +12,8 @@ using Snoop.Next.Localization;
 public class ProcessInfo
 {
     private bool? isOwningProcessElevated;
+    private TargetRuntime? targetRuntimes;
+    private string? targetArchitecture;
 
     public ProcessInfo(int processId)
         : this(Process.GetProcessById(processId))
@@ -26,6 +28,42 @@ public class ProcessInfo
     public Process Process { get; }
 
     public bool IsProcessElevated => this.isOwningProcessElevated ??= NativeMethods.IsProcessElevated(this.Process);
+
+    internal TargetRuntime TargetRuntimes => this.targetRuntimes ??= this.ReadTargetRuntimes();
+
+    internal string TargetArchitecture => this.targetArchitecture ??= this.ReadTargetArchitecture();
+
+    private TargetRuntime ReadTargetRuntimes()
+    {
+        var runtimes = TargetRuntime.None;
+        foreach (var module in NativeMethods.GetModules(this.Process))
+        {
+            if (string.Equals(module.szModule, "coreclr.dll", StringComparison.OrdinalIgnoreCase))
+            {
+                runtimes |= TargetRuntime.CoreClr;
+            }
+            else if (string.Equals(module.szModule, "clr.dll", StringComparison.OrdinalIgnoreCase)
+                     || string.Equals(module.szModule, "mscorwks.dll", StringComparison.OrdinalIgnoreCase))
+            {
+                runtimes |= TargetRuntime.NetFramework;
+            }
+        }
+
+        return runtimes;
+    }
+
+    private string ReadTargetArchitecture()
+    {
+        try
+        {
+            return NativeMethods.GetArchitecture(this.Process);
+        }
+        catch (Exception)
+        {
+            // A failed read (for example, an exited process) has no architecture to match.
+            return string.Empty;
+        }
+    }
 
     public AttachResult Snoop(IntPtr targetHwnd)
     {
