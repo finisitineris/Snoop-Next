@@ -82,10 +82,17 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: test-results
-          path: output/test-results
+          path: output/test-results/**/*.trx
         if: ${{ always() }}
       - uses: actions/upload-artifact@v7
         if: ${{ success() || steps.verify-msi.outcome == 'failure' }}
         with:
           name: artifacts
-          path: artifacts
+          path: |
+            artifacts/[Ss]noop.[0-9]*.zip
+            artifacts/[Ss]noop.[0-9]*.msi
+            artifacts/[Ss]noop.[0-9]*.nupkg
+            artifacts/[Ss]noop.[0-9]*.zip.sha256
+            artifacts/[Ss]noop.[0-9]*.msi.sha256
+            artifacts/[Ss]noop.[0-9]*.nupkg.sha256
+            artifacts/[Ss]noop.[0-9]*.wixpdb

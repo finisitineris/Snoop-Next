@@ -341,13 +341,13 @@ class Build : NukeBuild
             // ProcessTasks.StartProcess("powershell", $"./.build/SignPath.ps1 {SignPathAuthToken} {SignPathOrganizationId} {SignPathProjectSlug} {SignPathSigningPolicySlug}")
             //     .AssertWaitForExit();
 
-            var result = await SignPathTasks2.GetSigningRequestUrlViaAppVeyor(SignPathAuthToken!, SignPathOrganizationId!, SignPathProjectSlug!, SignPathSigningPolicySlug!);
-            Serilog.Log.Information(result);
+            await SignPathTasks2.GetSigningRequestUrlViaAppVeyor(SignPathAuthToken!, SignPathOrganizationId!, SignPathProjectSlug!, SignPathSigningPolicySlug!);
         });
 
     bool ShouldSign()
     {
         if (AppVeyor.Instance is null
+            || AppVeyor.Instance.PullRequestNumber.HasValue
             || GitRepository is null
             || GitVersion is null
             || string.IsNullOrEmpty(SignPathAuthToken))

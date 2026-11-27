@@ -1,0 +1,41 @@
+name: NUKE project parser
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [develop]
+    paths:
+      - '.build/**'
+      - 'global.json'
+      - 'experiments/NukeProjectModel/**'
+      - '.github/workflows/nuke-project-model.yml'
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  NUKE_TELEMETRY_OPTOUT: '1'
+
+jobs:
+  project-parser:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v6
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/sn006-sdk
+        with:
+          dotnet-version: '10.0.404'
+      - name: Evaluate the build project with NUKE
+        shell: pwsh
+        run: |
+          $sdk = (dotnet --version).Trim()
+          if ($LASTEXITCODE -ne 0 -or $sdk -ne '10.0.404') { throw "Unexpected SDK: $sdk" }
+          Write-Host "SDK: $sdk"
+          $probe = (Resolve-Path 'experiments/NukeProjectModel/ParserProbe.targets').Path
+          dotnet build .build/_build.csproj "-p:CustomAfterMicrosoftCommonTargets=$probe" -p:StartupObject=ParserProbe -p:OutputPath=bin/issue8/ -p:IntermediateOutputPath=obj/issue8/ -p:AppendTargetFrameworkToOutputPath=false
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet .build/bin/issue8/_build.dll
+          exit $LASTEXITCODE

@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.IO;
@@ -63,14 +64,15 @@ public static class SignPathTasks2
             AppVeyor.Instance.JobId
         };
 
-        using var httpClient = CreateAuthorizedHttpClient(authToken, DefaultHttpClientTimeout);
-        var response = await httpClient.PostAsync(
-            new Uri(GetSignPathAppVeyorIntegrationUrl(organizationId, projectSlug, signingPolicySlug), UriKind.Absolute),
+        var requestUrl = GetSignPathAppVeyorIntegrationUrl(organizationId, projectSlug, signingPolicySlug);
+        using var httpClient = CreateHttpClientForUrl(requestUrl, authToken, DefaultHttpClientTimeout);
+        using var response = await httpClient.PostAsync(
+            new Uri(requestUrl, UriKind.Absolute),
             new StringContent(content.ToJson(), Encoding.UTF8, contentType));
         response.AssertStatusCode(HttpStatusCode.Created);
 
-        Log.Information("Signing request created: {Url}", response.Headers.Location!.AbsoluteUri.Replace("api/v1", "Web", StringComparison.Ordinal));
-        return response.Headers.Location.AbsoluteUri;
+        Log.Information("Signing request created.");
+        return response.Headers.Location!.AbsoluteUri;
     }
 
     // static void SubmitSigningRequest(
@@ -117,11 +119,11 @@ public static class SignPathTasks2
         string signingRequestUrl,
         AbsolutePath outputPath)
     {
-        var defaultHttpClient = CreateAuthorizedHttpClient(apiToken, DefaultHttpClientTimeout);
+        using var defaultHttpClient = CreateHttpClientForUrl(signingRequestUrl, apiToken, DefaultHttpClientTimeout);
         var downloadUrl = GetSignedArtifactUrl(defaultHttpClient, signingRequestUrl);
-        Log.Information("Signed artifact is available: {DownloadUrl}", downloadUrl);
+        Log.Information("Signed artifact is available.");
 
-        var downloadHttpClient = CreateAuthorizedHttpClient(apiToken, UploadAndDownloadRequestTimeout);
+        using var downloadHttpClient = CreateHttpClientForUrl(downloadUrl, apiToken, UploadAndDownloadRequestTimeout, allowExternalDownload: true);
         using var response = SendGetRequestWithRetry(downloadHttpClient, downloadUrl);
         var downloadStream = await response.Content.ReadAsStreamAsync();
 
@@ -138,17 +140,26 @@ public static class SignPathTasks2
         ExecuteWithRetry(
             () =>
             {
-                var response = SendGetRequestWithRetry(httpClient, signingRequestUrl);
+                using var response = SendGetRequestWithRetry(httpClient, signingRequestUrl);
                 var rawContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var jsonContent = rawContent.GetJson();
-                signingRequestStatus = jsonContent["status"].NotNull()!.Value<string>();
+                JObject jsonContent;
+                try
+                {
+                    jsonContent = JObject.Parse(rawContent);
+                }
+                catch (JsonException)
+                {
+                    throw new InvalidDataException("SignPath returned an invalid signing status document.");
+                }
+                signingRequestStatus = (jsonContent["status"] as JValue)?.Value as string;
                 signedArtifactUrl = signingRequestStatus switch
                 {
-                    SigningRequestStatus.Completed => jsonContent["signedArtifactLink"].NotNull()!.Value<string>(),
+                    SigningRequestStatus.Completed => (jsonContent["signedArtifactLink"] as JValue)?.Value as string
+                        ?? throw new InvalidDataException("SignPath did not return a signed artifact link."),
                     SigningRequestStatus.Failed => null,
                     SigningRequestStatus.Denied => null,
                     SigningRequestStatus.Cancelled => null,
-                    _ => throw new Exception(signingRequestStatus)
+                    _ => throw new InvalidOperationException("Signing request is not complete.")
                 };
             },
             delay: WaitForCompletionRetryTimeout,
@@ -158,16 +169,20 @@ public static class SignPathTasks2
         return signedArtifactUrl.NotNull($"Signing Request {signingRequestStatus}")!;
     }
 
-    private static HttpClient CreateAuthorizedHttpClient(string apiToken, TimeSpan timeout)
+    private static HttpClient CreateHttpClientForUrl(string url, string apiToken, TimeSpan timeout, bool allowExternalDownload = false)
     {
-        return new HttpClient
-               {
-                   Timeout = timeout,
-                   DefaultRequestHeaders =
-                   {
-                       Authorization = new AuthenticationHeaderValue("Bearer", apiToken)
-                   }
-               };
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps || uri.UserInfo.Length != 0)
+            throw new InvalidOperationException("SignPath requires an absolute HTTPS URL without user information.");
+
+        var trustedOrigin = Uri.Compare(uri, new Uri(SignPathApiUrl, UriKind.Absolute), UriComponents.SchemeAndServer,
+            UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) == 0;
+        if (!trustedOrigin && !allowExternalDownload)
+            throw new InvalidOperationException("The signing request must use the SignPath API origin.");
+
+        var client = new HttpClient { Timeout = timeout };
+        if (trustedOrigin)
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiToken);
+        return client;
     }
 
     private static HttpResponseMessage SendRequestWithRetry(
@@ -240,17 +255,9 @@ public static class SignPathTasks2
     {
         if (response.StatusCode != statusCode)
         {
-            var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            try
-            {
-                var jobject = content.GetJson();
-                Assert.Fail($"[{response.StatusCode}] {jobject.GetChildren<JValue>("").Select(x => x.Value<string>()).JoinNewLine()}");
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, $"[{response.StatusCode}] Failed to convert content.\nContent:\n{{Content}}", content);
-                throw;
-            }
+            throw new HttpRequestException(
+                $"SignPath returned HTTP {(int)response.StatusCode}, expected {(int)statusCode}.",
+                null, response.StatusCode);
         }
 
         return response;
