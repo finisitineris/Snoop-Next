@@ -22,6 +22,7 @@ internal static class WorkbenchPropertyTabsSmoke
         var text = InspectorLocalization.Default;
         var savedLanguage = text.LanguageTag;
         var savedTheme = Snoop.Core.Settings.Default.ThemeMode;
+        var chrome = Find<FrameworkElement>(inspector, "WorkbenchChrome");
         var tabs = Find<TabControl>(inspector, "PropertiesWorkbenchPane");
         var dock = Find<TabControl>(inspector, "DiagnosticsWorkbenchPane");
         var bindingsTab = Find<TabItem>(inspector, "WorkbenchBindingsTab");
@@ -65,7 +66,7 @@ internal static class WorkbenchPropertyTabsSmoke
             VerifyVisibleRow(bindings, "PropertyName", "Content", nameof(source.Caption), "Active");
             VerifyVisibleRow(bindings, "PropertyName", "ToolTip", nameof(source.Hint), "Active");
             Require(!noBindings.IsVisible, "A populated binding list must hide its empty state.");
-            LauncherAppearanceSmoke.CaptureIfRequested(tabs, "property-tabs-bindings-Light-en-US");
+            LauncherAppearanceSmoke.CaptureIfRequested(chrome, "property-tabs-bindings-Light-en-US", tabs);
 
             text.SetLanguage("zh-CN");
             Settle();
@@ -95,7 +96,7 @@ internal static class WorkbenchPropertyTabsSmoke
             VerifyVisibleRow(events, "EventName", "Loaded", "FrameworkElement", "Direct");
             VerifyVisibleRow(events, "EventName", "Click", "ButtonBase", "Bubble");
             Require(!noEvents.IsVisible, "A populated event list must hide its empty state.");
-            LauncherAppearanceSmoke.CaptureIfRequested(tabs, "property-tabs-events-Dark-zh-CN");
+            LauncherAppearanceSmoke.CaptureIfRequested(chrome, "property-tabs-events-Dark-zh-CN", tabs);
 
             // Select an actual non-routed object through a scoped tree root.
             var swatch = new SolidColorBrush(Colors.SteelBlue);

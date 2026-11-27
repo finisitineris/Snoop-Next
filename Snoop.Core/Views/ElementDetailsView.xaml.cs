@@ -168,15 +168,13 @@ public partial class ElementDetailsView
         public EventRow(RoutedEvent routedEvent)
         {
             this.EventName = routedEvent.Name;
-            this.Owner = routedEvent.OwnerType.FullName ?? routedEvent.OwnerType.Name;
-            this.RoutingStrategy = routedEvent.RoutingStrategy.ToString();
+            var owner = routedEvent.OwnerType.FullName ?? routedEvent.OwnerType.Name;
+            this.Description = $"{owner} · {routedEvent.RoutingStrategy}";
         }
 
         public string EventName { get; }
 
-        public string Owner { get; }
-
-        public string RoutingStrategy { get; }
+        public string Description { get; }
 
         public override string ToString() => this.EventName;
     }

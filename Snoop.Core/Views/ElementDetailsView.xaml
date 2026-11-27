@@ -52,7 +52,7 @@
                 <DataTemplate>
                     <StackPanel Margin="1 2">
                         <TextBlock Text="{Binding EventName}" TextWrapping="Wrap" FontWeight="SemiBold" />
-                        <TextBlock TextWrapping="Wrap"><Run Text="{Binding Owner, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding RoutingStrategy, Mode=OneWay}" /></TextBlock>
+                        <TextBlock Text="{Binding Description}" TextWrapping="Wrap" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
