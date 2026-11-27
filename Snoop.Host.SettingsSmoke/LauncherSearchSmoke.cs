@@ -42,7 +42,7 @@ internal static class LauncherSearchSmoke
             var second = Start(current.MainModule.FileName, FixtureArgument);
             var frameworkX86 = Start(FindFixture("net462"), $"\"{FixtureTitle}\"");
             var modern = Start(FindFixture("net10.0-windows"), $"\"{FixtureTitle}\"");
-            Await(() => fixtures.All(HasWindow), "The discovery fixtures did not open their WPF windows.");
+            WaitForFixtureWindows(fixtures);
             VerifyPicker(chooser, list, first, second, frameworkX86, modern);
         }
         finally
@@ -58,9 +58,24 @@ internal static class LauncherSearchSmoke
 
         Process Start(string path, string arguments)
         {
-            var start = new ProcessStartInfo(path, arguments) { UseShellExecute = false, CreateNoWindow = true };
+            var start = new ProcessStartInfo(path, arguments)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardError = true
+            };
+            start.EnvironmentVariables["DOTNET_DISABLE_GUI_ERRORS"] = "1";
             var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start WPF fixture '{path}'.");
             fixtures.Add(process);
+            var pid = process.Id;
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (e.Data is { Length: > 0 } line)
+                {
+                    Console.Error.WriteLine($"WPF fixture PID {pid}: {line}");
+                }
+            };
+            process.BeginErrorReadLine();
             return process;
         }
 
@@ -72,12 +87,6 @@ internal static class LauncherSearchSmoke
                 : throw new FileNotFoundException("Build Snoop.Host.SettingsSmoke.Fixture in the same configuration before running the smoke.", path);
         }
 
-        static bool HasWindow(Process process)
-        {
-            process.Refresh();
-            return !process.HasExited && process.MainWindowHandle != IntPtr.Zero && process.MainWindowTitle == FixtureTitle;
-        }
-
         static void Stop(Process process)
         {
             if (!process.HasExited && (!process.CloseMainWindow() || !process.WaitForExit(2000)))
@@ -86,6 +95,36 @@ internal static class LauncherSearchSmoke
                 process.WaitForExit(2000);
             }
         }
+    }
+
+    private static void WaitForFixtureWindows(IEnumerable<Process> fixtures)
+    {
+        var startup = Stopwatch.StartNew();
+        try
+        {
+            // Use a separate budget for cold process startup on hosted Windows runners.
+            Await(() => fixtures.All(HasWindow), "The discovery fixtures did not open their WPF windows.", TimeSpan.FromSeconds(20));
+            Console.WriteLine($"WPF fixture windows ready in {startup.Elapsed.TotalSeconds:F1} s.");
+        }
+        catch (InvalidOperationException)
+        {
+            foreach (var fixture in fixtures)
+            {
+                fixture.Refresh();
+                var state = fixture.HasExited
+                    ? $"exited with code 0x{fixture.ExitCode:X8}"
+                    : $"has HWND 0x{fixture.MainWindowHandle.ToInt64():X} and title '{fixture.MainWindowTitle}'";
+                Console.Error.WriteLine($"WPF fixture {fixture.StartInfo.FileName} (PID {fixture.Id}) {state}.");
+            }
+
+            throw;
+        }
+    }
+
+    private static bool HasWindow(Process process)
+    {
+        process.Refresh();
+        return !process.HasExited && process.MainWindowHandle != IntPtr.Zero && process.MainWindowTitle == FixtureTitle;
     }
 
     private static void VerifyPicker(AppChooser chooser, ComboBox list, Process first, Process second, Process frameworkX86, Process modern)
