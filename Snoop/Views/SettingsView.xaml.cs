@@ -1,8 +1,10 @@
 ﻿namespace Snoop.Views;
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Snoop.Data;
@@ -19,6 +21,20 @@ public partial class SettingsView
     {
         this.InitializeComponent();
         this.ShowPreferences(Settings.Default);
+        this.Loaded += (_, _) =>
+        {
+            LocalizationManager.Default.PropertyChanged += this.OnLanguageChanged;
+            this.UpdateShortcutDisplay();
+        };
+        this.Unloaded += (_, _) => LocalizationManager.Default.PropertyChanged -= this.OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(LocalizationManager.EffectiveLanguageTag))
+        {
+            this.UpdateShortcutDisplay();
+        }
     }
 
     private void ShowPreferences(Settings settings)
@@ -232,8 +248,9 @@ public partial class SettingsView
     private void UpdateShortcutDisplay()
     {
         var text = LocalizationManager.Default;
-        this.GlobalHotKeyEditor.Content = this.isRecording ? text["Settings.ShortcutListening"]
-            : this.pendingShortcut is { Key: not Key.None } gesture ? gesture.ToString() : text["Settings.ShortcutDisabled"];
+        var shortcut = this.pendingShortcut is { Key: not Key.None } gesture ? gesture.ToString() : text["Settings.ShortcutDisabled"];
+        this.GlobalHotKeyEditor.Content = this.isRecording ? text["Settings.ShortcutListening"] : shortcut;
+        AutomationProperties.SetItemStatus(this.GlobalHotKeyEditor, this.isRecording ? text.Format("Settings.ShortcutRecordingStatus", shortcut) : shortcut);
         this.ShortcutHint.Text = text[this.shortcutError ?? (this.isRecording ? "Settings.ShortcutRecordingHelp" : "Settings.ShortcutHelp")];
         this.ShortcutHint.SetResourceReference(TextBlock.ForegroundProperty, this.shortcutError is null ? "SnoopNext.Brush.TextSecondary" : "SnoopNext.Brush.Error");
     }

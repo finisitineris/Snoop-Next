@@ -30,6 +30,7 @@
   <data name="Settings.GlobalHotKey" xml:space="preserve"><value>Global shortcut</value></data>
   <data name="Settings.ShortcutHelp" xml:space="preserve"><value>Select the shortcut and press a combination, such as Ctrl+Shift+F8.</value></data>
   <data name="Settings.ShortcutListening" xml:space="preserve"><value>Press shortcut…</value></data>
+  <data name="Settings.ShortcutRecordingStatus" xml:space="preserve"><value>Recording. Current shortcut: {0}</value></data>
   <data name="Settings.ShortcutRecordingHelp" xml:space="preserve"><value>Press a combination such as Ctrl+Shift+F8. Esc cancels.</value></data>
   <data name="Settings.ShortcutNeedsModifier" xml:space="preserve"><value>Hold a modifier with the key, for example Ctrl+Shift+F8.</value></data>
   <data name="Settings.ShortcutNeedsKey" xml:space="preserve"><value>Keep the modifier held and press another key.</value></data>

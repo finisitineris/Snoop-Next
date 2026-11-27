@@ -10,6 +10,7 @@ using System.Windows.Threading;
 using Snoop.Data.Tree;
 using Snoop.Localization;
 using Snoop.Windows;
+using Window = System.Windows.Window;
 
 internal static class WorkbenchAutomationClientSmoke
 {
@@ -77,14 +78,29 @@ internal static class WorkbenchAutomationClientSmoke
         }
     }
 
-    private static void RunClient(SnoopUI inspector, Action<IntPtr, Action<string>> run)
+    public static void VerifyShortcutStatus(Window window, string name, string status, string help)
     {
-        var handle = new WindowInteropHelper(inspector).Handle;
+        RunClient(window, (handle, report) =>
+        {
+            report("reading the launcher shortcut recorder");
+            var recorder = Find(AutomationElement.FromHandle(handle), AutomationElement.AutomationIdProperty, "GlobalHotKeyEditor");
+            var current = recorder.Current;
+            if (current.Name != name || current.ItemStatus != status || current.HelpText != help)
+            {
+                throw new InvalidOperationException($"Expected shortcut '{name}', status '{status}', help '{help}'. "
+                                                    + $"UI Automation returned '{current.Name}', '{current.ItemStatus}', '{current.HelpText}'.");
+            }
+        });
+    }
+
+    private static void RunClient(Window window, Action<IntPtr, Action<string>> run)
+    {
+        var handle = new WindowInteropHelper(window).Handle;
         // UIA calls back onto the WPF dispatcher. Give the client an MTA thread and
         // keep the window pumping messages while the client walks its control view.
-        var operation = "connecting to the workbench window";
+        var operation = "connecting to the window";
         var frame = new DispatcherFrame();
-        var timeout = new DispatcherTimer(DispatcherPriority.Normal, inspector.Dispatcher) { Interval = TimeSpan.FromSeconds(45) };
+        var timeout = new DispatcherTimer(DispatcherPriority.Normal, window.Dispatcher) { Interval = TimeSpan.FromSeconds(45) };
         timeout.Tick += (_, _) => frame.Continue = false;
         var read = Task.Run(() => run(handle, step => Volatile.Write(ref operation, step)));
         read.ConfigureAwait(false).GetAwaiter().OnCompleted(() => frame.Continue = false);
