@@ -171,7 +171,17 @@ internal static class WorkbenchPropertyTabsSmoke
 
     private static string VerifyVisibleRow(ListView list, string property, string name, params string[] terms)
     {
-        var item = Rows(list, property, name).Single();
+        var matches = Rows(list, property, name).ToArray();
+        if (matches.Length != 1)
+        {
+            var firstNames = list.Items.Cast<object>().Take(12)
+                .Select(entry => TypeDescriptor.GetProperties(entry)[property]?.GetValue(entry) as string ?? "<unnamed>");
+            var empty = (list.Parent as Panel)?.Children.OfType<TextBlock>().FirstOrDefault(block => block.IsVisible)?.Text ?? "<none>";
+            throw new InvalidOperationException($"Expected exactly one '{name}' row in {list.Name}, found {matches.Length}. "
+                                                + $"First rows of {list.Items.Count}: [{string.Join(", ", firstNames)}]. Visible empty state: {empty}.");
+        }
+
+        var item = matches[0];
         list.ScrollIntoView(item);
         list.UpdateLayout();
         var row = list.ItemContainerGenerator.ContainerFromItem(item) as ListViewItem

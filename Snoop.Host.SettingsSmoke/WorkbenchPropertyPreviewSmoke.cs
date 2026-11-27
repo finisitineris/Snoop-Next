@@ -155,6 +155,8 @@ internal static class WorkbenchPropertyPreviewSmoke
         CommandManager.InvalidateRequerySuggested();
         ExpectHistory(false, false);
 
+        Await(() => list.Items.Cast<PropertyInformation>().Any(row => ReferenceEquals(row.Target, button) && row.DependencyProperty == FrameworkElement.WidthProperty),
+            "Restoring the property filters must bring SaveButton.Width back into the grid before editing it.");
         widthEditor = SelectTextEditor(list, Row(button, FrameworkElement.WidthProperty));
         CommitText(widthEditor, "144");
         ExpectHistory(true, false);
