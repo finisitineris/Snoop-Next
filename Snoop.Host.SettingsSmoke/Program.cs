@@ -59,6 +59,11 @@ internal static class Program
                 return WorkbenchDisconnectSmoke.Run();
             }
 
+            if (args.Length == 2 && args[0] == WorkbenchReturnToPickerSmoke.FixtureArgument)
+            {
+                return WorkbenchReturnToPickerSmoke.RunFixture(args[1]);
+            }
+
             if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.ProbeArgument)
             {
                 return LauncherAttachFailureSmoke.RunProbe();
@@ -193,6 +198,8 @@ internal static class Program
                     ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
                 Require(hostPayload.LanguageTag == "en-US",
                     "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+                Require(hostPayload.LauncherReturnToken == Guid.Empty && hostPayload.LauncherProcessId == 0,
+                    "The common payload must leave picker return unset for attachment without a chooser.");
 
                 // The CLI does not run App.OnStartup to initialize the live manager.
                 LocalizationManager.Default.SetLanguage("zh-CN");
@@ -240,14 +247,14 @@ internal static class Program
                     Require(loadedTransient.LanguageTag == "en-US", "transient language preference did not round-trip");
                 }
 
-                // Old host XML has no LanguageTag; the new injector side must
-                // safely default to system rather than fail deserialization.
-                var legacyTransientXml = transientXml.Replace("<LanguageTag>en-US</LanguageTag>", string.Empty);
+                const string legacyTransientXml = "<TransientSettingsData><TargetWindowHandle>0</TargetWindowHandle></TransientSettingsData>";
                 using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(legacyTransientXml)))
                 {
                     var legacyTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
                         ?? throw new InvalidOperationException("Legacy transient settings could not be deserialized");
                     Require(legacyTransient.LanguageTag == "system", "legacy transient XML did not default to system");
+                    Require(legacyTransient.LauncherReturnToken == Guid.Empty && legacyTransient.LauncherProcessId == 0,
+                        "Legacy transient XML must not select a launcher return endpoint.");
                 }
             }
             finally

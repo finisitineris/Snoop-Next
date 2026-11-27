@@ -71,12 +71,19 @@ public class ProcessInfo
 
     public AttachResult Magnify(IntPtr targetHwnd) => this.Attach(targetHwnd, SnoopStartTarget.Zoomer);
 
-    internal Task<AttachResult> AttachAsync(IntPtr targetHwnd, SnoopStartTarget startTarget)
+    internal Task<AttachResult> AttachAsync(IntPtr targetHwnd, SnoopStartTarget startTarget, Guid launcherReturnToken)
     {
         try
         {
             // Capture mutable host settings and system language before leaving the dispatcher.
             var settings = CreateTransientSettingsData(startTarget, targetHwnd);
+            if (launcherReturnToken != Guid.Empty)
+            {
+                using var launcher = Process.GetCurrentProcess();
+                settings.LauncherReturnToken = launcherReturnToken;
+                settings.LauncherProcessId = launcher.Id;
+            }
+
             var processId = this.Process.Id;
             var completion = new TaskCompletionSource<AttachResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             var worker = new Thread(() => completion.SetResult(AttachOnWorker(processId, targetHwnd, settings)))

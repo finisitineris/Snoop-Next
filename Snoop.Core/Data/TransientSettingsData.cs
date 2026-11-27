@@ -27,6 +27,16 @@ public sealed class TransientSettingsData
 
     public long TargetWindowHandle { get; set; }
 
+    /// <summary>
+    /// Identifies the target picker to reopen on explicit disconnect. Empty for callers without a picker.
+    /// </summary>
+    public Guid LauncherReturnToken { get; set; }
+
+    public int LauncherProcessId { get; set; }
+
+    public static string GetLauncherReturnEventName(Guid token)
+        => $@"Local\Snoop.Next.ReturnToPicker.{token:N}";
+
     public string? ILSpyPath { get; set; } = "%path%";
 
     public bool EnableDiagnostics { get; set; } = true;

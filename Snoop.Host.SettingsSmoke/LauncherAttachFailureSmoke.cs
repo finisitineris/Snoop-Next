@@ -44,6 +44,7 @@ internal static class LauncherAttachFailureSmoke
 
         var directory = AppDomain.CurrentDomain.BaseDirectory;
         File.AppendAllLines(Path.Combine(directory, ObservationFile), new[] { args[target + 1], args[settings + 1] });
+        WorkbenchReturnToPickerSmoke.CopyRequestedSettings(directory, args[settings + 1]);
         var gate = Path.Combine(directory, HoldFile);
         var wait = Stopwatch.StartNew();
         while (File.Exists(gate) && wait.Elapsed < TimeSpan.FromSeconds(12))
@@ -181,6 +182,7 @@ internal static class LauncherAttachFailureSmoke
                 VerifyAttempt(target.Id);
                 Console.WriteLine("PASS: the native attach error clears target actions, localizes its retry and close buttons, and retries only after explicit reselection.");
 
+                WorkbenchReturnToPickerSmoke.Verify(chooser, picker, () => SetHelperExitCode(0), VerifyAttempt);
                 CheckCloseDuringAttempt();
 
                 void SelectTarget()

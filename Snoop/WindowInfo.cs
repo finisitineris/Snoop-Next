@@ -195,9 +195,9 @@ public class WindowInfo
             : TargetUnavailable();
     }
 
-    internal Task<AttachResult> AttachAsync(SnoopStartTarget startTarget)
+    internal Task<AttachResult> AttachAsync(SnoopStartTarget startTarget, Guid launcherReturnToken)
         => this.OwningProcessInfo is { } process
-            ? process.AttachAsync(this.HWnd, startTarget)
+            ? process.AttachAsync(this.HWnd, startTarget, launcherReturnToken)
             : Task.FromResult(TargetUnavailable());
 
     private static AttachResult TargetUnavailable()

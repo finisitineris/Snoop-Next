@@ -11,7 +11,9 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -72,6 +74,10 @@ public partial class AppChooser
     private bool? selectSingleTargetAfterRefresh;
     private bool closeAfterAttach;
     private bool isClosed;
+    private bool returnToPickerPending;
+    private Guid launcherReturnToken;
+    private EventWaitHandle? launcherReturnEvent;
+    private RegisteredWaitHandle? launcherReturnWait;
 
     private LowLevelKeyboardHook? keyboardHook;
 
@@ -416,6 +422,8 @@ public partial class AppChooser
     protected override void OnClosed(EventArgs e)
     {
         this.isClosed = true;
+        this.launcherReturnWait?.Unregister(null);
+        this.launcherReturnEvent?.Dispose();
         SystemEvents.UserPreferenceChanged -= this.HandleSystemPreferenceChanged;
         this.keyboardHook?.Stop();
 
@@ -460,8 +468,70 @@ public partial class AppChooser
         this.SetValue(IsAttachingPropertyKey, true);
         CommandManager.InvalidateRequerySuggested();
 
-        var result = await window.AttachAsync(startTarget).ConfigureAwait(false);
+        var returnToken = startTarget == SnoopStartTarget.SnoopUI ? this.GetLauncherReturnToken() : Guid.Empty;
+        var result = await window.AttachAsync(startTarget, returnToken).ConfigureAwait(false);
         _ = this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => this.CompleteAttach(startTarget, target, result)));
+    }
+
+    private Guid GetLauncherReturnToken()
+    {
+        if (this.launcherReturnEvent is null)
+        {
+            var token = Guid.NewGuid();
+            try
+            {
+                this.launcherReturnEvent = new EventWaitHandle(false, EventResetMode.AutoReset, TransientSettingsData.GetLauncherReturnEventName(token));
+                this.launcherReturnWait = ThreadPool.RegisterWaitForSingleObject(
+                    this.launcherReturnEvent, this.QueueReturnToTargetPicker, null, Timeout.Infinite, executeOnlyOnce: false);
+                this.launcherReturnToken = token;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or WaitHandleCannotBeOpenedException)
+            {
+                this.launcherReturnEvent?.Dispose();
+                this.launcherReturnEvent = null;
+                LogHelper.WriteWarning(ex);
+            }
+        }
+
+        return this.launcherReturnToken;
+    }
+
+    private void QueueReturnToTargetPicker(object? state, bool timedOut)
+    {
+        if (!this.Dispatcher.HasShutdownStarted)
+        {
+            _ = this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                this.returnToPickerPending = true;
+                this.TryReturnToTargetPicker();
+            }));
+        }
+    }
+
+    private void TryReturnToTargetPicker()
+    {
+        if (!this.returnToPickerPending || !this.CanStartAttach)
+        {
+            return;
+        }
+
+        this.returnToPickerPending = false;
+        if (this.WindowState == WindowState.Minimized)
+        {
+            this.WindowState = WindowState.Normal;
+        }
+
+        if (!this.IsVisible)
+        {
+            this.Show();
+        }
+
+        this.Activate();
+        this.WindowInfos.MoveCurrentToPosition(-1);
+        CommandManager.InvalidateRequerySuggested();
+        WindowInfo.ClearCachedWindowHandleInfo();
+        this.Refresh(selectSingleTarget: false);
+        ApplicationCommands.Find.Execute(null, this);
     }
 
     private void CompleteAttach(SnoopStartTarget startTarget, string target, AttachResult result)
@@ -488,6 +558,7 @@ public partial class AppChooser
 
         if (result.Success)
         {
+            this.TryReturnToTargetPicker();
             return;
         }
 
@@ -504,6 +575,8 @@ public partial class AppChooser
             this.Refresh(selectSingleTarget: false);
             ApplicationCommands.Find.Execute(null, this);
         }
+
+        this.TryReturnToTargetPicker();
     }
 
     private void HandleRefreshCommand(object sender, ExecutedRoutedEventArgs e)
@@ -523,6 +596,7 @@ public partial class AppChooser
         if (!this.IsAttaching)
         {
             new SettingsWindow { Owner = this }.ShowDialog();
+            this.TryReturnToTargetPicker();
         }
     }
 

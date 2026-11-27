@@ -15,6 +15,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
@@ -25,6 +26,7 @@ using System.Windows.Media.Media3D;
 using System.Windows.Threading;
 using JetBrains.Annotations;
 using Snoop.Core;
+using Snoop.Data;
 using Snoop.Data.Tree;
 using Snoop.Infrastructure;
 using Snoop.Infrastructure.Diagnostics;
@@ -603,14 +605,54 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     private bool CanDisconnect => !this.isShuttingDown && this.RootObject is not null;
 
+    internal Guid LauncherReturnToken { get; set; }
+
+    internal int LauncherProcessId { get; set; }
+
     private void HandleDisconnect(object sender, ExecutedRoutedEventArgs e)
     {
         if (this.CanDisconnect)
         {
+            using var launcherReturnEvent = this.OpenLauncherReturnEvent();
+            if (launcherReturnEvent is not null && this.LauncherProcessId > 0 && this.IsActive)
+            {
+                NativeMethods.AllowSetForegroundWindow(this.LauncherProcessId);
+            }
+
             this.Close();
+            if (this.isShuttingDown && launcherReturnEvent is not null)
+            {
+                try
+                {
+                    launcherReturnEvent.Set();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    LogHelper.WriteWarning(ex);
+                }
+            }
         }
 
         e.Handled = true;
+    }
+
+    private EventWaitHandle? OpenLauncherReturnEvent()
+    {
+        if (this.LauncherReturnToken == Guid.Empty)
+        {
+            return null;
+        }
+
+        try
+        {
+            EventWaitHandle.TryOpenExisting(TransientSettingsData.GetLauncherReturnEventName(this.LauncherReturnToken), out var launcherReturnEvent);
+            return launcherReturnEvent;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            LogHelper.WriteWarning(ex);
+            return null;
+        }
     }
 
     private void Refresh(bool treeTypeChanged = false)
