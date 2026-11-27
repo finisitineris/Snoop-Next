@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Nuke.Common.CI.AppVeyor;
 using Nuke.Common.IO;
@@ -141,11 +142,20 @@ public static class SignPathTasks2
             {
                 using var response = SendGetRequestWithRetry(httpClient, signingRequestUrl);
                 var rawContent = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var jsonContent = rawContent.GetJson();
-                signingRequestStatus = jsonContent["status"].NotNull()!.Value<string>();
+                JObject jsonContent;
+                try
+                {
+                    jsonContent = JObject.Parse(rawContent);
+                }
+                catch (JsonException)
+                {
+                    throw new InvalidDataException("SignPath returned an invalid signing status document.");
+                }
+                signingRequestStatus = (jsonContent["status"] as JValue)?.Value as string;
                 signedArtifactUrl = signingRequestStatus switch
                 {
-                    SigningRequestStatus.Completed => jsonContent["signedArtifactLink"].NotNull()!.Value<string>(),
+                    SigningRequestStatus.Completed => (jsonContent["signedArtifactLink"] as JValue)?.Value as string
+                        ?? throw new InvalidDataException("SignPath did not return a signed artifact link."),
                     SigningRequestStatus.Failed => null,
                     SigningRequestStatus.Denied => null,
                     SigningRequestStatus.Cancelled => null,
