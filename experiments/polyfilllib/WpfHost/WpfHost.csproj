@@ -5,16 +5,20 @@
     <DisableWinExeOutputInference>true</DisableWinExeOutputInference>
     <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
     <LangVersion>10.0</LangVersion>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <IsPackable>false</IsPackable>
-    <SuppressTfmSupportBuildWarnings>false</SuppressTfmSupportBuildWarnings>
+    <!-- Microsoft.Bcl.Memory emits its support warning only when this property is empty. -->
+    <SuppressTfmSupportBuildWarnings />
     <PlatformTarget>x64</PlatformTarget>
     <PlatformTarget Condition="'$(TargetFramework)' == 'net462'">x86</PlatformTarget>
     <AppConfig Condition="'$(TargetFramework)' == 'net462'">$(MSBuildProjectDirectory)/net462.config</AppConfig>
     <OutputPath>$(MSBuildProjectDirectory)/bin/$(Configuration)/</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="PolyfillLib" Version="11.4.5" />
+    <!-- Keep the DLL as a runtime payload. On CLR4 the C# compiler can otherwise
+         bind ordinary interpolation to PolyfillLib's DefaultInterpolatedStringHandler. -->
+    <PackageReference Include="PolyfillLib" Version="11.4.5" ExcludeAssets="compile" />
   </ItemGroup>
 </Project>

@@ -21,6 +21,17 @@ internal static class Program
             return 2;
         }
 
+        var domain = AppDomain.CurrentDomain;
+        domain.AssemblyLoad += (_, e) =>
+        {
+            if (e.LoadedAssembly.GetName().Name == "PolyfillLib")
+            {
+                Console.WriteLine("PolyfillLib AssemblyLoad: " + Describe(e.LoadedAssembly));
+            }
+        };
+        var entryPolyfill = domain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "PolyfillLib");
+        Console.WriteLine("PolyfillLib at Main entry: " + (entryPolyfill == null ? "absent" : Describe(entryPolyfill)));
+
         int result = 2;
         var app = new Application();
         var output = new TextBox { IsReadOnly = true, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
@@ -40,7 +51,6 @@ internal static class Program
 
         void Check()
         {
-            var domain = AppDomain.CurrentDomain;
             var snoop = domain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "Snoop.Core");
             Log($"PID={process.Id}; AppDomain={domain.Id} ({domain.FriendlyName}); CLR={Environment.Version}; x64={Environment.Is64BitProcess}");
             Log("WPF: " + typeof(Window).Assembly.FullName + " @ " + typeof(Window).Assembly.Location);
@@ -105,9 +115,15 @@ internal static class Program
     {
         var domain = AppDomain.CurrentDomain;
         string baseDir = domain.BaseDirectory;
-        if (domain.GetAssemblies().Any(a => a.GetName().Name == "PolyfillLib"))
+        var early = domain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "PolyfillLib");
+        if (early != null)
         {
-            throw new InvalidOperationException("PolyfillLib was already loaded. Start a fresh fixture.");
+            throw new InvalidOperationException("PolyfillLib was already loaded: " + Describe(early) + ". Start a fresh fixture.");
+        }
+
+        if (typeof(Program).Assembly.GetReferencedAssemblies().Any(a => a.Name == "PolyfillLib"))
+        {
+            throw new InvalidOperationException("The fixture has a compile-time PolyfillLib assembly reference.");
         }
 
 #if NETFRAMEWORK
@@ -174,7 +190,10 @@ internal static class Program
     }
     private static string Describe(Assembly assembly)
     {
-        string identity = assembly.FullName + " @ " + assembly.Location;
+        string path = assembly.IsDynamic || string.IsNullOrEmpty(assembly.Location)
+            ? "(no file location)"
+            : Path.GetFullPath(assembly.Location);
+        string identity = assembly.FullName + " @ " + path;
 #if !NETFRAMEWORK
         var context = System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(assembly);
         identity += " | LoadContext=" + context;
