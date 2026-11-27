@@ -30,10 +30,22 @@ For a desktop test with Snoop present, start a fresh fixture with `& .\fixture\W
 
 The automated result covers loading initiated by this fixture in its own AppDomain. The manual mode additionally identifies Snoop.Core in that AppDomain. Production Snoop has no dependency on PolyfillLib. Deployment by the inspector, other hosts' binding policies and an actual Framework 4.6.2-only installation still need separate evidence.
 
-## Still unverified after this CI
+## Desktop results, 27 November 2026
 
-- Actual **Snoop injected-process** assembly loading and target application assembly resolution / binding redirects. This is a separate **human-authorized isolated Windows desktop** test under SN-004; never inject into arbitrary processes on a hosted CI runner.
-- Minimum **4.6.2-only machine** compatibility, x86 injection, Windows AppDomain collisions and binding redirect interactions
+The [SN-003 desktop report](https://github.com/finisitineris/Snoop-Next/issues/4) records three successful interactive runs on Windows 11 25H2 build 26200.9168. The tester used portable Snoop 6.2.0-alpha.2154 (`e49c433`) with the fixtures from the [Windows compatibility run](https://github.com/finisitineris/Snoop-Next/actions/runs/45930788892), which checked out `05d285ef`. In each fresh process the tester attached Snoop before selecting **Run check**. The host saw Snoop.Core in its default AppDomain before loading PolyfillLib 11.4.5.
+
+| Target | Installed runtime | System.Memory resolved by the host and the library | Types loaded | Exit code |
+| --- | --- | --- | ---: | ---: |
+| net462 x86 | .NET Framework 4.8.1, Release 533509 | The CLR redirected 4.0.1.2 to the application's 4.0.5.0 assembly | 420 | 0 |
+| .NET 6 x64 | 6.0.36 | Framework assembly 6.0.0.0 in the default load context | 263 | 0 |
+| .NET 10 x64 | 10.0.15 | Framework assembly 10.0.0.0 in the default load context | 104 | 0 |
+
+All three runs completed the subsequent Dispatcher callback. The tester selected the host's output TextBox in the inspector's logical tree, detached, maximized the host and observed it repaint. Reattaching to the same PID restored access to the tree and the host's log preview. The issue records the per-run identities from the submitted report. The three desktop logs and nine screenshots referenced by the tester were unavailable for independent review.
+
+## Remaining coverage
+
+- Deployment and loading initiated by the production inspector. In these runs the fixture owned both the DLLs and the load call.
+- A machine with only .NET Framework 4.6.2 installed, separate AppDomains and other application binding policies.
 - PolyfillLib size/transitive dependency **acceptance** for the Snoop probe, where minimizing DLL deployment matters
 - .NET 11 build and actual WPF target compatibility
 - C# compiler-syntax polyfills: a package cannot backport a C# 15 language parser. C# 15 union syntax requires the .NET 11 compiler; this experiment does not test it.
