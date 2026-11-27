@@ -23,7 +23,6 @@ using Snoop.Core;
 using Snoop.Infrastructure;
 using Snoop.Next.Localization;
 using Snoop.Views;
-using Snoop.Windows;
 
 public partial class AppChooser
 {
@@ -64,6 +63,7 @@ public partial class AppChooser
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
     private readonly double singleRowMinimumWidth;
     private double preferredWidth;
+    private bool? selectSingleTargetAfterRefresh;
 
     private LowLevelKeyboardHook? keyboardHook;
 
@@ -257,8 +257,17 @@ public partial class AppChooser
         this.Top = Math.Max(work.Top, Math.Min(origin.Y, work.Bottom - this.Height));
     }
 
-    public void Refresh()
+    public void Refresh() => this.Refresh(selectSingleTarget: true);
+
+    private void Refresh(bool selectSingleTarget)
     {
+        if (this.selectSingleTargetAfterRefresh is { } pendingSelection)
+        {
+            this.selectSingleTargetAfterRefresh = pendingSelection && selectSingleTarget;
+            return;
+        }
+
+        this.selectSingleTargetAfterRefresh = selectSingleTarget;
         this.windowInfos.Clear();
 
         this.RunInDispatcherAsync(() =>
@@ -305,13 +314,18 @@ public partial class AppChooser
                     this.windowInfos.Add(windowInfo);
                 }
 
-                if (!this.HasTargetFilter && this.windowInfos.Count is 1)
+                if (this.selectSingleTargetAfterRefresh == false)
+                {
+                    this.WindowInfos.MoveCurrentToPosition(-1);
+                }
+                else if (!this.HasTargetFilter && this.windowInfos.Count is 1)
                 {
                     this.WindowInfos.MoveCurrentTo(this.windowInfos[0]);
                 }
             }
             finally
             {
+                this.selectSingleTargetAfterRefresh = null;
                 Mouse.OverrideCursor = null;
             }
         }, DispatcherPriority.Loaded);
@@ -389,38 +403,38 @@ public partial class AppChooser
     }
 
     private void HandleInspectCommand(object sender, ExecutedRoutedEventArgs e)
-    {
-        var window = (WindowInfo?)this.WindowInfos.CurrentItem;
-
-        if (window is null)
-        {
-            return;
-        }
-
-        var result = window.OwningProcessInfo?.Snoop(window.HWnd);
-
-        if (result?.Success == false)
-        {
-            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
-                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
-        }
-    }
+        => this.AttachToSelection(static (process, handle) => process.Snoop(handle), "Chooser.InspectFailed");
 
     private void HandleMagnifyCommand(object sender, ExecutedRoutedEventArgs e)
-    {
-        var window = (WindowInfo?)this.WindowInfos.CurrentItem;
+        => this.AttachToSelection(static (process, handle) => process.Magnify(handle), "Chooser.MagnifyFailed");
 
-        if (window is null)
+    private void AttachToSelection(Func<ProcessInfo, IntPtr, AttachResult> action, string failureTitleKey)
+    {
+        if (this.WindowInfos.CurrentItem is not WindowInfo window)
         {
             return;
         }
 
-        var result = window.OwningProcessInfo?.Magnify(window.HWnd);
-
-        if (result?.Success == false)
+        var target = window.Description;
+        var result = window.Attach(action);
+        if (result.Success)
         {
-            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
-                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
+            return;
+        }
+
+        this.WindowInfos.MoveCurrentToPosition(-1);
+        CommandManager.InvalidateRequerySuggested();
+        var failure = new AttachFailureDialog(failureTitleKey, target, result.AttachException);
+        if (this.IsVisible)
+        {
+            failure.Owner = this;
+        }
+
+        if (failure.ShowDialog() == true)
+        {
+            WindowInfo.ClearCachedWindowHandleInfo();
+            this.Refresh(selectSingleTarget: false);
+            ApplicationCommands.Find.Execute(null, this);
         }
     }
 
@@ -454,7 +468,7 @@ public partial class AppChooser
 
     private void HandleWindowsComboBox_OnDropDownOpened(object sender, EventArgs e)
     {
-        if (this.windowInfos.Any())
+        if (this.selectSingleTargetAfterRefresh is not null || this.windowInfos.Any())
         {
             return;
         }

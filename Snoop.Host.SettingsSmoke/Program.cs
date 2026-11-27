@@ -27,6 +27,11 @@ internal static class Program
             return LauncherSearchSmoke.RunFixture();
         }
 
+        if (LauncherAttachFailureSmoke.IsTestHelper())
+        {
+            return LauncherAttachFailureSmoke.RunHelper(args);
+        }
+
         const string settingsRootVariable = Snoop.Core.SettingsHelper.SNOOP_SETTINGS_PATH_ENV_VAR;
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
         var file = Path.Combine(path, "SnoopSettings.xml");
@@ -42,6 +47,25 @@ internal static class Program
             if (args.Length == 1 && args[0] == "--launcher-search-smoke")
             {
                 return RunLauncherSearchSmoke();
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.ProbeArgument)
+            {
+                return LauncherAttachFailureSmoke.RunProbe();
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.SmokeArgument)
+            {
+                try
+                {
+                    LauncherAttachFailureSmoke.Verify(path);
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                    return 1;
+                }
             }
 
             return RunSmoke(file, inspectorFile);
@@ -98,6 +122,7 @@ internal static class Program
                 "inspector settings did not use the temporary settings root");
 
             AppDomainLanguageSmoke.Verify(Path.GetDirectoryName(file)!);
+            LauncherAttachFailureSmoke.Verify(Path.GetDirectoryName(file)!);
 
             var settings = new Settings { SettingsFile = file };
             Require(settings.LanguageTag == "zh-CN", "default language must be zh-CN");

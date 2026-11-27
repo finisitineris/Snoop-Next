@@ -186,9 +186,9 @@ public partial class WindowFinder
 
     public static void AttachSnoop(WindowInfo windowInfo)
     {
-        var result = windowInfo.OwningProcessInfo?.Snoop(windowInfo.HWnd);
+        var result = windowInfo.Attach(static (process, handle) => process.Snoop(handle));
 
-        if (result?.Success == false)
+        if (!result.Success)
         {
             ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
                                    LocalizationManager.Default.Format("Chooser.AttachFailureDetail", windowInfo.Description), true);
@@ -197,9 +197,9 @@ public partial class WindowFinder
 
     private static void AttachMagnify(WindowInfo windowInfo)
     {
-        var result = windowInfo.OwningProcessInfo?.Magnify(windowInfo.HWnd);
+        var result = windowInfo.Attach(static (process, handle) => process.Magnify(handle));
 
-        if (result?.Success == false)
+        if (!result.Success)
         {
             ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
                                    LocalizationManager.Default.Format("Chooser.AttachFailureDetail", windowInfo.Description), true);
