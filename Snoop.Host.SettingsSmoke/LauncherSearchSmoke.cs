@@ -38,12 +38,39 @@ internal static class LauncherSearchSmoke
         var fixtures = new List<Process>();
         try
         {
-            var first = Start(current.MainModule.FileName, FixtureArgument);
-            var second = Start(current.MainModule.FileName, FixtureArgument);
-            var frameworkX86 = Start(FindFixture("net462"), $"\"{FixtureTitle}\"");
-            var modern = Start(FindFixture("net10.0-windows"), $"\"{FixtureTitle}\"");
-            WaitForFixtureWindows(fixtures);
-            VerifyPicker(chooser, list, first, second, frameworkX86, modern);
+            fixtures.Add(Start(current.MainModule.FileName, FixtureArgument));
+            fixtures.Add(Start(current.MainModule.FileName, FixtureArgument));
+            fixtures.Add(Start(FindFixture("net462"), $"\"{FixtureTitle}\""));
+            fixtures.Add(Start(FindFixture("net10.0-windows"), $"\"{FixtureTitle}\""));
+
+            var startup = Stopwatch.StartNew();
+            try
+            {
+                // Use a separate budget for cold process startup on hosted Windows runners.
+                WaitForFixtureWindows(fixtures, TimeSpan.FromSeconds(20));
+            }
+            catch (InvalidOperationException)
+            {
+                for (var index = 0; index < fixtures.Count; index++)
+                {
+                    var fixture = fixtures[index];
+                    if (HasWindow(fixture))
+                    {
+                        continue;
+                    }
+
+                    var start = fixture.StartInfo;
+                    Console.Error.WriteLine($"Restarting unready WPF fixture '{start.FileName}' (PID {fixture.Id}).");
+                    Stop(fixture);
+                    fixtures[index] = Start(start.FileName, start.Arguments);
+                    fixture.Dispose();
+                }
+
+                WaitForFixtureWindows(fixtures, TimeSpan.FromSeconds(12));
+            }
+
+            Console.WriteLine($"WPF fixture windows ready in {startup.Elapsed.TotalSeconds:F1} s.");
+            VerifyPicker(chooser, list, fixtures[0], fixtures[1], fixtures[2], fixtures[3]);
         }
         finally
         {
@@ -56,7 +83,7 @@ internal static class LauncherSearchSmoke
             }
         }
 
-        Process Start(string path, string arguments)
+        static Process Start(string path, string arguments)
         {
             var start = new ProcessStartInfo(path, arguments)
             {
@@ -66,7 +93,6 @@ internal static class LauncherSearchSmoke
             };
             start.EnvironmentVariables["DOTNET_DISABLE_GUI_ERRORS"] = "1";
             var process = Process.Start(start) ?? throw new InvalidOperationException($"Could not start WPF fixture '{path}'.");
-            fixtures.Add(process);
             var pid = process.Id;
             process.ErrorDataReceived += (_, e) =>
             {
@@ -75,8 +101,20 @@ internal static class LauncherSearchSmoke
                     Console.Error.WriteLine($"WPF fixture PID {pid}: {line}");
                 }
             };
-            process.BeginErrorReadLine();
-            return process;
+            try
+            {
+                process.BeginErrorReadLine();
+                return process;
+            }
+            catch
+            {
+                using (process)
+                {
+                    Stop(process);
+                }
+
+                throw;
+            }
         }
 
         static string FindFixture(string framework)
@@ -97,14 +135,11 @@ internal static class LauncherSearchSmoke
         }
     }
 
-    private static void WaitForFixtureWindows(IEnumerable<Process> fixtures)
+    private static void WaitForFixtureWindows(IEnumerable<Process> fixtures, TimeSpan timeout)
     {
-        var startup = Stopwatch.StartNew();
         try
         {
-            // Use a separate budget for cold process startup on hosted Windows runners.
-            Await(() => fixtures.All(HasWindow), "The discovery fixtures did not open their WPF windows.", TimeSpan.FromSeconds(20));
-            Console.WriteLine($"WPF fixture windows ready in {startup.Elapsed.TotalSeconds:F1} s.");
+            Await(() => fixtures.All(HasWindow), "The discovery fixtures did not open their WPF windows.", timeout);
         }
         catch (InvalidOperationException)
         {
