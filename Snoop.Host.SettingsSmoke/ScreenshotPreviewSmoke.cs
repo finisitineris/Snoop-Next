@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using Snoop.Controls;
+using Snoop.Infrastructure;
 using Snoop.Windows;
 
 internal static class ScreenshotPreviewSmoke
@@ -28,7 +29,17 @@ internal static class ScreenshotPreviewSmoke
         var lastDirectory = typeof(ScreenshotDialog).GetField("lastSaveDirectory", BindingFlags.Static | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("Cannot isolate the screenshot destination.");
         var savedDirectory = lastDirectory.GetValue(null);
-        var target = new Border { Name = "CaptureTarget", Width = 64, Height = 32, Background = Brushes.Coral };
+        var target = new Border
+        {
+            Name = "CaptureTarget",
+            Width = 64,
+            Height = 32,
+            Background = Brushes.Coral,
+            RenderTransform = new ScaleTransform(1.5, 1.25),
+            Child = new Border { Width = 32, HorizontalAlignment = HorizontalAlignment.Right, Background = Brushes.SteelBlue },
+        };
+        var evidence = Environment.GetEnvironmentVariable("SNOOP_UI_PREVIEW_DIR");
+        var evidenceDirectory = string.IsNullOrEmpty(evidence) ? null : Path.GetFullPath(evidence);
         var preview = new Previewer();
         var content = new StackPanel();
         content.Children.Add(target);
@@ -63,12 +74,26 @@ internal static class ScreenshotPreviewSmoke
             var actual = string.Join(", ", files.Select(file => file.Name));
             Require(files.Length == 1 && string.Equals(files[0].Name, filename, StringComparison.OrdinalIgnoreCase) && File.Exists(destination),
                 $"Expected only '{destination}' after Save As. Entries in '{directory.FullName}': [{actual}]. The picker returned directory '{lastDirectory.GetValue(null)}'.");
+            if (evidenceDirectory is not null)
+            {
+                Directory.CreateDirectory(evidenceDirectory);
+                File.Copy(destination, Path.Combine(evidenceDirectory, "screenshot-confirmed-96dpi.png"), overwrite: true);
+            }
+
             using var stream = File.OpenRead(destination);
             var frame = new PngBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.OnLoad).Frames.Single();
-            var pixel = new byte[4];
-            new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0).CopyPixels(new Int32Rect(32, 16, 1, 1), pixel, 4, 0);
-            Require(frame.PixelWidth == 64 && frame.PixelHeight == 32 && pixel.SequenceEqual(new[] { Colors.Coral.B, Colors.Coral.G, Colors.Coral.R, (byte)255 }),
-                "The saved 96 DPI PNG must contain the selected visual's dimensions and center pixel.");
+            var bitmap = new FormatConvertedBitmap(frame, PixelFormats.Bgra32, null, 0);
+            var left = Sample(bitmap, 0.25);
+            var seam = Sample(bitmap, 0.5);
+            var right = Sample(bitmap, 0.75);
+            var offset = VisualTreeHelper.GetOffset(target);
+            var details = $"PNG {frame.PixelWidth}x{frame.PixelHeight} at {frame.DpiX:F2}x{frame.DpiY:F2} DPI, target {target.RenderSize}, offset {offset}, left/seam/right {left}/{seam}/{right}.";
+            Console.WriteLine(details);
+            Require(offset.X > target.ActualWidth && frame.PixelWidth == 64 && frame.PixelHeight == 32
+                    && Math.Abs(frame.DpiX - 96) < 0.1 && Math.Abs(frame.DpiY - 96) < 0.1
+                    && left == Colors.Coral && seam == Colors.SteelBlue && right == Colors.SteelBlue,
+                "The saved PNG must contain both halves of the offset visual at 96 DPI. " + details);
+            VerifyTransformedDrawing();
             Console.WriteLine("PASS: native screenshot preview, preview cancellation and Save As cancellation create no files; explicit Save As writes the selected visual to PNG.");
 
             void Open(Action<ScreenshotDialog> verify)
@@ -113,6 +138,30 @@ internal static class ScreenshotPreviewSmoke
             lastDirectory.SetValue(null, savedDirectory);
             directory.Delete(recursive: true);
         }
+    }
+
+    private static void VerifyTransformedDrawing()
+    {
+        // Non-UI visuals can draw at a nonzero local origin and have a root transform.
+        var drawing = new DrawingVisual { Offset = new Vector(18, 23), Transform = new MatrixTransform(0, 2, -1, 0, 0, 0) };
+        using (var context = drawing.RenderOpen())
+        {
+            context.DrawRectangle(Brushes.Coral, null, new Rect(31, 7, 6, 8));
+            context.DrawRectangle(Brushes.SteelBlue, null, new Rect(37, 7, 6, 8));
+        }
+
+        var image = VisualCaptureUtil.RenderVisualWithHighQuality(drawing, 96, 96);
+        var top = Sample(image, 0.5, 0.25);
+        var bottom = Sample(image, 0.5, 0.75);
+        Require(image.PixelWidth == 12 && image.PixelHeight == 8 && top == Colors.Coral && bottom == Colors.SteelBlue,
+            $"A rotated and scaled drawing must retain its local image dimensions and display the rotated color bands, got {image.PixelWidth}x{image.PixelHeight} {top}/{bottom}.");
+    }
+
+    private static Color Sample(BitmapSource image, double fractionX, double fractionY = 0.5)
+    {
+        var pixel = new byte[4];
+        image.CopyPixels(new Int32Rect((int)(image.PixelWidth * fractionX), (int)(image.PixelHeight * fractionY), 1, 1), pixel, 4, 0);
+        return Color.FromArgb(pixel[3], pixel[2], pixel[1], pixel[0]);
     }
 
     private static void ChooseFile(ScreenshotDialog preview, string? expectedFilename)

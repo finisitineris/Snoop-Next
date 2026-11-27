@@ -111,6 +111,8 @@ internal static class LauncherSearchSmoke
             Await(() => search.Text == pid && list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == first.Id,
                 "Keyboard PID input must leave only the matching target visible.");
             var row = (WindowInfo)list.Items[0];
+            Await(() => VisibleRowIds().SequenceEqual(new[] { "TargetProcess." + pid }),
+                "The picker automation tree must expose only the filtered PID after the row containers update.");
             var item = picker.GetChildren().Single(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem);
             Require(item.GetAutomationId() == "TargetProcess." + pid && item.GetName() == $"{FixtureTitle} - {first.ProcessName} [{pid}]",
                 $"The target row must expose its title, process and PID. Got '{item.GetAutomationId()}', '{item.GetName()}'.");
@@ -124,6 +126,9 @@ internal static class LauncherSearchSmoke
             Await(() => list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == second.Id
                         && list.SelectedItem is null && chooser.WindowInfos.CurrentItem is null && !AppChooser.InspectCommand.CanExecute(null, chooser)
                         && !AppChooser.MagnifyCommand.CanExecute(null, chooser), "Hiding the selection must not switch either action to another matching process.");
+            var secondRowId = "TargetProcess." + second.Id.ToString(CultureInfo.InvariantCulture);
+            Await(() => VisibleRowIds().SequenceEqual(new[] { secondRowId }),
+                "Replacing the PID query must remove the previously selected process from the automation tree.");
             popup.Collapse();
             popup.Expand();
             Await(() => list.Items.Count == 1 && ((WindowInfo)list.Items[0]).OwningProcessId == second.Id && search.Text == second.Id.ToString(CultureInfo.InvariantCulture),
@@ -141,6 +146,7 @@ internal static class LauncherSearchSmoke
                 text.SetLanguage(language);
                 input.SetValue("no-such-ledger-window");
                 Await(() => list.Items.IsEmpty && empty.IsVisible && empty.Text == text["Chooser.NoMatches"], "Missing localized no-match state for " + language);
+                Await(() => VisibleRowIds().Length == 0, "An empty result must expose no actionable process row to automation.");
                 Require(clear.IsVisible && clear.IsEnabled && search.IsVisible && entry.GetName() == text["Chooser.SearchTargets"]
                         && reset.GetName() == text["Chooser.ClearSearch"] && !input.IsReadOnly, "Missing accessible search or reset in " + language);
                 Require(list.SelectedItem is null && chooser.WindowInfos.CurrentItem is null
@@ -157,6 +163,11 @@ internal static class LauncherSearchSmoke
 
             popup.Collapse();
             Console.WriteLine("PASS: launcher keyboard PID search, process/title filters, bilingual no-match state, command disabling and clear recovery through the picker automation tree.");
+
+            string[] VisibleRowIds() => picker.GetChildren()
+                .Where(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem)
+                .Select(peer => peer.GetAutomationId())
+                .ToArray();
 
             AutomationPeer Child(AutomationControlType type, string id, string nameKey)
                 => picker.GetChildren()?.SingleOrDefault(peer => peer.GetAutomationControlType() == type && peer.GetAutomationId() == id && peer.GetName() == text[nameKey])

@@ -2,12 +2,16 @@ namespace Snoop;
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Controls;
+using System.Windows.Threading;
 
 public sealed class LauncherTargetPicker : ComboBox
 {
+    private DispatcherOperation? pendingPeerRefresh;
+
     protected override AutomationPeer OnCreateAutomationPeer() => new TargetPickerPeer(this);
 
     protected override void OnDropDownOpened(EventArgs e)
@@ -20,6 +24,21 @@ public sealed class LauncherTargetPicker : ComboBox
     {
         base.OnDropDownClosed(e);
         UIElementAutomationPeer.FromElement(this)?.ResetChildrenCache();
+    }
+
+    protected override void OnItemsChanged(NotifyCollectionChangedEventArgs e)
+    {
+        base.OnItemsChanged(e);
+        if (this.pendingPeerRefresh is null && UIElementAutomationPeer.FromElement(this) is { } peer)
+        {
+            // A filtered view resets the generated rows. Rebuild the cached UIA
+            // children after layout, once per batch of collection changes.
+            this.pendingPeerRefresh = this.Dispatcher.InvokeAsync(() =>
+            {
+                this.pendingPeerRefresh = null;
+                peer.ResetChildrenCache();
+            }, DispatcherPriority.Input);
+        }
     }
 
     private sealed class TargetPickerPeer : ComboBoxAutomationPeer
