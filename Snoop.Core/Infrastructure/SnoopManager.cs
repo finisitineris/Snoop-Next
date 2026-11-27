@@ -263,9 +263,10 @@ public class SnoopManager
         var targetTitle = TryGetWindowOrMainWindowTitle(targetWindowOnSameDispatcher);
         snoopWindow.Title = string.IsNullOrEmpty(targetTitle) ? "Snoop Next" : $"{targetTitle} — Snoop Next";
 
-        snoopWindow.Inspect(dispatcherRootObjectPair.RootObject);
+        var isWorkbench = snoopWindow is SnoopUI;
+        snoopWindow.Inspect(dispatcherRootObjectPair.RootObject, isWorkbench ? targetWindowOnSameDispatcher : null);
 
-        if (targetWindowOnSameDispatcher is not null)
+        if (!isWorkbench && targetWindowOnSameDispatcher is not null)
         {
             snoopWindow.Target = targetWindowOnSameDispatcher;
         }
