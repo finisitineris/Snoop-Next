@@ -54,3 +54,62 @@ jobs:
           name: polyfilllib-compat-evidence
           path: output/polyfilllib-compat
           if-no-files-found: warn
+
+  wpf-host:
+    name: WPF host (${{ matrix.framework }})
+    runs-on: windows-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        framework: [net462, net6.0-windows, net10.0-windows]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-dotnet@v6
+        if: matrix.framework == 'net6.0-windows'
+        with:
+          dotnet-version: '6.0.x'
+      - name: Build and run the WPF fixture in its own process
+        shell: pwsh
+        env:
+          FIXTURE_TFM: ${{ matrix.framework }}
+        run: |
+          $project = 'experiments/polyfilllib/WpfHost/WpfHost.csproj'
+          $out = 'output/polyfilllib-wpf'
+          New-Item -ItemType Directory -Force $out | Out-Null
+          git rev-parse HEAD | Set-Content "$out/commit.txt"
+          dotnet --info | Out-File "$out/dotnet-info.txt"
+          dotnet build $project -c Release -f $env:FIXTURE_TFM -o "$out/fixture"
+          if ($LASTEXITCODE -ne 0) { throw 'WPF fixture build failed.' }
+          Copy-Item License.txt "$out/fixture/"
+          $notices = New-Item -ItemType Directory -Force "$out/fixture/notices"
+          $dotnetRoot = Split-Path (Get-Command dotnet).Source
+          Copy-Item "$dotnetRoot/LICENSE.txt","$dotnetRoot/ThirdPartyNotices.txt" $notices.FullName
+          $assets = Get-Content 'experiments/polyfilllib/WpfHost/obj/project.assets.json' -Raw | ConvertFrom-Json -AsHashtable
+          foreach ($package in $assets.libraries.Values | Where-Object type -eq 'package') {
+            foreach ($root in $assets.packageFolders.Keys) {
+              $dir = Join-Path $root $package.path
+              if (!(Test-Path $dir)) { continue }
+              $dest = New-Item -ItemType Directory -Force (Join-Path $notices.FullName $package.path)
+              Get-ChildItem $dir -File | Where-Object Name -match 'license|notice|\.nuspec$' |
+                Copy-Item -Destination $dest.FullName
+              break
+            }
+          }
+          dotnet list $project package --include-transitive --framework $env:FIXTURE_TFM |
+            Tee-Object -FilePath "$out/packages.txt"
+          if ($LASTEXITCODE -ne 0) { throw 'WPF package listing failed.' }
+          & "$out/fixture/WpfHost.exe" 2>&1 | Tee-Object -FilePath "$out/runtime.txt"
+          if ($LASTEXITCODE -ne 0) { throw "WPF fixture failed with exit code $LASTEXITCODE." }
+          if (!(Select-String -Path "$out/runtime.txt" -Pattern '^PASS: fixture loader')) {
+            throw 'WPF fixture exited without its completion marker.'
+          }
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: polyfilllib-wpf-${{ matrix.framework }}
+          path: output/polyfilllib-wpf/
+          if-no-files-found: warn
