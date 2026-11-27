@@ -63,6 +63,14 @@
   <data name="Chooser.MagnifyLabel" xml:space="preserve"><value>放大</value></data>
   <data name="Chooser.SelectTarget" xml:space="preserve"><value>选择要挂载的窗口</value></data>
   <data name="Chooser.Empty" xml:space="preserve"><value>未找到 WPF 窗口</value></data>
+  <data name="Chooser.SearchTip" xml:space="preserve"><value>选择目标窗口，或按 Ctrl+F 搜索</value></data>
+  <data name="Chooser.SearchTargets" xml:space="preserve"><value>搜索 PID、进程名或窗口标题</value></data>
+  <data name="Chooser.ClearFilters" xml:space="preserve"><value>清除筛选</value></data>
+  <data name="Chooser.Runtime" xml:space="preserve"><value>运行时</value></data>
+  <data name="Chooser.Architecture" xml:space="preserve"><value>架构</value></data>
+  <data name="Chooser.All" xml:space="preserve"><value>全部</value></data>
+  <data name="Chooser.FiltersActive" xml:space="preserve"><value>筛选已启用</value></data>
+  <data name="Chooser.NoMatches" xml:space="preserve"><value>没有匹配的 WPF 窗口</value></data>
   <data name="Chooser.Refresh" xml:space="preserve"><value>刷新目标窗口（F5）</value></data>
   <data name="Chooser.Inspect" xml:space="preserve"><value>挂载到选中的窗口</value></data>
   <data name="Chooser.PickInspect" xml:space="preserve"><value>拖到窗口上以挂载（Esc 取消）</value></data>
@@ -77,4 +85,11 @@
   <data name="Chooser.InspectFailed" xml:space="preserve"><value>无法挂载到窗口</value></data>
   <data name="Chooser.MagnifyFailed" xml:space="preserve"><value>无法放大查看窗口</value></data>
   <data name="Chooser.AttachFailureDetail" xml:space="preserve"><value>挂载到“{0}”失败。</value></data>
+  <data name="Chooser.Attaching" xml:space="preserve"><value>正在挂载…</value></data>
+  <data name="Chooser.AttachFailureGuidance" xml:space="preserve"><value>请确认目标窗口仍处于打开状态，并确认你有权限检查它。点击「重试」可刷新列表并重新选择目标。</value></data>
+  <data name="Chooser.AttachAccessDenied" xml:space="preserve"><value>Windows 拒绝了访问。请确认 Snoop 可以运行，并确认你有权限检查此目标。点击「重试」可重新选择目标。</value></data>
+  <data name="Chooser.AttachElevationCanceled" xml:space="preserve"><value>Windows 已取消提权请求。点击「重试」可重新选择目标。如有 Windows 提示，请查看后再决定。</value></data>
+  <data name="Chooser.FailureDetails" xml:space="preserve"><value>技术详情</value></data>
+  <data name="Chooser.TargetUnavailable" xml:space="preserve"><value>所选目标进程已经不可用。</value></data>
+  <data name="Chooser.Retry" xml:space="preserve"><value>重试</value></data>
 </root>

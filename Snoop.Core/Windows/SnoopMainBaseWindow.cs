@@ -26,13 +26,15 @@ public abstract class SnoopMainBaseWindow : SnoopBaseWindow
 
     public abstract object? Target { get; set; }
 
-    public Window Inspect(object rootObject)
+    public Window Inspect(object rootObject) => this.Inspect(rootObject, null);
+
+    internal Window Inspect(object rootObject, Window? attachedWindow)
     {
         ExceptionHandler.AddExceptionHandler(this.Dispatcher);
 
         this.RootObject = rootObject;
 
-        this.Load(rootObject);
+        this.Load(rootObject, attachedWindow);
 
         this.ownerWindow = SnoopWindowUtils.FindOwnerWindow(this);
 
@@ -90,4 +92,6 @@ public abstract class SnoopMainBaseWindow : SnoopBaseWindow
     }
 
     protected abstract void Load(object rootToInspect);
+
+    private protected virtual void Load(object rootToInspect, Window? attachedWindow) => this.Load(rootToInspect);
 }

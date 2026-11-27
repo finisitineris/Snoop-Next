@@ -78,16 +78,16 @@ public static class VisualCaptureUtil
     public static RenderTargetBitmap RenderVisualWithHighQuality(Visual visual, int dpiX, int dpiY, PixelFormat? pixelFormat = null, Viewport3D? viewport3D = null)
     {
         visual = GetCaptureVisual(visual) ?? throw new InvalidOperationException("The window has no attached client visual.");
-        var size = GetSize(visual);
+        var localBounds = visual is UIElement element ? new Rect(element.RenderSize) : VisualTreeHelper.GetDescendantBounds(visual);
+        var sourceBounds = Rect.Transform(localBounds, GetVisualBrushTransform(visual));
 
         var drawingVisual = new DrawingVisual();
         using (var drawingContext = drawingVisual.RenderOpen())
         {
-            DrawVisualInTiles(visual, drawingContext, size);
+            DrawVisualInTiles(visual, drawingContext, localBounds.Size, sourceBounds);
         }
 
-        var renderTargetBitmap = RenderVisual(drawingVisual, size, dpiX, dpiY, pixelFormat, viewport3D);
-        return renderTargetBitmap;
+        return RenderVisual(drawingVisual, localBounds.Size, dpiX, dpiY, pixelFormat, viewport3D);
     }
 
     public static RenderTargetBitmap RenderVisual(Visual visual, Size bounds, int dpiX, int dpiY, PixelFormat? pixelFormat = null, Viewport3D? viewport3D = null)
@@ -113,15 +113,12 @@ public static class VisualCaptureUtil
         return renderTargetBitmap;
     }
 
-    private static Size GetSize(Visual visual)
+    internal static Matrix GetVisualBrushTransform(Visual visual)
     {
-        if (visual is UIElement uiElement)
-        {
-            return uiElement.RenderSize;
-        }
-
-        var descendantBounds = VisualTreeHelper.GetDescendantBounds(visual);
-        return new Size(descendantBounds.Width, descendantBounds.Height);
+        var transform = VisualTreeHelper.GetTransform(visual)?.Value ?? Matrix.Identity;
+        var offset = VisualTreeHelper.GetOffset(visual);
+        transform.Translate(offset.X, offset.Y);
+        return transform;
     }
 
     /// <summary>
@@ -130,7 +127,8 @@ public static class VisualCaptureUtil
     /// </summary>
     /// <param name="visual">The visual to be drawn.</param>
     /// <param name="drawingContext">The <see cref="DrawingContext"/> to use.</param>
-    /// <param name="visualSize">The size of <paramref name="visual"/>.</param>
+    /// <param name="size">Output dimensions before applying the requested DPI.</param>
+    /// <param name="sourceBounds">Bounds in the absolute coordinate space of the visual brush.</param>
     /// <param name="tileWidth">The width of one tile.</param>
     /// <param name="tileHeight">The height of one tile.</param>
     /// <remarks>
@@ -138,48 +136,30 @@ public static class VisualCaptureUtil
     ///
     /// A tile size of 32x32 turned out deliver the best quality while not increasing computation time too much.
     /// </remarks>
-    private static void DrawVisualInTiles(Visual visual, DrawingContext drawingContext, Size visualSize, double tileWidth = 32, double tileHeight = 32)
+    private static void DrawVisualInTiles(Visual visual, DrawingContext drawingContext, Size size, Rect sourceBounds, double tileWidth = 32, double tileHeight = 32)
     {
-        var visualWidth = visualSize.Width;
-        var visualHeight = visualSize.Height;
-
-        var verticalTileCount = visualHeight / tileHeight;
-        var horizontalTileCount = visualWidth / tileWidth;
-
-        for (var i = 0; i <= verticalTileCount; i++)
+        if (size.Width <= 0 || size.Height <= 0 || sourceBounds.Width <= 0 || sourceBounds.Height <= 0)
         {
-            for (var j = 0; j <= horizontalTileCount; j++)
+            return;
+        }
+
+        // Absolute brush coordinates include the offset and transform of the visual.
+        // Tile the output at the original layout size, mapping each tile back to that space.
+        var scaleX = sourceBounds.Width / size.Width;
+        var scaleY = sourceBounds.Height / size.Height;
+        for (var y = 0d; y < size.Height; y += tileHeight)
+        {
+            for (var x = 0d; x < size.Width; x += tileWidth)
             {
-                var width = tileWidth;
-                var height = tileHeight;
-
-                // Check if we would exceed the width of the visual and limit it by the remaining
-                if ((j + 1) * tileWidth > visualWidth)
+                var tile = new Rect(x, y, Math.Min(tileWidth, size.Width - x), Math.Min(tileHeight, size.Height - y));
+                var viewbox = new Rect(sourceBounds.X + (x * scaleX), sourceBounds.Y + (y * scaleY), tile.Width * scaleX, tile.Height * scaleY);
+                var brush = new VisualBrush(visual)
                 {
-                    width = visualWidth - (j * tileWidth);
-                }
-
-                // Check if we would exceed the height of the visual and limit it by the remaining
-                if ((i + 1) * tileHeight > visualHeight)
-                {
-                    height = visualHeight - (i * tileHeight);
-                }
-
-                var x = j * tileWidth;
-                var y = i * tileHeight;
-
-                var rectangle = new Rect(x, y, width, height);
-
-                var contentBrush = new VisualBrush(visual)
-                {
-                    Stretch = Stretch.None,
-                    AlignmentX = AlignmentX.Left,
-                    AlignmentY = AlignmentY.Top,
-                    Viewbox = rectangle,
+                    Stretch = Stretch.Fill,
+                    Viewbox = viewbox,
                     ViewboxUnits = BrushMappingMode.Absolute
                 };
-
-                drawingContext.DrawRectangle(contentBrush, null, rectangle);
+                drawingContext.DrawRectangle(brush, null, tile);
             }
         }
     }

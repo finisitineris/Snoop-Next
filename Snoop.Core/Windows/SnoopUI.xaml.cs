@@ -1249,11 +1249,30 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         }
     }
 
-    protected override void Load(object newRoot)
+    protected override void Load(object newRoot) => this.Load(newRoot, null);
+
+    private protected override void Load(object newRoot, Window? attachedWindow)
     {
+        // Capture logical focus before showing the inspector can change keyboard focus.
+        var focused = GetAttachedWindowFocus(attachedWindow);
         this.Refresh();
 
-        this.CurrentSelection = this.RootTreeItem;
+        var windowItem = attachedWindow is null ? null : this.FindItem(attachedWindow);
+        this.CurrentSelection = windowItem?.FindNode(focused) ?? windowItem ?? this.RootTreeItem;
+    }
+
+    private static DependencyObject? GetAttachedWindowFocus(Window? attachedWindow)
+    {
+        if (attachedWindow is null
+            || FocusManager.GetFocusedElement(attachedWindow) is not DependencyObject focused
+            || !focused.CheckAccess())
+        {
+            return null;
+        }
+
+        // Logical focus can retain an element from another source or a detached visual.
+        var source = PresentationSource.FromVisual(attachedWindow);
+        return source is not null && ReferenceEquals(source, PresentationSource.FromDependencyObject(focused)) ? focused : null;
     }
 
     #endregion
