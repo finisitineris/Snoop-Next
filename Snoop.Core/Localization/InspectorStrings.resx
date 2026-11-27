@@ -14,6 +14,8 @@
   <data name="zh-CN.Menu.View" xml:space="preserve"><value>视图(_V)</value></data>
   <data name="en-US.Menu.CloseWindow" xml:space="preserve"><value>Close window</value></data>
   <data name="zh-CN.Menu.CloseWindow" xml:space="preserve"><value>关闭窗口</value></data>
+  <data name="en-US.Menu.DisconnectTarget" xml:space="preserve"><value>Disconnect</value></data>
+  <data name="zh-CN.Menu.DisconnectTarget" xml:space="preserve"><value>断开连接</value></data>
   <data name="en-US.Menu.Settings" xml:space="preserve"><value>_Settings</value></data>
   <data name="zh-CN.Menu.Settings" xml:space="preserve"><value>设置(_S)</value></data>
   <data name="en-US.Menu.MakeSettingsApplicationSpecific" xml:space="preserve"><value>Make settings application specific</value></data>

@@ -38,6 +38,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     public static readonly RoutedCommand IntrospectCommand = new(nameof(IntrospectCommand), typeof(SnoopUI));
     public static readonly RoutedCommand RefreshCommand = new(nameof(RefreshCommand), typeof(SnoopUI));
+    public static readonly RoutedCommand DisconnectCommand = new(nameof(DisconnectCommand), typeof(SnoopUI));
     public static readonly RoutedCommand ExportTreeWithFilterCommand = new(nameof(ExportTreeWithFilterCommand), typeof(SnoopUI));
     public static readonly RoutedCommand HelpCommand = new(nameof(HelpCommand), typeof(SnoopUI));
     public static readonly RoutedCommand InspectCommand = new(nameof(InspectCommand), typeof(SnoopUI));
@@ -77,6 +78,8 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         };
 
         this.CommandBindings.Add(new(ApplicationCommands.Close, (_, _) => this.Close()));
+        this.CommandBindings.Add(new CommandBinding(DisconnectCommand, this.HandleDisconnect,
+            (_, e) => e.CanExecute = this.CanDisconnect));
 
         this.CommandBindings.Add(new CommandBinding(IntrospectCommand, this.HandleIntrospection));
         this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefresh));
@@ -196,7 +199,7 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         set
         {
-            if (this.currentSelection == value)
+            if (this.currentSelection == value || (this.isShuttingDown && value is not null))
             {
                 return;
             }
@@ -205,7 +208,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
             if (this.currentSelection is not null)
             {
                 this.ObservePreviewPathNames(false);
-                this.SaveEditedProperties(this.currentSelection);
+                if (!this.isShuttingDown)
+                {
+                    this.SaveEditedProperties(this.currentSelection);
+                }
+
                 this.currentSelection.IsSelected = false;
             }
 
@@ -217,15 +224,10 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
                 this.ObservePreviewPathNames(true);
             }
 
-            if (this.isShuttingDown)
-            {
-                return;
-            }
-
             this.OnPropertyChanged();
             this.OnPropertyChanged(nameof(this.PreviewSelectionPath));
 
-            if (this.currentSelection is null)
+            if (this.isShuttingDown || this.currentSelection is null)
             {
                 return;
             }
@@ -350,6 +352,11 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
     {
         get
         {
+            if (this.isShuttingDown)
+            {
+                return null;
+            }
+
             var newFocus = Keyboard.FocusedElement;
 
             if (newFocus == this.currentFocus
@@ -520,26 +527,52 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
     protected override void OnClosed(EventArgs e)
     {
+        this.isShuttingDown = true;
+        try
+        {
+            this.EndInspection();
+        }
+        finally
+        {
+            base.OnClosed(e);
+        }
+    }
+
+    private void EndInspection()
+    {
         this.WorkbenchCommandPalette.IsOpen = false;
         this.ClosePreviewPicker(restoreFocus: false);
-        this.isShuttingDown = true;
         this.depthAdjustment?.Abort();
         this.depthAdjustment = null;
-        this.CurrentSelection = null;
-
-        this.TreeService?.Dispose();
-
-        this.eventsView?.Dispose();
-        this.debugListenerControl?.Dispose();
-
-        CacheManager.Instance.DecreaseUsageCount();
-
+        this.filterTimer.Stop();
+        this.Tree.SelectedItemChanged -= this.HandleTreeSelectedItemChanged;
         this.WorkbenchGrid.LayoutUpdated -= this.HandleWorkbenchLayoutUpdated;
         this.PreviewArea.ElementPicked -= this.HandlePreviewElementPicked;
         this.PropertyInspector.PropertyGrid.EditReplayed -= this.HandleEditReplayed;
         InputManager.Current.PreProcessInput -= this.HandlePreProcessInputForTracking;
 
-        this.filterTimer.Stop();
+        this.CurrentSelection = null;
+        this.currentFocus = null;
+        this.previousFocus = null;
+        this.OnPropertyChanged(nameof(this.CurrentFocus));
+        this.OnPropertyChanged(nameof(this.CurrentFocusScope));
+
+        this.PropertyInspector.EndInspection();
+        this.DataContextPropertyGrid.EndInspection();
+
+        this.TreeItems.Clear();
+        this.RootTreeItem?.Dispose();
+        this.RootTreeItem = null;
+        this.SystemResourcesTreeItem?.Dispose();
+        this.SystemResourcesTreeItem = null;
+
+        this.TreeService.RootTreeItem = null;
+        this.TreeService.Dispose();
+
+        this.eventsView?.Dispose();
+        this.debugListenerControl?.Dispose();
+
+        CacheManager.Instance.DecreaseUsageCount();
 
         // persist whether all properties are shown by default
         Settings.Default.ShowDefaults = this.PropertyInspector.ShowDefaults;
@@ -549,8 +582,6 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
 
         // actually do the persisting
         Settings.Default.Save();
-
-        base.OnClosed(e);
     }
 
     #endregion
@@ -570,8 +601,25 @@ public sealed partial class SnoopUI : INotifyPropertyChanged
         this.Refresh();
     }
 
+    private bool CanDisconnect => !this.isShuttingDown && this.RootObject is not null;
+
+    private void HandleDisconnect(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (this.CanDisconnect)
+        {
+            this.Close();
+        }
+
+        e.Handled = true;
+    }
+
     private void Refresh(bool treeTypeChanged = false)
     {
+        if (this.isShuttingDown)
+        {
+            return;
+        }
+
         var saveCursor = Mouse.OverrideCursor;
         Mouse.OverrideCursor = Cursors.Wait;
         try
@@ -1830,6 +1878,21 @@ public static class EditedPropertiesHelper
 
     private static readonly Dictionary<Dispatcher, List<EditedObject>> itemsWithEditedProperties = new();
 
+    internal static void RemoveScope(Dispatcher dispatcher, object scope)
+    {
+        lock (@lock)
+        {
+            if (itemsWithEditedProperties.TryGetValue(dispatcher, out var groups))
+            {
+                groups.RemoveAll(group => group.MatchesScope(scope));
+                if (groups.Count == 0)
+                {
+                    itemsWithEditedProperties.Remove(dispatcher);
+                }
+            }
+        }
+    }
+
     public static void AddEditedProperty(Dispatcher dispatcher, TreeItem propertyOwner, PropertyInformation propInfo)
     {
         UpdateEditedProperty(dispatcher, (object?)propInfo.Filter ?? propertyOwner, propInfo.Target ?? propertyOwner.Target, propertyOwner,
@@ -1946,8 +2009,10 @@ public static class EditedPropertiesHelper
 
         public Dictionary<object, PropertyValueInfo> Properties { get; } = new();
 
+        public bool MatchesScope(object editor)
+            => this.scope.TryGetTarget(out var savedEditor) && ReferenceEquals(savedEditor, editor);
+
         public bool Matches(object editor, object owner)
-            => this.scope.TryGetTarget(out var savedEditor) && ReferenceEquals(savedEditor, editor)
-               && this.target.TryGetTarget(out var savedOwner) && ReferenceEquals(savedOwner, owner);
+            => this.MatchesScope(editor) && this.target.TryGetTarget(out var savedOwner) && ReferenceEquals(savedOwner, owner);
     }
 }

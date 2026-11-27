@@ -223,6 +223,16 @@ public partial class PropertyInspector : INotifyPropertyChanged
             typeof(PropertyInspector),
             new PropertyMetadata(OnRootTargetChanged));
 
+    internal void EndInspection()
+    {
+        this.PropertyFilter.EndEditSession();
+        EditedPropertiesHelper.RemoveScope(this.Dispatcher, this.PropertyFilter);
+        this.SetCurrentValue(RootTargetProperty, null);
+        this.Target = null;
+        this.lastRootTarget = null;
+        this.PropertyGrid.EndInspection();
+    }
+
     private static void OnRootTargetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         var inspector = (PropertyInspector)d;

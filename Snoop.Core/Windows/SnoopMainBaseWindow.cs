@@ -86,6 +86,14 @@ public abstract class SnoopMainBaseWindow : SnoopBaseWindow
 
     protected override void OnClosed(EventArgs e)
     {
+        if (this.ownerWindow is not null)
+        {
+            this.ownerWindow.Closed -= this.OnOwnerWindowOnClosed;
+            this.ownerWindow = null;
+        }
+
+        this.RootObject = null;
+        this.Unscope();
         ExceptionHandler.RemoveExceptionHandler(this.Dispatcher);
 
         base.OnClosed(e);

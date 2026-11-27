@@ -54,6 +54,11 @@ internal static class Program
                 return WorkbenchInitialSelectionSmoke.Run();
             }
 
+            if (args.Length == 1 && args[0] == WorkbenchDisconnectSmoke.Argument)
+            {
+                return WorkbenchDisconnectSmoke.Run();
+            }
+
             if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.ProbeArgument)
             {
                 return LauncherAttachFailureSmoke.RunProbe();
@@ -315,6 +320,7 @@ internal static class Program
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     var surfaceFailures = new List<Exception>();
                     CheckSurface(() => WorkbenchInitialSelectionSmoke.Verify(app));
+                    CheckSurface(WorkbenchDisconnectSmoke.Verify);
                     CheckSurface(InspectorTableSmoke.Verify);
                     CheckSurface(HighlightSettingsFormSmoke.Verify);
                     CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));

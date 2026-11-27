@@ -229,25 +229,40 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
     /// </summary>
     private void ProcessIncrementalPropertyAdd()
     {
-        var numberToAdd = 10;
-
-        if (this.propertiesToAdd is null)
+        var target = this.target;
+        if (target is null)
         {
-            this.propertiesToAdd = PropertyInformation.GetProperties(this.target).GetEnumerator();
-
-            numberToAdd = 0;
+            return;
         }
 
+        var pendingProperties = this.propertiesToAdd;
+        if (pendingProperties is null)
+        {
+            var properties = PropertyInformation.GetProperties(target);
+            if (ReferenceEquals(target, this.target))
+            {
+                this.propertiesToAdd = properties.GetEnumerator();
+                this.processIncrementalCall.Enqueue(this.Dispatcher);
+            }
+
+            return;
+        }
+
+        const int numberToAdd = 10;
         var i = 0;
-        for (; i < numberToAdd && this.propertiesToAdd.MoveNext(); ++i)
+        for (; i < numberToAdd && pendingProperties.MoveNext(); ++i)
         {
             // iterate over the PropertyInfo objects,
             // setting the property grid's filter on each object,
             // and adding those properties to the observable collection of propertiesToSort (this.properties)
-            var property = this.propertiesToAdd.Current;
+            var property = pendingProperties.Current;
             property.Filter = this.Filter;
 
             this.Properties.Add(property);
+            if (!ReferenceEquals(pendingProperties, this.propertiesToAdd))
+            {
+                return;
+            }
         }
 
         if (i == numberToAdd)
@@ -256,7 +271,7 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
         }
         else
         {
-            this.propertiesToAdd?.Dispose();
+            pendingProperties.Dispose();
             this.propertiesToAdd = null;
         }
     }
@@ -362,18 +377,20 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
 
     private void CanClear(object sender, CanExecuteRoutedEventArgs e)
     {
-        if (e.Parameter is PropertyInformation propertyInformation)
-        {
-            e.CanExecute = propertyInformation.CanEdit && propertyInformation.IsLocallySet;
-        }
-
+        e.CanExecute = e.Parameter is PropertyInformation property && this.CanClearRow(property);
         e.Handled = true;
     }
 
     private void HandleClear(object sender, ExecutedRoutedEventArgs e)
     {
-        ((PropertyInformation)e.Parameter).Clear();
+        if (e.Parameter is PropertyInformation property && this.CanClearRow(property))
+        {
+            property.Clear();
+        }
     }
+
+    private bool CanClearRow(PropertyInformation property)
+        => this.Properties.Contains(property) && property.CanEdit && property.IsLocallySet;
 
     private void HandleSort(object sender, ExecutedRoutedEventArgs args)
     {
@@ -497,8 +514,19 @@ public partial class PropertyGrid2 : INotifyPropertyChanged
         this.ClosePropertyOrigin();
         this.Properties.Clear();
 
+        this.propertiesToAdd?.Dispose();
         this.propertiesToAdd = null;
-        this.processIncrementalCall.Enqueue(this.Dispatcher);
+        if (this.target is not null)
+        {
+            this.processIncrementalCall.Enqueue(this.Dispatcher);
+        }
+    }
+
+    internal void EndInspection()
+    {
+        this.SetCurrentValue(TargetProperty, null);
+        this.Selection = null;
+        this.filterTimer.Stop();
     }
 
     private object? target;

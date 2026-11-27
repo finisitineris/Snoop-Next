@@ -13,6 +13,16 @@ internal sealed class PropertyEditHistory
     private readonly List<Entry> future = new();
     private bool replaying;
 
+    internal bool IsClosed { get; private set; }
+
+    internal void EndSession()
+    {
+        this.IsClosed = true;
+        this.past.Clear();
+        this.future.Clear();
+        CommandManager.InvalidateRequerySuggested();
+    }
+
     // Rows can also wrap a setter, converter or an unrelated binding. Only the
     // grid's direct, two-way DP binding describes the property we could restore.
     internal static object? CaptureLiteral(PropertyInformation row, BindingExpressionBase binding)
@@ -52,6 +62,11 @@ internal sealed class PropertyEditHistory
 
     internal void Record(PropertyInformation row, object? before, object? after, bool previouslyEdited)
     {
+        if (this.IsClosed)
+        {
+            return;
+        }
+
         this.future.Clear();
         if (row.Target is DependencyObject target && row.DependencyProperty is { } dp)
         {
@@ -89,11 +104,11 @@ internal sealed class PropertyEditHistory
         }
     }
 
-    internal bool CanReplay(bool undo) => !this.replaying && this.FindNext(undo, out _) is not null;
+    internal bool CanReplay(bool undo) => !this.IsClosed && !this.replaying && this.FindNext(undo, out _) is not null;
 
     internal bool Replay(bool undo, Action<DependencyObject, DependencyProperty, object?, bool> applied)
     {
-        if (this.replaying || this.FindNext(undo, out var target) is not { } entry || target is null)
+        if (this.IsClosed || this.replaying || this.FindNext(undo, out var target) is not { } entry || target is null)
         {
             return false;
         }
@@ -118,7 +133,7 @@ internal sealed class PropertyEditHistory
                 return false;
             }
 
-            if (!Equals(ReadLocalLiteral(target, entry.Property), value))
+            if (this.IsClosed || !Equals(ReadLocalLiteral(target, entry.Property), value))
             {
                 this.Forget(target, entry.Property);
                 return false;
