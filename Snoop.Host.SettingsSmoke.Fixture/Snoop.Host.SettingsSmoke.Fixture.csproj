@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFrameworks>$(MinTargetFramework);net10.0-windows</TargetFrameworks>
+    <UseWPF>true</UseWPF>
+    <IsPackable>false</IsPackable>
+    <OutputPath>$(MSBuildThisFileDirectory)..\bin\$(Configuration)\$(MinTargetFramework)\fixtures\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(MinTargetFramework)'">
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+</Project>

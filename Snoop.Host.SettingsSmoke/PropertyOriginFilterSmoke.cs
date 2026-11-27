@@ -295,9 +295,9 @@ internal static class PropertyOriginFilterSmoke
 
     private static void Drain() => Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.ApplicationIdle, new Action(() => { }));
 
-    internal static void Await(Func<bool> condition, string message)
+    internal static void Await(Func<bool> condition, string message, TimeSpan? timeout = null)
     {
-        var timeout = Stopwatch.StartNew();
+        var elapsed = Stopwatch.StartNew();
         do
         {
             Drain();
@@ -308,7 +308,7 @@ internal static class PropertyOriginFilterSmoke
 
             Thread.Sleep(10);
         }
-        while (timeout.Elapsed < TimeSpan.FromSeconds(5));
+        while (elapsed.Elapsed < (timeout ?? TimeSpan.FromSeconds(5)));
 
         throw new InvalidOperationException(message);
     }
