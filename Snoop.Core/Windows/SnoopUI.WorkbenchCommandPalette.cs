@@ -30,6 +30,7 @@ public sealed partial class SnoopUI
 
     protected override void OnDeactivated(EventArgs e)
     {
+        this.ClosePreviewPicker(restoreFocus: false);
         this.WorkbenchCommandPalette.IsOpen = false;
         base.OnDeactivated(e);
     }

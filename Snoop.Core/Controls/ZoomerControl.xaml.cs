@@ -183,6 +183,48 @@ public partial class ZoomerControl
             && (ReferenceEquals(scene, selected) || ReferenceEquals(client, selected) || selected.IsDescendantOf(client));
     }
 
+    internal UIElement? GetKeyboardPickScene()
+    {
+        return this.Target is UIElement selected
+            && this.TryGetPreviewContext(selected, out var scene, out var client)
+            && this.contextImage?.Fill is VisualBrush brush && ReferenceEquals(brush.Visual, client)
+            ? scene : null;
+    }
+
+    internal bool CanPickWithKeyboard(UIElement element, UIElement scene)
+    {
+        if (element.Dispatcher != this.Dispatcher || this.contextImage?.Fill is not VisualBrush { Visual: UIElement client } brush
+            || !this.contextImage.IsArrangeValid
+            || (!ReferenceEquals(element, scene) && !element.IsDescendantOf(client) && !ReferenceEquals(element, client)))
+        {
+            return false;
+        }
+
+        var visual = ReferenceEquals(element, scene) ? client : element;
+        for (Visual? ancestor = visual; ancestor is not null; ancestor = VisualTreeHelper.GetParent(ancestor) as Visual)
+        {
+            if (this.FilterPreviewHitTest(ancestor) == HitTestFilterBehavior.ContinueSkipSelfAndChildren)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(ancestor, client))
+            {
+                break;
+            }
+        }
+
+        return this.TryProjectOutline(visual, client, this.contextImage, brush.Viewbox, GetContextTransform(client), out _, out _);
+    }
+
+    private UIElement? keyboardPickCandidate;
+
+    internal void ShowKeyboardPickCandidate(UIElement? candidate)
+    {
+        this.keyboardPickCandidate = candidate is Window ? VisualCaptureUtil.GetCaptureVisual(candidate) as UIElement : candidate;
+        this.RefreshPreview();
+    }
+
     private bool CanPreview(Visual visual)
     {
         return visual.Dispatcher == this.Dispatcher
@@ -229,32 +271,42 @@ public partial class ZoomerControl
             image.Height = crop.Height;
         }
 
-        if (!selected.IsVisible || !image.IsArrangeValid)
+        var outlined = this.keyboardPickCandidate is { IsVisible: true } candidate
+            && (ReferenceEquals(candidate, context) || candidate.IsDescendantOf(context))
+            ? candidate : selected;
+        if (outlined.IsVisible && image.IsArrangeValid
+            && this.TryProjectOutline(outlined, context, image, crop, toBrush, out var outline, out var clip))
+        {
+            this.SetSelectionOutline(outline, clip);
+        }
+        else
         {
             this.SetSelectionOutline(Rect.Empty);
-            return;
         }
+    }
 
-        var bounds = GetSelectionBounds(selected, context, toBrush, out var visibleBounds);
+    private bool TryProjectOutline(UIElement element, UIElement context, Rectangle image, Rect crop, Matrix toBrush, out Rect outline, out Rect clip)
+    {
+        outline = Rect.Empty;
+        clip = Rect.Empty;
+        var bounds = GetSelectionBounds(element, context, toBrush, out var visibleBounds);
         visibleBounds.Intersect(crop);
         if (!HasArea(visibleBounds))
         {
-            this.SetSelectionOutline(Rect.Empty);
-            return;
+            return false;
         }
 
         var toViewport = image.TransformToAncestor(this.DocumentRoot);
-        var outline = Project(bounds);
-        var clip = Project(visibleBounds);
+        outline = Project(bounds);
+        clip = Project(visibleBounds);
         clip.Intersect(new Rect(this.DocumentRoot.RenderSize));
         if (!HasArea(outline) || !HasArea(clip))
         {
-            this.SetSelectionOutline(Rect.Empty);
-            return;
+            return false;
         }
 
         clip.Offset(-outline.X, -outline.Y);
-        this.SetSelectionOutline(outline, clip);
+        return true;
 
         Rect Project(Rect rect)
         {

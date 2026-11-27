@@ -200,8 +200,8 @@
   <data name="zh-CN.Tab.Preview" xml:space="preserve"><value>预览</value></data>
   <data name="en-US.Tooltip.PreviewTitle" xml:space="preserve"><value>Preview</value></data>
   <data name="zh-CN.Tooltip.PreviewTitle" xml:space="preserve"><value>预览</value></data>
-  <data name="en-US.Tooltip.PreviewDescription" xml:space="preserve"><value>Click the live preview to select an element. Drag to pan and use the mouse wheel to zoom.</value></data>
-  <data name="zh-CN.Tooltip.PreviewDescription" xml:space="preserve"><value>单击实时预览选中元素，拖动可平移，滚轮可缩放。</value></data>
+  <data name="en-US.Tooltip.PreviewDescription" xml:space="preserve"><value>Click the live preview to select an element, or press F6 to pick with the keyboard. Drag to pan and use the mouse wheel to zoom.</value></data>
+  <data name="zh-CN.Tooltip.PreviewDescription" xml:space="preserve"><value>单击实时预览或按 F6 用键盘拾取元素。拖动可平移，滚轮可缩放。</value></data>
   <data name="en-US.Status.TargetProcess" xml:space="preserve"><value>Target:</value></data>
   <data name="zh-CN.Status.TargetProcess" xml:space="preserve"><value>目标：</value></data>
   <data name="en-US.Status.NoTarget" xml:space="preserve"><value>No target</value></data>
@@ -666,6 +666,10 @@
   <data name="zh-CN.Highlight.SelectedElement" xml:space="preserve"><value>选中的元素</value></data>
   <data name="en-US.Highlight.Reset" xml:space="preserve"><value>Restore defaults</value></data>
   <data name="zh-CN.Highlight.Reset" xml:space="preserve"><value>恢复默认值</value></data>
+  <data name="en-US.Previewer.KeyboardPickTitle" xml:space="preserve"><value>Pick (F6)</value></data>
+  <data name="zh-CN.Previewer.KeyboardPickTitle" xml:space="preserve"><value>拾取 (F6)</value></data>
+  <data name="en-US.Previewer.KeyboardPickHelp" xml:space="preserve"><value>↑/↓ to browse, Enter to select, Esc to cancel.</value></data>
+  <data name="zh-CN.Previewer.KeyboardPickHelp" xml:space="preserve"><value>↑/↓ 浏览，Enter 选中，Esc 取消。</value></data>
   <data name="en-US.Previewer.MagnifyTip" xml:space="preserve"><value>Bring up the Magnify window on the currently selected object.</value></data>
   <data name="zh-CN.Previewer.MagnifyTip" xml:space="preserve"><value>在放大窗口中查看当前所选对象。</value></data>
   <data name="en-US.Previewer.ToggleTip" xml:space="preserve"><value>Enable/disable preview area (i.e. the display of the currently selected object).</value></data>
