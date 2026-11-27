@@ -1,9 +1,6 @@
 namespace Snoop.Host.SettingsSmoke;
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,10 +9,8 @@ using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Threading;
 using Snoop.Core;
 using Snoop.Localization;
 using Snoop.Next.Localization;
@@ -88,7 +83,7 @@ internal static class LauncherAppearanceSmoke
                 }
             }
 
-            VerifyTargetRow(chooser, list);
+            LauncherSearchSmoke.Verify(chooser, list);
             var reopened = new AppChooser { Width = 320, Height = 86 };
             try
             {
@@ -157,52 +152,6 @@ internal static class LauncherAppearanceSmoke
         }
     }
 
-    private static void VerifyTargetRow(AppChooser chooser, ComboBox list)
-    {
-        // Realize the real picker in an ordinary window, so the chooser's global hook stays inactive.
-        var parent = (Panel)list.Parent;
-        var index = parent.Children.IndexOf(list);
-        var rows = (IList<WindowInfo>)chooser.WindowInfos.SourceCollection;
-        var host = new Window { Title = "Snoop target picker fixture", DataContext = chooser, Width = 420, Height = 100, ShowInTaskbar = false };
-        try
-        {
-            parent.Children.RemoveAt(index);
-            host.Content = list;
-            host.Show();
-            using var process = Process.GetCurrentProcess();
-            var row = WindowInfo.GetWindowInfo(new WindowInteropHelper(host).Handle);
-            rows.Add(row); // A populated list opens without enumerating the desktop.
-            list.SelectedIndex = -1;
-
-            var picker = UIElementAutomationPeer.CreatePeerForElement(list);
-            var popup = (IExpandCollapseProvider)picker.GetPattern(PatternInterface.ExpandCollapse);
-            popup.Expand();
-            list.Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
-            var item = picker.GetChildren().Single(peer => peer.GetAutomationControlType() == AutomationControlType.ListItem);
-            var pid = process.Id.ToString(CultureInfo.InvariantCulture);
-            if (item.GetAutomationId() != "TargetProcess." + pid || item.GetName() != $"{host.Title} - {process.ProcessName} [{pid}]"
-                || item.GetPattern(PatternInterface.SelectionItem) is not ISelectionItemProvider selection)
-            {
-                throw new InvalidOperationException($"Target row must identify the window and process and allow selection. ID '{item.GetAutomationId()}', name '{item.GetName()}'.");
-            }
-
-            selection.Select();
-            popup.Collapse();
-            if (!selection.IsSelected || !ReferenceEquals(list.SelectedItem, row) || !ReferenceEquals(chooser.WindowInfos.CurrentItem, row))
-            {
-                throw new InvalidOperationException("UI Automation selection must update the launcher's current target.");
-            }
-        }
-        finally
-        {
-            list.IsDropDownOpen = false;
-            rows.Clear();
-            host.Content = null;
-            host.Close();
-            parent.Children.Insert(index, list);
-        }
-    }
-
     private static void VerifyCompactLayout(AppChooser chooser, string? capture)
     {
         var applyWorkArea = typeof(AppChooser).GetMethod("ApplyWorkArea", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -229,11 +178,13 @@ internal static class LauncherAppearanceSmoke
             var element = (FrameworkElement)chooser.FindName(name);
             return element.TransformToAncestor(content).TransformBounds(new Rect(element.RenderSize));
         }).ToArray();
+        // Edges that share a physical pixel boundary can differ by floating-point noise at fractional DPI.
+        const double overlapTolerance = 0.000001;
         for (var i = 0; i < boxes.Length; i++)
         {
             var box = boxes[i];
             if (box.Width < (i == 0 ? 145 : 28) || box.Height < 28 || !bounds.Contains(box)
-                || boxes.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > 0, Height: > 0 }))
+                || boxes.Take(i).Any(other => Rect.Intersect(box, other) is { Width: > overlapTolerance, Height: > overlapTolerance }))
             {
                 throw new InvalidOperationException($"The compact launcher must expose its selector and every action without overlap. {names[i]} at {box}.");
             }
@@ -246,10 +197,11 @@ internal static class LauncherAppearanceSmoke
 
         applyWorkArea.Invoke(chooser, new object[] { new Rect(0, 0, 1280, 720), new Point(20, 20) });
         WorkbenchLayoutSmoke.Arrange(content, new Rect(0, 0, chooser.Width, chooser.Height));
-        if (chooser.Width != 740 || chooser.MinWidth != 560 || chooser.Height != 48 || Grid.GetRow(actions) != 0
+        var onePixel = 1 / VisualTreeHelper.GetDpi(content).DpiScaleY;
+        if (chooser.Width != 740 || chooser.MinWidth != 560 || Math.Abs(chooser.Height - 48) > onePixel + overlapTolerance || Grid.GetRow(actions) != 0
             || ((TextBlock)chooser.FindName("BrandLabel")).Visibility != Visibility.Visible)
         {
-            throw new InvalidOperationException("A wider work area must restore the launcher's single-row geometry.");
+            throw new InvalidOperationException($"A wider work area must restore the launcher's single-row geometry. Got {chooser.Width} × {chooser.Height} DIP.");
         }
     }
 

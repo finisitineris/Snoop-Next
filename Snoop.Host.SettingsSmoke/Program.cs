@@ -20,8 +20,18 @@ using Snoop.Windows;
 internal static class Program
 {
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
+        if (args.Length == 1 && args[0] == LauncherSearchSmoke.FixtureArgument)
+        {
+            return LauncherSearchSmoke.RunFixture();
+        }
+
+        if (LauncherAttachFailureSmoke.IsTestHelper())
+        {
+            return LauncherAttachFailureSmoke.RunHelper(args);
+        }
+
         const string settingsRootVariable = Snoop.Core.SettingsHelper.SNOOP_SETTINGS_PATH_ENV_VAR;
         var path = Path.Combine(Path.GetTempPath(), "SnoopHostSettings-" + Guid.NewGuid().ToString("N"));
         var file = Path.Combine(path, "SnoopSettings.xml");
@@ -34,6 +44,45 @@ internal static class Program
             File.WriteAllText(file, "<Settings />");
             File.WriteAllText(inspectorFile, "<Settings />");
             Environment.SetEnvironmentVariable(settingsRootVariable, path);
+            if (args.Length == 1 && args[0] == "--launcher-search-smoke")
+            {
+                return RunLauncherSearchSmoke();
+            }
+
+            if (args.Length == 1 && args[0] == WorkbenchInitialSelectionSmoke.Argument)
+            {
+                return WorkbenchInitialSelectionSmoke.Run();
+            }
+
+            if (args.Length == 1 && args[0] == WorkbenchDisconnectSmoke.Argument)
+            {
+                return WorkbenchDisconnectSmoke.Run();
+            }
+
+            if (args.Length == 2 && args[0] == WorkbenchReturnToPickerSmoke.FixtureArgument)
+            {
+                return WorkbenchReturnToPickerSmoke.RunFixture(args[1]);
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.ProbeArgument)
+            {
+                return LauncherAttachFailureSmoke.RunProbe();
+            }
+
+            if (args.Length == 1 && args[0] == LauncherAttachFailureSmoke.SmokeArgument)
+            {
+                try
+                {
+                    LauncherAttachFailureSmoke.Verify(path);
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                    return 1;
+                }
+            }
+
             return RunSmoke(file, inspectorFile);
         }
         finally
@@ -53,6 +102,29 @@ internal static class Program
         }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static int RunLauncherSearchSmoke()
+    {
+        var app = new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
+        var chooser = new AppChooser();
+        try
+        {
+            chooser.ApplyTemplate();
+            LauncherSearchSmoke.Verify(chooser, (System.Windows.Controls.ComboBox)chooser.FindName("windowsComboBox"));
+            return 0;
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine(ex);
+            return 1;
+        }
+        finally
+        {
+            chooser.Close();
+            app.Shutdown();
+        }
+    }
+
     // Keep the JIT from initializing the settings singletons before Main sets the temporary root.
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static int RunSmoke(string file, string inspectorFile)
@@ -65,6 +137,7 @@ internal static class Program
                 "inspector settings did not use the temporary settings root");
 
             AppDomainLanguageSmoke.Verify(Path.GetDirectoryName(file)!);
+            LauncherAttachFailureSmoke.Verify(Path.GetDirectoryName(file)!);
 
             var settings = new Settings { SettingsFile = file };
             Require(settings.LanguageTag == "zh-CN", "default language must be zh-CN");
@@ -125,6 +198,8 @@ internal static class Program
                     ?? throw new InvalidOperationException("ProcessInfo did not create transient settings data");
                 Require(hostPayload.LanguageTag == "en-US",
                     "ProcessInfo did not copy the committed host LanguageTag into the injector payload");
+                Require(hostPayload.LauncherReturnToken == Guid.Empty && hostPayload.LauncherProcessId == 0,
+                    "The common payload must leave picker return unset for attachment without a chooser.");
 
                 // The CLI does not run App.OnStartup to initialize the live manager.
                 LocalizationManager.Default.SetLanguage("zh-CN");
@@ -172,14 +247,14 @@ internal static class Program
                     Require(loadedTransient.LanguageTag == "en-US", "transient language preference did not round-trip");
                 }
 
-                // Old host XML has no LanguageTag; the new injector side must
-                // safely default to system rather than fail deserialization.
-                var legacyTransientXml = transientXml.Replace("<LanguageTag>en-US</LanguageTag>", string.Empty);
+                const string legacyTransientXml = "<TransientSettingsData><TargetWindowHandle>0</TargetWindowHandle></TransientSettingsData>";
                 using (var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(legacyTransientXml)))
                 {
                     var legacyTransient = transientSerializer.Deserialize(stream) as TransientSettingsData
                         ?? throw new InvalidOperationException("Legacy transient settings could not be deserialized");
                     Require(legacyTransient.LanguageTag == "system", "legacy transient XML did not default to system");
+                    Require(legacyTransient.LauncherReturnToken == Guid.Empty && legacyTransient.LauncherProcessId == 0,
+                        "Legacy transient XML must not select a launcher return endpoint.");
                 }
             }
             finally
@@ -251,6 +326,8 @@ internal static class Program
                     var app = System.Windows.Application.Current
                         ?? new System.Windows.Application { ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown };
                     var surfaceFailures = new List<Exception>();
+                    CheckSurface(() => WorkbenchInitialSelectionSmoke.Verify(app));
+                    CheckSurface(WorkbenchDisconnectSmoke.Verify);
                     CheckSurface(InspectorTableSmoke.Verify);
                     CheckSurface(HighlightSettingsFormSmoke.Verify);
                     CheckSurface(() => LauncherSettingsFormSmoke.Verify(file));
@@ -288,7 +365,7 @@ internal static class Program
                             "system language resolution changed the inspected thread CurrentUICulture");
 
                         InspectorFilterSmoke.Verify(inspector);
-                        LauncherAppearanceSmoke.Verify(inspector);
+                        CheckSurface(() => LauncherAppearanceSmoke.Verify(inspector));
                         InspectorDispatcherSmoke.Verify(app, inspector, fileMenu);
                         InspectorThemeResourceSmoke.Verify(inspector);
                         InspectorDensitySmoke.Verify(app, inspector, Path.GetDirectoryName(file)!);
@@ -307,6 +384,7 @@ internal static class Program
                         WorkbenchDiagnosticLocationSmoke.Verify();
                         WorkbenchBindingDiagnosticsSmoke.Verify();
                         InspectorAuxiliaryViewSmoke.Verify();
+                        CheckSurface(ScreenshotPreviewSmoke.Verify);
                         CheckSurface(InspectorPropertyAndDebugSmoke.Verify);
                         InspectorRemainingViewSmoke.Verify();
                         TargetWindowRenderingSmoke.Verify(app);

@@ -263,9 +263,16 @@ public class SnoopManager
         var targetTitle = TryGetWindowOrMainWindowTitle(targetWindowOnSameDispatcher);
         snoopWindow.Title = string.IsNullOrEmpty(targetTitle) ? "Snoop Next" : $"{targetTitle} — Snoop Next";
 
-        snoopWindow.Inspect(dispatcherRootObjectPair.RootObject);
+        var workbench = snoopWindow as SnoopUI;
+        if (workbench is not null)
+        {
+            workbench.LauncherReturnToken = settingsData.LauncherReturnToken;
+            workbench.LauncherProcessId = settingsData.LauncherProcessId;
+        }
 
-        if (targetWindowOnSameDispatcher is not null)
+        snoopWindow.Inspect(dispatcherRootObjectPair.RootObject, workbench is not null ? targetWindowOnSameDispatcher : null);
+
+        if (workbench is null && targetWindowOnSameDispatcher is not null)
         {
             snoopWindow.Target = targetWindowOnSameDispatcher;
         }

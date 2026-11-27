@@ -10,25 +10,29 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Threading;
 using Microsoft.Win32;
 using Snoop.Core;
+using Snoop.Data;
 using Snoop.Infrastructure;
 using Snoop.Next.Localization;
 using Snoop.Views;
-using Snoop.Windows;
 
 public partial class AppChooser
 {
     public static readonly RoutedCommand InspectCommand = new(nameof(InspectCommand), typeof(AppChooser));
     public static readonly RoutedCommand RefreshCommand = new(nameof(RefreshCommand), typeof(AppChooser));
     public static readonly RoutedCommand MagnifyCommand = new(nameof(MagnifyCommand), typeof(AppChooser));
+    public static readonly RoutedCommand ClearTargetFiltersCommand = new(nameof(ClearTargetFiltersCommand), typeof(AppChooser));
     public static readonly RoutedCommand SettingsCommand = new(nameof(SettingsCommand), typeof(AppChooser));
     public static readonly RoutedCommand MinimizeCommand = new(nameof(MinimizeCommand), typeof(AppChooser));
 
@@ -37,9 +41,43 @@ public partial class AppChooser
 
     public static readonly DependencyProperty SortColumnProperty = SortColumnPropertyKey.DependencyProperty;
 
+    public static readonly DependencyProperty TargetSearchProperty = DependencyProperty.Register(
+        nameof(TargetSearch), typeof(string), typeof(AppChooser),
+        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    public static readonly DependencyProperty TargetRuntimeFilterProperty = DependencyProperty.Register(
+        nameof(TargetRuntimeFilter), typeof(TargetRuntime), typeof(AppChooser),
+        new PropertyMetadata(TargetRuntime.None, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    public static readonly DependencyProperty TargetArchitectureFilterProperty = DependencyProperty.Register(
+        nameof(TargetArchitectureFilter), typeof(string), typeof(AppChooser),
+        new PropertyMetadata(string.Empty, (d, _) => ((AppChooser)d).RefreshTargetFilter()));
+
+    private static readonly DependencyPropertyKey TargetFilterTextPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(TargetFilterText), typeof(string), typeof(AppChooser), new PropertyMetadata(string.Empty));
+
+    public static readonly DependencyProperty TargetFilterTextProperty = TargetFilterTextPropertyKey.DependencyProperty;
+
+    private static readonly DependencyPropertyKey HasTargetFilterPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(HasTargetFilter), typeof(bool), typeof(AppChooser), new PropertyMetadata(false));
+
+    public static readonly DependencyProperty HasTargetFilterProperty = HasTargetFilterPropertyKey.DependencyProperty;
+
+    private static readonly DependencyPropertyKey IsAttachingPropertyKey = DependencyProperty.RegisterReadOnly(
+        nameof(IsAttaching), typeof(bool), typeof(AppChooser), new PropertyMetadata(false));
+
+    public static readonly DependencyProperty IsAttachingProperty = IsAttachingPropertyKey.DependencyProperty;
+
     private readonly ObservableCollection<WindowInfo> windowInfos = new();
     private readonly double singleRowMinimumWidth;
     private double preferredWidth;
+    private bool? selectSingleTargetAfterRefresh;
+    private bool closeAfterAttach;
+    private bool isClosed;
+    private bool returnToPickerPending;
+    private Guid launcherReturnToken;
+    private EventWaitHandle? launcherReturnEvent;
+    private RegisteredWaitHandle? launcherReturnWait;
 
     private LowLevelKeyboardHook? keyboardHook;
 
@@ -60,10 +98,13 @@ public partial class AppChooser
 
         ThemeManager.Current.ApplyTheme(ThemeMode.Auto, this);
 
-        this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefreshCommand));
+        this.CommandBindings.Add(new CommandBinding(RefreshCommand, this.HandleRefreshCommand, this.HandleCanUseLauncherCommand));
         this.CommandBindings.Add(new CommandBinding(InspectCommand, this.HandleInspectCommand, this.HandleCanInspectOrMagnifyCommand));
         this.CommandBindings.Add(new CommandBinding(MagnifyCommand, this.HandleMagnifyCommand, this.HandleCanInspectOrMagnifyCommand));
-        this.CommandBindings.Add(new CommandBinding(SettingsCommand, this.HandleSettingsCommand));
+        this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Find, this.HandleFindTarget, this.HandleCanUseLauncherCommand));
+        this.CommandBindings.Add(new CommandBinding(ClearTargetFiltersCommand, (_, _) => this.ClearTargetFilters(),
+                                                   (_, e) => e.CanExecute = !this.IsAttaching && (this.HasTargetFilter || !string.IsNullOrEmpty(this.TargetSearch))));
+        this.CommandBindings.Add(new CommandBinding(SettingsCommand, this.HandleSettingsCommand, this.HandleCanUseLauncherCommand));
         this.CommandBindings.Add(new CommandBinding(MinimizeCommand, this.HandleMinimizeCommand));
         this.CommandBindings.Add(new CommandBinding(ApplicationCommands.Close, this.HandleCloseCommand));
 
@@ -76,6 +117,110 @@ public partial class AppChooser
     public ICollectionView WindowInfos { get; }
 
     public int SortColumn => (int)this.GetValue(SortColumnProperty);
+
+    public string TargetSearch
+    {
+        get => (string)this.GetValue(TargetSearchProperty);
+        set => this.SetValue(TargetSearchProperty, value);
+    }
+
+    public TargetRuntime TargetRuntimeFilter
+    {
+        get => (TargetRuntime)this.GetValue(TargetRuntimeFilterProperty);
+        set => this.SetValue(TargetRuntimeFilterProperty, value);
+    }
+
+    public string TargetArchitectureFilter
+    {
+        get => (string)this.GetValue(TargetArchitectureFilterProperty);
+        set => this.SetValue(TargetArchitectureFilterProperty, value);
+    }
+
+    public string TargetFilterText => (string)this.GetValue(TargetFilterTextProperty);
+
+    public bool HasTargetFilter => (bool)this.GetValue(HasTargetFilterProperty);
+
+    public bool IsAttaching => (bool)this.GetValue(IsAttachingProperty);
+
+    private bool CanStartAttach => !this.IsAttaching && !this.isClosed && this.IsEnabled && !ComponentDispatcher.IsThreadModal;
+
+    private void ClearTargetFilters()
+    {
+        if (this.IsAttaching)
+        {
+            return;
+        }
+
+        this.TargetSearch = string.Empty;
+        this.TargetRuntimeFilter = TargetRuntime.None;
+        this.TargetArchitectureFilter = string.Empty;
+    }
+
+    private void RefreshTargetFilter()
+    {
+        var term = this.TargetSearch?.Trim() ?? string.Empty;
+        var runtime = this.TargetRuntimeFilter;
+        var architecture = this.TargetArchitectureFilter;
+        var selected = this.WindowInfos.CurrentItem;
+        var hasFilter = term.Length > 0 || runtime != TargetRuntime.None || !string.IsNullOrEmpty(architecture);
+        this.SetValue(TargetFilterTextPropertyKey, term);
+        this.SetValue(HasTargetFilterPropertyKey, hasFilter);
+
+        var hasPid = int.TryParse(term, NumberStyles.None, CultureInfo.InvariantCulture, out var pid);
+        this.WindowInfos.Filter = !hasFilter ? null : item =>
+        {
+            var window = (WindowInfo)item;
+            try
+            {
+                var matchesText = term.Length == 0
+                    || (hasPid && window.OwningProcessId == pid)
+                    || window.ProcessName?.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0
+                    || window.WindowTitle.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
+                return matchesText
+                    && (runtime == TargetRuntime.None || window.OwningProcessInfo?.TargetRuntimes.HasFlag(runtime) == true)
+                    && (string.IsNullOrEmpty(architecture) || window.OwningProcessInfo?.TargetArchitecture == architecture);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                // A window may have disappeared since the last refresh.
+                return false;
+            }
+        };
+
+        // Refreshing a WPF view can select the first remaining row on its own.
+        // Keep the user's selection only while the same target is still visible.
+        if (selected is null || !this.WindowInfos.Contains(selected))
+        {
+            this.WindowInfos.MoveCurrentToPosition(-1);
+        }
+        else
+        {
+            this.WindowInfos.MoveCurrentTo(selected);
+        }
+
+        CommandManager.InvalidateRequerySuggested();
+    }
+
+    private void HandleFindTarget(object sender, ExecutedRoutedEventArgs e)
+    {
+        if (this.IsAttaching)
+        {
+            return;
+        }
+
+        this.windowsComboBox.IsDropDownOpen = true;
+        // ComboBox queues focus navigation when its popup opens. Focus the search
+        // field after that navigation, once the popup has its own presentation source.
+        this.Dispatcher.InvokeAsync(() =>
+        {
+            if (this.windowsComboBox.IsDropDownOpen
+                && this.windowsComboBox.Template.FindName("TargetSearchBox", this.windowsComboBox) is TextBox search)
+            {
+                search.Focus();
+                search.SelectAll();
+            }
+        }, DispatcherPriority.Input);
+    }
 
     private void HandleChooserLoaded(object sender, RoutedEventArgs e)
     {
@@ -140,8 +285,22 @@ public partial class AppChooser
         this.Top = Math.Max(work.Top, Math.Min(origin.Y, work.Bottom - this.Height));
     }
 
-    public void Refresh()
+    public void Refresh() => this.Refresh(selectSingleTarget: true);
+
+    private void Refresh(bool selectSingleTarget)
     {
+        if (this.IsAttaching)
+        {
+            return;
+        }
+
+        if (this.selectSingleTargetAfterRefresh is { } pendingSelection)
+        {
+            this.selectSingleTargetAfterRefresh = pendingSelection && selectSingleTarget;
+            return;
+        }
+
+        this.selectSingleTargetAfterRefresh = selectSingleTarget;
         this.windowInfos.Clear();
 
         this.RunInDispatcherAsync(() =>
@@ -188,13 +347,18 @@ public partial class AppChooser
                     this.windowInfos.Add(windowInfo);
                 }
 
-                if (this.windowInfos.Count is 1)
+                if (this.selectSingleTargetAfterRefresh == false)
+                {
+                    this.WindowInfos.MoveCurrentToPosition(-1);
+                }
+                else if (!this.HasTargetFilter && this.windowInfos.Count is 1)
                 {
                     this.WindowInfos.MoveCurrentTo(this.windowInfos[0]);
                 }
             }
             finally
             {
+                this.selectSingleTargetAfterRefresh = null;
                 Mouse.OverrideCursor = null;
             }
         }, DispatcherPriority.Loaded);
@@ -218,35 +382,37 @@ public partial class AppChooser
 
     private void KeyboardHook_LowLevelKeyUp(object sender, KeyEventArgs e)
     {
-        if (Settings.Default?.GlobalHotKey?.Matches(null, e) == true
-            && !this.OwnedWindows.OfType<SettingsWindow>().Any(window => window.IsActive))
+        if (this.CanStartAttach && Settings.Default?.GlobalHotKey?.Matches(null, e) == true)
         {
-            var thread = new Thread(AttachToForegroundWindow)
-            {
-                Name = "Snoop_AttachToForegroundWindow_Thread"
-            };
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
+            var foregroundWindow = NativeMethods.GetForegroundWindow();
+            // Defer discovery and attachment until the low-level hook has returned.
+            this.Dispatcher.InvokeAsync(() => this.AttachToForegroundWindow(foregroundWindow));
         }
     }
 
-    private static void AttachToForegroundWindow()
+    private void AttachToForegroundWindow(IntPtr foregroundWindow)
     {
-        var foregroundWindow = NativeMethods.GetForegroundWindow();
-
-        if (foregroundWindow != IntPtr.Zero)
+        if (this.CanStartAttach && foregroundWindow != IntPtr.Zero)
         {
             var windowInfo = WindowInfo.GetWindowInfo(foregroundWindow);
 
             if (windowInfo.IsValidProcess)
             {
-                WindowFinder.AttachSnoop(windowInfo);
+                this.AttachWindow(windowInfo, SnoopStartTarget.SnoopUI);
             }
         }
     }
 
     protected override void OnClosing(CancelEventArgs e)
     {
+        if (this.IsAttaching)
+        {
+            this.closeAfterAttach = true;
+            base.OnClosing(e);
+            e.Cancel = true;
+            return;
+        }
+
         // persist the window placement details to the user settings.
         SnoopWindowUtils.SaveWindowPlacement(this, wp => Settings.Default.AppChooserWindowPlacement = wp);
 
@@ -255,6 +421,9 @@ public partial class AppChooser
 
     protected override void OnClosed(EventArgs e)
     {
+        this.isClosed = true;
+        this.launcherReturnWait?.Unregister(null);
+        this.launcherReturnEvent?.Dispose();
         SystemEvents.UserPreferenceChanged -= this.HandleSystemPreferenceChanged;
         this.keyboardHook?.Stop();
 
@@ -263,52 +432,160 @@ public partial class AppChooser
 
     private void HandleCanInspectOrMagnifyCommand(object sender, CanExecuteRoutedEventArgs e)
     {
-        if (this.WindowInfos.CurrentItem is not null)
-        {
-            e.CanExecute = true;
-        }
+        e.CanExecute = !this.IsAttaching && this.WindowInfos.CurrentItem is not null;
+        e.Handled = true;
+    }
 
+    private void HandleCanUseLauncherCommand(object sender, CanExecuteRoutedEventArgs e)
+    {
+        e.CanExecute = !this.IsAttaching;
         e.Handled = true;
     }
 
     private void HandleInspectCommand(object sender, ExecutedRoutedEventArgs e)
+        => this.AttachToSelection(SnoopStartTarget.SnoopUI);
+
+    private void HandleMagnifyCommand(object sender, ExecutedRoutedEventArgs e)
+        => this.AttachToSelection(SnoopStartTarget.Zoomer);
+
+    private void AttachToSelection(SnoopStartTarget startTarget)
     {
-        var window = (WindowInfo?)this.WindowInfos.CurrentItem;
-
-        if (window is null)
+        if (this.WindowInfos.CurrentItem is WindowInfo window)
         {
-            return;
-        }
-
-        var result = window.OwningProcessInfo?.Snoop(window.HWnd);
-
-        if (result?.Success == false)
-        {
-            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.InspectFailed"],
-                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
+            this.AttachWindow(window, startTarget);
         }
     }
 
-    private void HandleMagnifyCommand(object sender, ExecutedRoutedEventArgs e)
+    internal async void AttachWindow(WindowInfo window, SnoopStartTarget startTarget)
     {
-        var window = (WindowInfo?)this.WindowInfos.CurrentItem;
-
-        if (window is null)
+        if (!this.CanStartAttach)
         {
             return;
         }
 
-        var result = window.OwningProcessInfo?.Magnify(window.HWnd);
+        var target = window.Description;
+        this.windowsComboBox.IsDropDownOpen = false;
+        this.SetValue(IsAttachingPropertyKey, true);
+        CommandManager.InvalidateRequerySuggested();
 
-        if (result?.Success == false)
+        var returnToken = startTarget == SnoopStartTarget.SnoopUI ? this.GetLauncherReturnToken() : Guid.Empty;
+        var result = await window.AttachAsync(startTarget, returnToken).ConfigureAwait(false);
+        _ = this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => this.CompleteAttach(startTarget, target, result)));
+    }
+
+    private Guid GetLauncherReturnToken()
+    {
+        if (this.launcherReturnEvent is null)
         {
-            ErrorDialog.ShowDialog(result.AttachException, LocalizationManager.Default["Chooser.MagnifyFailed"],
-                                   LocalizationManager.Default.Format("Chooser.AttachFailureDetail", window.Description), true);
+            var token = Guid.NewGuid();
+            try
+            {
+                this.launcherReturnEvent = new EventWaitHandle(false, EventResetMode.AutoReset, TransientSettingsData.GetLauncherReturnEventName(token));
+                this.launcherReturnWait = ThreadPool.RegisterWaitForSingleObject(
+                    this.launcherReturnEvent, this.QueueReturnToTargetPicker, null, Timeout.Infinite, executeOnlyOnce: false);
+                this.launcherReturnToken = token;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or WaitHandleCannotBeOpenedException)
+            {
+                this.launcherReturnEvent?.Dispose();
+                this.launcherReturnEvent = null;
+                LogHelper.WriteWarning(ex);
+            }
         }
+
+        return this.launcherReturnToken;
+    }
+
+    private void QueueReturnToTargetPicker(object? state, bool timedOut)
+    {
+        if (!this.Dispatcher.HasShutdownStarted)
+        {
+            _ = this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                this.returnToPickerPending = true;
+                this.TryReturnToTargetPicker();
+            }));
+        }
+    }
+
+    private void TryReturnToTargetPicker()
+    {
+        if (!this.returnToPickerPending || !this.CanStartAttach)
+        {
+            return;
+        }
+
+        this.returnToPickerPending = false;
+        if (this.WindowState == WindowState.Minimized)
+        {
+            this.WindowState = WindowState.Normal;
+        }
+
+        if (!this.IsVisible)
+        {
+            this.Show();
+        }
+
+        this.Activate();
+        this.WindowInfos.MoveCurrentToPosition(-1);
+        CommandManager.InvalidateRequerySuggested();
+        WindowInfo.ClearCachedWindowHandleInfo();
+        this.Refresh(selectSingleTarget: false);
+        ApplicationCommands.Find.Execute(null, this);
+    }
+
+    private void CompleteAttach(SnoopStartTarget startTarget, string target, AttachResult result)
+    {
+        if (this.isClosed)
+        {
+            return;
+        }
+
+        if (!result.Success)
+        {
+            this.WindowInfos.MoveCurrentToPosition(-1);
+        }
+
+        this.SetValue(IsAttachingPropertyKey, false);
+        CommandManager.InvalidateRequerySuggested();
+
+        if (this.closeAfterAttach)
+        {
+            this.closeAfterAttach = false;
+            this.Close();
+            return;
+        }
+
+        if (result.Success)
+        {
+            this.TryReturnToTargetPicker();
+            return;
+        }
+
+        var failureTitleKey = startTarget == SnoopStartTarget.Zoomer ? "Chooser.MagnifyFailed" : "Chooser.InspectFailed";
+        var failure = new AttachFailureDialog(failureTitleKey, target, result.AttachException);
+        if (this.IsVisible)
+        {
+            failure.Owner = this;
+        }
+
+        if (failure.ShowDialog() == true)
+        {
+            WindowInfo.ClearCachedWindowHandleInfo();
+            this.Refresh(selectSingleTarget: false);
+            ApplicationCommands.Find.Execute(null, this);
+        }
+
+        this.TryReturnToTargetPicker();
     }
 
     private void HandleRefreshCommand(object sender, ExecutedRoutedEventArgs e)
     {
+        if (this.IsAttaching)
+        {
+            return;
+        }
+
         // clear out cached process info to make the force refresh do the process check over again.
         WindowInfo.ClearCachedWindowHandleInfo();
         this.Refresh();
@@ -316,7 +593,11 @@ public partial class AppChooser
 
     private void HandleSettingsCommand(object sender, ExecutedRoutedEventArgs e)
     {
-        new SettingsWindow { Owner = this }.ShowDialog();
+        if (!this.IsAttaching)
+        {
+            new SettingsWindow { Owner = this }.ShowDialog();
+            this.TryReturnToTargetPicker();
+        }
     }
 
     private void HandleMinimizeCommand(object sender, ExecutedRoutedEventArgs e)
@@ -337,7 +618,7 @@ public partial class AppChooser
 
     private void HandleWindowsComboBox_OnDropDownOpened(object sender, EventArgs e)
     {
-        if (this.windowInfos.Any())
+        if (this.selectSingleTargetAfterRefresh is not null || this.windowInfos.Any())
         {
             return;
         }

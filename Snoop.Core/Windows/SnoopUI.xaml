@@ -183,6 +183,9 @@
                             <AccessText Text="{localization:InspectorLoc Menu.FileAccess}" />
                         </DataTemplate>
                     </MenuItem.HeaderTemplate>
+                    <MenuItem x:Name="DisconnectTargetItem"
+                              Header="{localization:InspectorLoc Menu.DisconnectTarget}"
+                              Command="{x:Static windows:SnoopUI.DisconnectCommand}" />
                     <MenuItem Header="{localization:InspectorLoc Menu.CloseWindow}"
                               Command="{x:Static ApplicationCommands.Close}" />
                 </MenuItem>

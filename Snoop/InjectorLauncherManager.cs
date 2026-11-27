@@ -77,15 +77,17 @@ Snoop requires this component, which is part of the Snoop project, to do it's jo
             using var process = new Process();
             process.StartInfo = processStartInfo;
 
-            if (process.Start())
+            if (!process.Start())
             {
-                process.WaitForExit();
-
-                LogHelper.WriteLine($"Injector returned exit code: {process.ExitCode}.");
+                throw new InvalidOperationException("The Snoop injector launcher did not start.");
             }
-            else
+
+            process.WaitForExit();
+            var exitCode = process.ExitCode;
+            LogHelper.WriteLine($"Injector returned exit code: {exitCode}.");
+            if (exitCode != 0)
             {
-                LogHelper.WriteLine("Injector could not be started.");
+                throw new InvalidOperationException($"The Snoop injector launcher exited with code {exitCode}.");
             }
         }
         finally

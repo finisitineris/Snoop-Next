@@ -3,10 +3,14 @@ namespace Snoop;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Snoop.Data;
 using Snoop.Infrastructure;
+using Snoop.Next.Localization;
 
 public class WindowInfo
 {
@@ -168,7 +172,36 @@ public class WindowInfo
 
     public IntPtr HWnd { get; }
 
-    public string Description => $"{this.WindowTitle} - {this.OwningProcessInfo?.Process.ProcessName ?? string.Empty} [{this.OwningProcessId}]";
+    public string Description
+    {
+        get
+        {
+            try
+            {
+                return $"{this.WindowTitle} - {this.ProcessName ?? string.Empty} [{this.OwningProcessId}]";
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+            {
+                // The PID remains useful if the process exits before the failure message is shown.
+                return $"PID {this.OwningProcessId}";
+            }
+        }
+    }
+
+    internal AttachResult Attach(Func<ProcessInfo, IntPtr, AttachResult> action)
+    {
+        return this.OwningProcessInfo is { } process
+            ? action(process, this.HWnd)
+            : TargetUnavailable();
+    }
+
+    internal Task<AttachResult> AttachAsync(SnoopStartTarget startTarget, Guid launcherReturnToken)
+        => this.OwningProcessInfo is { } process
+            ? process.AttachAsync(this.HWnd, startTarget, launcherReturnToken)
+            : Task.FromResult(TargetUnavailable());
+
+    private static AttachResult TargetUnavailable()
+        => new(new InvalidOperationException(LocalizationManager.Default["Chooser.TargetUnavailable"]));
 
     #region UI Binding sources
 

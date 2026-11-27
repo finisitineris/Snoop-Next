@@ -12,16 +12,22 @@ on:
       - 'Snoop.Next.Localization.Tests/**'
       - 'Snoop.Next.Localization.Demo/**'
       - 'Snoop.Host.SettingsSmoke/**'
+      - 'Snoop.Host.SettingsSmoke.Fixture/**'
       - 'Snoop/Snoop.csproj'
       - 'Snoop/Settings.cs'
       - 'Snoop/AppChooser.*'
       - 'Snoop/LauncherStyles.xaml'
+      - 'Snoop/LauncherTargetPicker.cs'
+      - 'Snoop/InjectorLauncherManager.cs'
+      - 'Snoop/TargetRuntime.cs'
       - 'Snoop/WindowFinder.*'
+      - 'Snoop/WindowInfo.cs'
       - 'Snoop/WindowInfoControl.xaml'
       - 'Snoop/App.xaml.cs'
       - 'Snoop/Views/SettingsView.xaml'
       - 'Snoop/Views/SettingsView.xaml.cs'
       - 'Snoop/Views/SettingsWindow.cs'
+      - 'Snoop/Views/AttachFailureDialog.*'
       - 'Snoop/Data/KeyGestureEx.cs'
       - 'Snoop/ProcessInfo.cs'
       - 'Snoop.Core/Data/TransientSettingsData.cs'
@@ -97,6 +103,7 @@ jobs:
           SNOOP_UI_PREVIEW_DIR: output/next-ui-previews
         shell: pwsh
         run: |
+          dotnet --list-runtimes
           $project = 'Snoop.Host.SettingsSmoke/Snoop.Host.SettingsSmoke.csproj'
           dotnet build $project -c Release --nologo
           if ($LASTEXITCODE -ne 0) { throw 'Snoop host settings smoke compilation failed' }
