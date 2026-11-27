@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Snoop.Data;
 using Snoop.Infrastructure;
 using Snoop.Next.Localization;
 using Snoop.Windows;
@@ -94,6 +95,13 @@ public partial class WindowFinder
             return;
         }
 
+        if (Window.GetWindow(this) is AppChooser chooser)
+        {
+            var startTarget = this.WindowFinderType == WindowFinderType.Snoop ? SnoopStartTarget.SnoopUI : SnoopStartTarget.Zoomer;
+            chooser.AttachWindow(windowInfoToUse, startTarget);
+            return;
+        }
+
         switch (this.WindowFinderType)
         {
             case WindowFinderType.Snoop:
@@ -103,6 +111,15 @@ public partial class WindowFinder
             case WindowFinderType.Magnify:
                 AttachMagnify(windowInfoToUse);
                 break;
+        }
+    }
+
+    protected override void OnLostMouseCapture(MouseEventArgs e)
+    {
+        base.OnLostMouseCapture(e);
+        if (this.lowLevelMouseHook.IsRunning)
+        {
+            this.StopSnoopTargetsSearch();
         }
     }
 

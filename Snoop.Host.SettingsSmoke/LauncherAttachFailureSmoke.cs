@@ -6,10 +6,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Snoop.Infrastructure;
 using Snoop.Next.Localization;
@@ -23,6 +25,7 @@ internal static class LauncherAttachFailureSmoke
     private const string HelperPrefix = "Snoop.InjectorLauncher.";
     private const string ExitCodeFile = "helper-exit-code.txt";
     private const string ObservationFile = "helper-observation.txt";
+    private const string HoldFile = "hold-attach-helper.txt";
     private const int HelperFailureExitCode = 5;
 
     internal static bool IsTestHelper()
@@ -41,6 +44,13 @@ internal static class LauncherAttachFailureSmoke
 
         var directory = AppDomain.CurrentDomain.BaseDirectory;
         File.AppendAllLines(Path.Combine(directory, ObservationFile), new[] { args[target + 1], args[settings + 1] });
+        var gate = Path.Combine(directory, HoldFile);
+        var wait = Stopwatch.StartNew();
+        while (File.Exists(gate) && wait.Elapsed < TimeSpan.FromSeconds(12))
+        {
+            Thread.Sleep(10);
+        }
+
         return int.Parse(File.ReadAllText(Path.Combine(directory, ExitCodeFile)), CultureInfo.InvariantCulture);
     }
 
@@ -163,18 +173,15 @@ internal static class LauncherAttachFailureSmoke
                 Require(NoSelectedTarget(), "Retry must require explicit reselection before either command becomes available.");
                 VerifyAttempt(target.Id);
 
-                SetHelperExitCode(0);
-                SelectTarget();
-                AppChooser.InspectCommand.Execute(null, chooser);
-                VerifyAttempt(target.Id);
-                Require(app.Windows.Cast<Window>().All(window => window == chooser || !window.IsVisible),
-                    "A successful command after reselection must leave no failure dialog.");
+                CheckProgress();
 
                 CheckDialog("en-US", "CloseButton", "Chooser.Close");
                 Require(!picker.IsDropDownOpen && NoSelectedTarget(),
                     "Closing the error without restarting selection must leave both target actions disabled.");
                 VerifyAttempt(target.Id);
                 Console.WriteLine("PASS: the native attach error clears target actions, localizes its retry and close buttons, and retries only after explicit reselection.");
+
+                CheckCloseDuringAttempt();
 
                 void SelectTarget()
                 {
@@ -186,6 +193,97 @@ internal static class LauncherAttachFailureSmoke
                 bool NoSelectedTarget() => picker.SelectedItem is null && chooser.WindowInfos.CurrentItem is null
                     && !AppChooser.InspectCommand.CanExecute(null, chooser)
                     && !AppChooser.MagnifyCommand.CanExecute(null, chooser);
+
+                void CheckProgress()
+                {
+                    var localization = LocalizationManager.Default;
+                    localization.SetLanguage("zh-CN");
+                    SetHelperExitCode(0);
+                    SelectTarget();
+                    var selected = picker.SelectedItem;
+                    var gate = HoldHelper();
+
+                    ProgressBar progress;
+                    var inspectFinder = (WindowFinder)chooser.FindName("InspectWindowFinder");
+                    var magnifyFinder = (WindowFinder)chooser.FindName("MagnifyWindowFinder");
+                    try
+                    {
+                        AppChooser.InspectCommand.Execute(null, chooser);
+                        Require(!AppChooser.InspectCommand.CanExecute(null, chooser),
+                            "Attach must return while the held helper is still running and keep the target actions disabled.");
+                        progress = chooser.FindName("AttachProgress") as ProgressBar
+                            ?? throw new InvalidOperationException("The launcher must show an indeterminate attach progress bar.");
+                        var status = chooser.FindName("AttachProgressStatus") as TextBlock
+                            ?? throw new InvalidOperationException("The launcher must show a localized attach progress status.");
+
+                        var dispatcherResponded = false;
+                        chooser.Dispatcher.InvokeAsync(() => dispatcherResponded = true, DispatcherPriority.Background);
+                        Await(() => dispatcherResponded && progress.IsVisible && progress.IsIndeterminate && status.IsVisible
+                                    && status.Text == localization["Chooser.Attaching"] && AttemptIsWaiting(target.Id),
+                            "The dispatcher and localized progress must remain active while the helper waits.", TimeSpan.FromSeconds(10));
+                        var progressPeer = UIElementAutomationPeer.CreatePeerForElement(progress);
+                        Require(progressPeer.GetAutomationControlType() == AutomationControlType.ProgressBar
+                                && progressPeer.GetName() == localization["Chooser.Attaching"],
+                            "UI Automation must discover the localized attach progress indicator.");
+
+                        Require(!AppChooser.MagnifyCommand.CanExecute(null, chooser)
+                                && !AppChooser.RefreshCommand.CanExecute(null, chooser)
+                                && !AppChooser.SettingsCommand.CanExecute(null, chooser)
+                                && !ApplicationCommands.Find.CanExecute(null, chooser)
+                                && !picker.IsEnabled && !inspectFinder.IsEnabled && !magnifyFinder.IsEnabled,
+                            "A running attempt must disable the picker, drag targets and commands that can change the target.");
+                        AppChooser.InspectCommand.Execute(null, chooser);
+                        AppChooser.MagnifyCommand.Execute(null, chooser);
+                        AppChooser.RefreshCommand.Execute(null, chooser);
+                        ApplicationCommands.Find.Execute(null, chooser);
+                        Require(ReferenceEquals(picker.SelectedItem, selected) && !picker.IsDropDownOpen,
+                            "A running attempt must keep its original selection and reject opening or refreshing the picker.");
+
+                        localization.SetLanguage("en-US");
+                        Await(() => status.IsVisible && status.Text == localization["Chooser.Attaching"] && AttemptIsWaiting(target.Id),
+                            "The busy status must remain localized and only the original helper may be running.");
+                        LauncherAppearanceSmoke.CaptureIfRequested((FrameworkElement)chooser.Content, "launcher-attach-progress");
+                    }
+                    finally
+                    {
+                        File.Delete(gate);
+                    }
+
+                    Await(() => !progress.IsVisible && AppChooser.InspectCommand.CanExecute(null, chooser)
+                                && AppChooser.MagnifyCommand.CanExecute(null, chooser)
+                                && AppChooser.RefreshCommand.CanExecute(null, chooser)
+                                && AppChooser.SettingsCommand.CanExecute(null, chooser)
+                                && ApplicationCommands.Find.CanExecute(null, chooser)
+                                && picker.IsEnabled && inspectFinder.IsEnabled && magnifyFinder.IsEnabled,
+                        "A successful helper exit must clear progress and restore the launcher actions.");
+                    VerifyAttempt(target.Id);
+                    Require(app.Windows.Cast<Window>().All(window => window == chooser || !window.IsVisible),
+                        "A successful command after reselection must leave no failure dialog.");
+                    Console.WriteLine("PASS: launcher attach progress stays responsive, prevents duplicate target actions, and clears when the helper exits.");
+                }
+
+                void CheckCloseDuringAttempt()
+                {
+                    SetHelperExitCode(0);
+                    SelectTarget();
+                    var gate = HoldHelper();
+                    try
+                    {
+                        AppChooser.InspectCommand.Execute(null, chooser);
+                        Await(() => AttemptIsWaiting(target.Id), "The launcher helper must start before requesting close.", TimeSpan.FromSeconds(10));
+                        chooser.Close();
+                        Require(chooser.IsVisible && AttemptIsWaiting(target.Id),
+                            "Closing the launcher during attach must wait for the in-flight helper.");
+                    }
+                    finally
+                    {
+                        File.Delete(gate);
+                    }
+
+                    Await(() => !chooser.IsVisible, "The launcher must close after the in-flight helper exits.");
+                    VerifyAttempt(target.Id);
+                    Console.WriteLine("PASS: launcher close waits for the active helper and removes its transient settings.");
+                }
 
                 void CheckDialog(string language, string buttonName, string label)
                 {
@@ -203,11 +301,18 @@ internal static class LauncherAttachFailureSmoke
                         CloseOtherWindows();
                         watchdog.Stop();
                     };
-                    var inspection = chooser.Dispatcher.InvokeAsync(() =>
+                    var inspection = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) };
+                    inspection.Tick += (_, _) =>
                     {
                         try
                         {
-                            var dialog = app.Windows.Cast<Window>().Single(window => window != chooser && window.IsVisible);
+                            var dialog = app.Windows.Cast<Window>().SingleOrDefault(window => window != chooser && window.IsVisible);
+                            if (dialog is null)
+                            {
+                                return;
+                            }
+
+                            inspection.Stop();
                             Require(NoSelectedTarget(), "The failed target must be cleared while error feedback is visible.");
                             var caption = (TextBlock)dialog.FindName("FailureCaption");
                             var guidance = (TextBlock)dialog.FindName("FailureGuidance");
@@ -223,19 +328,24 @@ internal static class LauncherAttachFailureSmoke
                         }
                         catch (Exception ex)
                         {
+                            inspection.Stop();
                             failure = ex;
                             CloseOtherWindows();
                         }
-                    }, DispatcherPriority.ApplicationIdle);
+                    };
                     watchdog.Start();
+                    inspection.Start();
                     try
                     {
                         AppChooser.InspectCommand.Execute(null, chooser);
+                        Await(() => (inspected || failure is not null)
+                                    && app.Windows.Cast<Window>().All(window => window == chooser || !window.IsVisible),
+                            "The native attach failure dialog must open and close.", TimeSpan.FromSeconds(20));
                     }
                     finally
                     {
                         watchdog.Stop();
-                        inspection.Abort();
+                        inspection.Stop();
                     }
 
                     if (failure is not null)
@@ -256,7 +366,11 @@ internal static class LauncherAttachFailureSmoke
             }
             finally
             {
-                chooser.Close();
+                if (chooser.IsVisible)
+                {
+                    chooser.Close();
+                }
+
                 app.Shutdown();
             }
         }
@@ -309,12 +423,32 @@ internal static class LauncherAttachFailureSmoke
         File.WriteAllText(Path.Combine(directory, ExitCodeFile), exitCode.ToString(CultureInfo.InvariantCulture));
     }
 
+    private static string HoldHelper()
+    {
+        var gate = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, HoldFile);
+        File.WriteAllText(gate, string.Empty);
+        return gate;
+    }
+
     private static void VerifyAttempt(int targetProcessId)
     {
         var observation = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ObservationFile));
         Require(observation.Length == 2 && observation[0] == targetProcessId.ToString(CultureInfo.InvariantCulture),
             "The test helper must receive exactly one request for the controlled target PID.");
         Require(!File.Exists(observation[1]), "The launcher must remove transient settings after each helper attempt.");
+    }
+
+    private static bool AttemptIsWaiting(int targetProcessId)
+    {
+        try
+        {
+            var lines = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ObservationFile));
+            return lines.Length == 2 && lines[0] == targetProcessId.ToString(CultureInfo.InvariantCulture) && File.Exists(lines[1]);
+        }
+        catch (IOException)
+        {
+            return false;
+        }
     }
 
     private static void Require(bool condition, string message)

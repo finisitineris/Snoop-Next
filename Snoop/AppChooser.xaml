@@ -8,6 +8,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:converters="clr-namespace:Snoop.Converters"
+        xmlns:coreConverters="clr-namespace:Snoop.Converters;assembly=Snoop.Core"
         xmlns:infrastructure="clr-namespace:Snoop.Infrastructure"
         xmlns:local="clr-namespace:Snoop.Next.Localization;assembly=Snoop.Next.Localization"
         xmlns:snoop="clr-namespace:Snoop"
@@ -63,6 +64,7 @@
 
             <snoop:LauncherTargetPicker x:Name="windowsComboBox" Grid.Column="1" VerticalAlignment="Center"
                       Style="{StaticResource LauncherTargetList}" MaxDropDownHeight="320"
+                      IsEnabled="{Binding IsAttaching, Converter={x:Static coreConverters:InvertBoolConverter.DefaultInstance}}"
                       IsSynchronizedWithCurrentItem="True" TextSearch.TextPath="ProcessName" ItemsSource="{Binding WindowInfos}"
                       DropDownOpened="HandleWindowsComboBox_OnDropDownOpened"
                       AutomationProperties.Name="{local:Loc Chooser.SelectTarget}"
@@ -110,7 +112,25 @@
                 </ComboBox.ItemTemplate>
             </snoop:LauncherTargetPicker>
 
-            <WrapPanel x:Name="TargetActions" Grid.Column="2" Margin="3,0,0,0" VerticalAlignment="Center">
+            <Border Grid.Column="1" Height="32" VerticalAlignment="Center" Padding="8,3" CornerRadius="4"
+                    Background="{DynamicResource SnoopNext.Brush.Control}" IsHitTestVisible="False"
+                    Visibility="{Binding IsAttaching, Converter={x:Static snoopwpf:BoolToVisibilityConverter.DefaultInstance}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="3" />
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="AttachProgressStatus" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               Text="{local:Loc Chooser.Attaching}" />
+                    <ProgressBar x:Name="AttachProgress" Grid.Row="1" IsIndeterminate="{Binding IsAttaching}" Focusable="False"
+                                 BorderThickness="0" Foreground="{DynamicResource SnoopNext.Brush.Accent}"
+                                 Background="{DynamicResource SnoopNext.Brush.Border}"
+                                 AutomationProperties.Name="{local:Loc Chooser.Attaching}" />
+                </Grid>
+            </Border>
+
+            <WrapPanel x:Name="TargetActions" Grid.Column="2" Margin="3,0,0,0" VerticalAlignment="Center"
+                       IsEnabled="{Binding IsAttaching, Converter={x:Static coreConverters:InvertBoolConverter.DefaultInstance}}">
                 <Button x:Name="RefreshTargetsButton" Style="{StaticResource LauncherButton}" Command="{x:Static snoop:AppChooser.RefreshCommand}"
                         AutomationProperties.Name="{local:Loc Chooser.Refresh}" ToolTip="{local:Loc Chooser.Refresh}">
                     <Path Style="{StaticResource LauncherIcon}" Data="M14,6 A6,6 0 1 0 14,11 M14,2 L14,6.5 L9.5,6.5" />

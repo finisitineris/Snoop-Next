@@ -3,6 +3,8 @@
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Snoop.Data;
@@ -65,16 +67,64 @@ public class ProcessInfo
         }
     }
 
-    public AttachResult Snoop(IntPtr targetHwnd)
+    public AttachResult Snoop(IntPtr targetHwnd) => this.Attach(targetHwnd, SnoopStartTarget.SnoopUI);
+
+    public AttachResult Magnify(IntPtr targetHwnd) => this.Attach(targetHwnd, SnoopStartTarget.Zoomer);
+
+    internal Task<AttachResult> AttachAsync(IntPtr targetHwnd, SnoopStartTarget startTarget)
     {
-        if (Application.Current?.CheckAccess() == true)
+        try
+        {
+            // Capture mutable host settings and system language before leaving the dispatcher.
+            var settings = CreateTransientSettingsData(startTarget, targetHwnd);
+            var processId = this.Process.Id;
+            var completion = new TaskCompletionSource<AttachResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var worker = new Thread(() => completion.SetResult(AttachOnWorker(processId, targetHwnd, settings)))
+            {
+                Name = "Snoop_AttachWorker",
+                IsBackground = true
+            };
+            worker.SetApartmentState(ApartmentState.STA);
+            worker.Start();
+            return completion.Task;
+        }
+        catch (Exception ex)
+        {
+            return Task.FromResult(new AttachResult(ex));
+        }
+    }
+
+    private static AttachResult AttachOnWorker(int processId, IntPtr targetHwnd, TransientSettingsData settings)
+    {
+        try
+        {
+            NativeMethods.GetWindowThreadProcessId(targetHwnd, out var owningProcessId);
+            if (owningProcessId != processId)
+            {
+                return new AttachResult(new InvalidOperationException(LocalizationManager.Default["Chooser.TargetUnavailable"]));
+            }
+
+            using var process = Process.GetProcessById(processId);
+            new ProcessInfo(process).Launch(targetHwnd, settings);
+            return new AttachResult();
+        }
+        catch (Exception ex)
+        {
+            return new AttachResult(ex);
+        }
+    }
+
+    private AttachResult Attach(IntPtr targetHwnd, SnoopStartTarget startTarget)
+    {
+        var isUiThread = Application.Current?.CheckAccess() == true;
+        if (isUiThread)
         {
             Mouse.OverrideCursor = Cursors.Wait;
         }
 
         try
         {
-            InjectorLauncherManager.Launch(this, targetHwnd, typeof(SnoopManager).GetMethod(nameof(SnoopManager.StartSnoop))!, CreateTransientSettingsData(SnoopStartTarget.SnoopUI, targetHwnd));
+            this.Launch(targetHwnd, CreateTransientSettingsData(startTarget, targetHwnd));
         }
         catch (Exception e)
         {
@@ -82,7 +132,7 @@ public class ProcessInfo
         }
         finally
         {
-            if (Application.Current?.CheckAccess() == true)
+            if (isUiThread)
             {
                 Mouse.OverrideCursor = null;
             }
@@ -91,31 +141,8 @@ public class ProcessInfo
         return new AttachResult();
     }
 
-    public AttachResult Magnify(IntPtr targetHwnd)
-    {
-        if (Application.Current?.CheckAccess() == true)
-        {
-            Mouse.OverrideCursor = Cursors.Wait;
-        }
-
-        try
-        {
-            InjectorLauncherManager.Launch(this, targetHwnd, typeof(SnoopManager).GetMethod(nameof(SnoopManager.StartSnoop))!, CreateTransientSettingsData(SnoopStartTarget.Zoomer, targetHwnd));
-        }
-        catch (Exception e)
-        {
-            return new AttachResult(e);
-        }
-        finally
-        {
-            if (Application.Current?.CheckAccess() == true)
-            {
-                Mouse.OverrideCursor = null;
-            }
-        }
-
-        return new AttachResult();
-    }
+    private void Launch(IntPtr targetHwnd, TransientSettingsData settings)
+        => InjectorLauncherManager.Launch(this, targetHwnd, typeof(SnoopManager).GetMethod(nameof(SnoopManager.StartSnoop))!, settings);
 
     private static TransientSettingsData CreateTransientSettingsData(SnoopStartTarget startTarget, IntPtr targetWindowHandle)
     {

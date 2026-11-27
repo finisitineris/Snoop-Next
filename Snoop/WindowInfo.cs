@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Snoop.Data;
 using Snoop.Infrastructure;
 using Snoop.Next.Localization;
 
@@ -190,8 +192,16 @@ public class WindowInfo
     {
         return this.OwningProcessInfo is { } process
             ? action(process, this.HWnd)
-            : new AttachResult(new InvalidOperationException(LocalizationManager.Default["Chooser.TargetUnavailable"]));
+            : TargetUnavailable();
     }
+
+    internal Task<AttachResult> AttachAsync(SnoopStartTarget startTarget)
+        => this.OwningProcessInfo is { } process
+            ? process.AttachAsync(this.HWnd, startTarget)
+            : Task.FromResult(TargetUnavailable());
+
+    private static AttachResult TargetUnavailable()
+        => new(new InvalidOperationException(LocalizationManager.Default["Chooser.TargetUnavailable"]));
 
     #region UI Binding sources
 

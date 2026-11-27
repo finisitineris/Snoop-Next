@@ -85,6 +85,7 @@
   <data name="Chooser.InspectFailed" xml:space="preserve"><value>无法挂载到窗口</value></data>
   <data name="Chooser.MagnifyFailed" xml:space="preserve"><value>无法放大查看窗口</value></data>
   <data name="Chooser.AttachFailureDetail" xml:space="preserve"><value>挂载到“{0}”失败。</value></data>
+  <data name="Chooser.Attaching" xml:space="preserve"><value>正在挂载…</value></data>
   <data name="Chooser.AttachFailureGuidance" xml:space="preserve"><value>请确认目标窗口仍处于打开状态，并确认你有权限检查它。点击「重试」可刷新列表并重新选择目标。</value></data>
   <data name="Chooser.AttachAccessDenied" xml:space="preserve"><value>Windows 拒绝了访问。请确认 Snoop 可以运行，并确认你有权限检查此目标。点击「重试」可重新选择目标。</value></data>
   <data name="Chooser.AttachElevationCanceled" xml:space="preserve"><value>Windows 已取消提权请求。点击「重试」可重新选择目标。如有 Windows 提示，请查看后再决定。</value></data>

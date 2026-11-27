@@ -85,6 +85,7 @@
   <data name="Chooser.InspectFailed" xml:space="preserve"><value>Could not attach to window</value></data>
   <data name="Chooser.MagnifyFailed" xml:space="preserve"><value>Could not magnify window</value></data>
   <data name="Chooser.AttachFailureDetail" xml:space="preserve"><value>Failed to attach to “{0}”.</value></data>
+  <data name="Chooser.Attaching" xml:space="preserve"><value>Attaching…</value></data>
   <data name="Chooser.AttachFailureGuidance" xml:space="preserve"><value>Check that the target window is still open and that you have permission to inspect it. Retry to refresh the list and choose a target.</value></data>
   <data name="Chooser.AttachAccessDenied" xml:space="preserve"><value>Windows denied access. Check that Snoop can run and that you have permission to inspect this target. Retry to choose a target again.</value></data>
   <data name="Chooser.AttachElevationCanceled" xml:space="preserve"><value>Windows canceled the elevation request. Retry to choose a target and review the Windows prompt if it appears.</value></data>
