@@ -29,6 +29,6 @@ This P0 documentation does **not** modify source targets or injector behavior. T
 ## Current test status
 
 - Source baseline: merged Windows CI fix [PR #7](https://github.com/finisitineris/Snoop-Next/pull/7) and [passing run #44692566884](https://github.com/finisitineris/Snoop-Next/actions/runs/44692566884).
-- Windows CI ran 51 core NUnit test executions on .NET 6, 8 and 10. Testers separately confirmed attach and same-process reattach on net462-targeted CLR4 fixtures (x86 and x64) and a .NET 10 x64 fixture. The .NET 11 desktop lane remains untested. [Runtime results and remaining checks](p0/SMOKE-MATRIX.md)
+- Windows CI ran 51 core NUnit test executions on .NET 6, 8 and 10. On a Windows 11 desktop, all six SN-004 fixtures passed external attach, property and binding inspection, detach, reattach and target restart. The runs covered net462 x86/x64 on .NET Framework 4.8.1 and .NET 6/8/10/11 x64. [Runtime results and evidence](p0/SMOKE-MATRIX.md)
 - Non-elevated desktop smoke protocol / compile-only harnesses prepared in [PR #9](https://github.com/finisitineris/Snoop-Next/pull/9).
 - Remaining inherited Nuke bootstrapper advisory cleanup is tracked in [SN-006](https://github.com/finisitineris/Snoop-Next/issues/8).
